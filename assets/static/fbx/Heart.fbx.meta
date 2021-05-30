@@ -1,0 +1,76 @@
+{
+  "ver": "2.0.12",
+  "importer": "fbx",
+  "imported": true,
+  "uuid": "d2e8aa91-4203-449f-a4b8-8db81ae65848",
+  "files": [],
+  "subMetas": {
+    "f051b": {
+      "importer": "gltf-mesh",
+      "uuid": "d2e8aa91-4203-449f-a4b8-8db81ae65848@f051b",
+      "displayName": "",
+      "id": "f051b",
+      "name": "Cube.016.mesh",
+      "userData": {
+        "gltfIndex": 0
+      },
+      "ver": "1.1.0",
+      "imported": true,
+      "files": [
+        ".bin",
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "b4e6b": {
+      "importer": "gltf-material",
+      "uuid": "d2e8aa91-4203-449f-a4b8-8db81ae65848@b4e6b",
+      "displayName": "",
+      "id": "b4e6b",
+      "name": "Material.material",
+      "userData": {
+        "gltfIndex": 0
+      },
+      "ver": "1.0.14",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "a81c7": {
+      "importer": "gltf-scene",
+      "uuid": "d2e8aa91-4203-449f-a4b8-8db81ae65848@a81c7",
+      "displayName": "",
+      "id": "a81c7",
+      "name": "Heart.prefab",
+      "userData": {
+        "gltfIndex": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "imageMetas": [],
+    "legacyFbxImporter": false,
+    "redirect": "d2e8aa91-4203-449f-a4b8-8db81ae65848@a81c7",
+    "assetFinder": {
+      "meshes": [
+        "d2e8aa91-4203-449f-a4b8-8db81ae65848@f051b"
+      ],
+      "skeletons": [],
+      "textures": [],
+      "materials": [
+        "d2e8aa91-4203-449f-a4b8-8db81ae65848@b4e6b"
+      ],
+      "scenes": [
+        "d2e8aa91-4203-449f-a4b8-8db81ae65848@a81c7"
+      ]
+    }
+  }
+}

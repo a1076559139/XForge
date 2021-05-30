@@ -1,0 +1,201 @@
+{
+  "__version__": "1.2.6",
+  "version": {
+    "builder": "1.2.3"
+  },
+  "BuildTaskManager": {
+    "taskMap": {
+      "1617883232685": {
+        "id": "1617883232685",
+        "progress": 1,
+        "state": "success",
+        "message": "Build success in 7319 ms!",
+        "options": {
+          "name": "CocosCreatorFrontFrame",
+          "platform": "web-mobile",
+          "buildPath": "./build",
+          "debug": false,
+          "md5Cache": false,
+          "sourceMaps": false,
+          "replaceSplashScreen": false,
+          "mainBundleCompressionType": "merge_dep",
+          "mainBundleIsRemote": false,
+          "mergeStartScene": false,
+          "experimentalEraseModules": false,
+          "compressTexture": true,
+          "packAutoAtlas": true,
+          "startScene": "45032da9-37f2-4e17-8fd4-47dd41efe1a3",
+          "scenes": [
+            {
+              "url": "db://assets/scene/main.scene",
+              "uuid": "45032da9-37f2-4e17-8fd4-47dd41efe1a3"
+            }
+          ],
+          "outputName": "web-mobile",
+          "packages": {
+            "cocos-service": {
+              "configID": "2f6697",
+              "services": []
+            },
+            "web-mobile": {
+              "orientation": "auto",
+              "polyfills": {
+                "asyncFunctions": true
+              }
+            }
+          }
+        },
+        "time": "2021-4-15 14:54",
+        "dirty": false,
+        "rawOptions": {
+          "name": "CocosCreatorFrontFrame",
+          "platform": "web-mobile",
+          "buildPath": "./build",
+          "debug": false,
+          "md5Cache": false,
+          "sourceMaps": false,
+          "replaceSplashScreen": false,
+          "mainBundleCompressionType": "merge_dep",
+          "mainBundleIsRemote": false,
+          "mergeStartScene": false,
+          "experimentalEraseModules": false,
+          "compressTexture": true,
+          "packAutoAtlas": true,
+          "startScene": "45032da9-37f2-4e17-8fd4-47dd41efe1a3",
+          "scenes": [
+            {
+              "url": "db://assets/scene/main.scene",
+              "uuid": "45032da9-37f2-4e17-8fd4-47dd41efe1a3"
+            }
+          ],
+          "outputName": "web-mobile",
+          "packages": {
+            "cocos-service": {
+              "configID": "2f6697",
+              "services": []
+            },
+            "web-mobile": {
+              "orientation": "auto",
+              "polyfills": {
+                "asyncFunctions": true
+              }
+            }
+          }
+        }
+      },
+      "1620699556740": {
+        "id": "1620699556740",
+        "progress": 1,
+        "state": "success",
+        "message": "Build success in 13352 ms!",
+        "options": {
+          "name": "CocosCreatorFrontFrame",
+          "platform": "ios",
+          "buildPath": "./build",
+          "debug": false,
+          "md5Cache": false,
+          "sourceMaps": false,
+          "replaceSplashScreen": false,
+          "mainBundleCompressionType": "merge_dep",
+          "mainBundleIsRemote": false,
+          "mergeStartScene": false,
+          "experimentalEraseModules": false,
+          "compressTexture": true,
+          "packAutoAtlas": true,
+          "startScene": "45032da9-37f2-4e17-8fd4-47dd41efe1a3",
+          "scenes": [
+            {
+              "url": "db://assets/scene/main.scene",
+              "uuid": "45032da9-37f2-4e17-8fd4-47dd41efe1a3"
+            }
+          ],
+          "outputName": "ios",
+          "packages": {
+            "cocos-service": {
+              "configID": "2f6697",
+              "services": []
+            },
+            "native": {
+              "template": "link",
+              "polyfills": {
+                "asyncFunctions": true
+              },
+              "encrypted": false,
+              "xxteaKey": "0ctwc2kd1HEpPSZK",
+              "compressZip": false,
+              "makeAfterBuild": false
+            },
+            "ios": {
+              "packageName": "com.cocos.CocosCreatorFrontFrame",
+              "orientation": {
+                "landscapeRight": true,
+                "landscapeLeft": true
+              },
+              "renderBackEnd": {
+                "metal": true,
+                "gles3": false
+              }
+            }
+          }
+        },
+        "time": "2021-5-11 19:43",
+        "dirty": false,
+        "rawOptions": {
+          "name": "CocosCreatorFrontFrame",
+          "platform": "ios",
+          "buildPath": "./build",
+          "debug": false,
+          "md5Cache": false,
+          "sourceMaps": false,
+          "replaceSplashScreen": false,
+          "mainBundleCompressionType": "merge_dep",
+          "mainBundleIsRemote": false,
+          "mergeStartScene": false,
+          "experimentalEraseModules": false,
+          "compressTexture": true,
+          "packAutoAtlas": true,
+          "startScene": "45032da9-37f2-4e17-8fd4-47dd41efe1a3",
+          "scenes": [
+            {
+              "url": "db://assets/scene/main.scene",
+              "uuid": "45032da9-37f2-4e17-8fd4-47dd41efe1a3"
+            }
+          ],
+          "outputName": "ios",
+          "packages": {
+            "cocos-service": {
+              "configID": "2f6697",
+              "services": []
+            },
+            "native": {
+              "template": "link",
+              "polyfills": {
+                "asyncFunctions": true
+              },
+              "encrypted": false,
+              "xxteaKey": "0ctwc2kd1HEpPSZK",
+              "compressZip": false,
+              "makeAfterBuild": false
+            },
+            "ios": {
+              "packageName": "com.cocos.CocosCreatorFrontFrame",
+              "orientation": {
+                "landscapeRight": true,
+                "landscapeLeft": true
+              },
+              "renderBackEnd": {
+                "metal": true,
+                "gles3": false
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "common": {
+    "outputName": "ios",
+    "mainBundleCompressionType": "merge_dep",
+    "platform": "ios"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "CocosCreatorFrame3D",
+  "type": "3d",
+  "uuid": "fa46ef53-f8af-46c8-9906-d778aa747888",
+  "version": "3.0.1",
+  "devDependencies": {
+    "@types/gulp": "^4.0.8",
+    "@types/gulp-if": "^0.0.33",
+    "@types/gulp-imagemin": "^7.0.2",
+    "@types/node": "^14.14.35",
+    "gulp": "^4.0.2",
+    "gulp-if": "^3.0.0",
+    "gulp-imagemin": "^7.1.0",
+    "imagemin": "^7.0.1",
+    "imagemin-jpegtran": "^7.0.0",
+    "imagemin-pngquant": "^9.0.2",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.3"
+  }
+}

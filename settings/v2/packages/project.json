@@ -1,0 +1,25 @@
+{
+  "__version__": "1.0.1",
+  "layer": [
+    {
+      "name": "NONE",
+      "value": 1
+    },
+    {
+      "name": "UI_2D_BACK",
+      "value": 2
+    },
+    {
+      "name": "UI_2D_FRONT",
+      "value": 4
+    }
+  ],
+  "general": {
+    "designResolution": {
+      "width": 750,
+      "height": 1334,
+      "fitWidth": true,
+      "fitHeight": false
+    }
+  }
+}

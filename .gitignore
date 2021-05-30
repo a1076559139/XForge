@@ -1,0 +1,10 @@
+/node_modules/
+/library/
+/temp/
+/build/
+/local/logs/
+/local/local.json
+/local/layout.editor.json
+/build-templates/
+# local/
+# settings/

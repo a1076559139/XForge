@@ -1,0 +1,298 @@
+// Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
+CCEffect %{
+  techniques:
+  - name: opaque
+    passes:
+    - vert: unlit-vs:vert
+      frag: unlit-fs:frag
+      properties: &props
+        mainTexture:    { value: grey }
+        tilingOffset:   { value: [1, 1, 0, 0] }
+        mainColor:      { value: [1, 1, 1, 1], editor: { type: color } }
+        #colorScale:     { value: [1, 1, 1], target: colorScaleAndCutoff.xyz }
+        #alphaThreshold: { value: 0.5, target: colorScaleAndCutoff.w, editor: { parent: USE_ALPHA_TEST } }
+        emissive:       { value: 0.7, target: emissiveParam.x }
+        color:          { target: mainColor, editor: { visible: false } } # backward compability
+        specularGloss:  { value: 20.0 }
+        #ambientColor:   { value: [0.1, 0.1, 0.1, 1], editor: { type: color } }
+        diffuseColor:   { value: [1, 1, 1, 1], editor: { type: color } }
+        specularColor:  { value: [1, 1, 1, 1], editor: { type: color } }
+      migrations: &migs
+        properties:
+          mainColor:    { formerlySerializedAs: color }
+    - &shadow-caster
+      vert: shadow-caster-vs:vert
+      frag: shadow-caster-fs:frag
+      phase: shadow-caster
+      propertyIndex: 0
+      rasterizerState:
+        cullMode: front
+      properties:
+        tilingOffset:   { value: [1.0, 1.0, 0.0, 0.0] }
+        mainColor:      { value: [1.0, 1.0, 1.0, 1.0], target: albedo, editor: { displayName: Albedo, type: color } }
+        albedoScale:    { value: [1.0, 1.0, 1.0], target: albedoScaleAndCutoff.xyz }
+        alphaThreshold: { value: 0.5, target: albedoScaleAndCutoff.w, editor: { parent: USE_ALPHA_TEST } }
+        occlusion:      { value: 1.0, target: pbrParams.x }
+        roughness:      { value: 0.8, target: pbrParams.y }
+        metallic:       { value: 0.6, target: pbrParams.z }
+        normalStrenth:  { value: 1.0, target: pbrParams.w, editor: { parent: USE_NORMAL_MAP } }
+        emissive:       { value: [0.0, 0.0, 0.0, 1.0], editor: { type: color } }
+        emissiveScale:  { value: [1.0, 1.0, 1.0], target: emissiveScaleParam.xyz }
+        mainTexture:    { value: grey, target: albedoMap, editor: { displayName: AlbedoMap } }
+  - name: transparent
+    passes:
+    - vert: unlit-vs:vert
+      frag: unlit-fs:frag
+      depthStencilState: &d1
+        depthTest: true
+        depthWrite: false
+      blendState:
+        targets:
+          - blend: true
+            blendSrc: src_alpha
+            blendDst: one_minus_src_alpha
+            blendDstAlpha: one_minus_src_alpha
+      properties: *props
+      migrations: *migs
+    - *shadow-caster
+  - name: add
+    passes:
+    - vert: unlit-vs:vert
+      frag: unlit-fs:frag
+      rasterizerState: &r1 { cullMode: none }
+      depthStencilState: *d1
+      blendState:
+        targets:
+          - blend: true
+            blendSrc: src_alpha
+            blendDst: one
+            blendSrcAlpha: src_alpha
+            blendDstAlpha: one
+      properties: *props
+      migrations: *migs
+    - *shadow-caster
+  - name: alpha-blend
+    passes:
+    - vert: unlit-vs:vert
+      frag: unlit-fs:frag
+      rasterizerState: *r1
+      depthStencilState: *d1
+      blendState:
+        targets:
+          - blend: true
+            blendSrc: src_alpha
+            blendDst: one_minus_src_alpha
+            blendSrcAlpha: src_alpha
+            blendDstAlpha: one_minus_src_alpha
+      properties: *props
+      migrations: *migs
+    - *shadow-caster
+}%
+
+
+CCProgram shared-ubos %{
+  uniform Constants {
+    vec4 tilingOffset;
+    vec4 albedo;
+    vec4 albedoScaleAndCutoff;
+    vec4 pbrParams;
+    vec4 emissive;
+    vec4 emissiveScaleParam;
+  };
+}%
+
+CCProgram unlit-vs %{
+  precision highp float;
+  #include <input-standard>
+  #include <cc-global>
+  #include <cc-local-batch>
+  #include <cc-shadow-map-vs>
+
+  #if USE_VERTEX_COLOR
+    in vec4 a_color;
+    out vec4 v_color;
+  #endif
+
+  #if USE_TEXTURE
+
+    out vec2 v_uv;
+    uniform TexCoords {
+      vec4 tilingOffset;
+    };
+  #endif
+
+  out vec3 v_worldNormal;
+  out vec3 v_worldPos;
+
+  vec4 vert () {
+    StandardVertInput In;
+    CCVertInput(In);
+
+    mat4 matWorld, matWorldIT;
+    CCGetWorldMatrixFull(matWorld, matWorldIT);
+
+    vec4 pos = matWorld * In.position;
+    v_worldPos = pos.xyz;
+    v_worldNormal = normalize((matWorldIT * vec4(In.normal, 0.0)).xyz);
+
+
+    #if CC_RECEIVE_SHADOW
+      CCPassShadowParams(pos);
+    #endif
+
+    #if USE_TEXTURE
+      v_uv = a_texCoord;
+      #if FLIP_UV
+        v_uv.y = 1.0 - v_uv.y;
+      #endif
+      v_uv = v_uv * tilingOffset.xy + tilingOffset.zw;
+    #endif
+
+    #if USE_VERTEX_COLOR
+      v_color = a_color;
+    #endif
+
+    return cc_matProj * (cc_matView * matWorld) * In.position;
+  }
+}%
+
+CCProgram unlit-fs %{
+  precision mediump float;
+  #include <output>
+  #include <cc-shadow>
+
+  #if CC_RECEIVE_SHADOW
+    #include <cc-shadow-map-fs>
+  #endif
+
+  #if USE_ALPHA_TEST
+    #pragma define ALPHA_TEST_CHANNEL options([a, r, g, b])
+  #endif
+
+  #if USE_TEXTURE
+    in vec2 v_uv;
+    uniform sampler2D mainTexture;
+  #endif
+
+  uniform Constant {
+    vec4 mainColor;
+    // vec4 colorScaleAndCutoff;
+    // vec4 ambientColor;
+    vec4 diffuseColor;
+    vec4 emissiveParam;
+    vec4 specularColor;
+    float specularGloss;
+  };
+
+  #if USE_VERTEX_COLOR
+    in vec4 v_color;
+  #endif
+
+  in vec3 v_worldNormal;
+  in vec3 v_worldPos;
+
+  vec4 frag () {
+    vec4 o = mainColor;
+
+    #if USE_VERTEX_COLOR
+      o *= v_color;
+    #endif
+
+    #if USE_TEXTURE
+      o *= texture(mainTexture, v_uv);
+    #endif
+
+  
+    // 1.ambientColor
+    // vec3 ambient = ambientColor.rgb;
+    // 2.diffuseColor
+    vec3 N =  normalize(v_worldNormal);
+    vec3 L = normalize(cc_mainLitDir.xyz * -1.0);
+    vec3 diffuse = diffuseColor.rgb * max(0.0, dot(N,L));
+    // 3.specularColor
+    vec3 V = normalize(cc_cameraPos.xyz - v_worldPos.xyz);
+    // H替代了Phong中的reflectDic = normalize(reflect(-L,N));
+    vec3 H = normalize(L+V);
+    // 这里需要注意的是计算高光反射的时候使用的是【半角向量 H】和法向量的点积
+    vec3 specular = specularColor.rgb * pow(max(0.0, dot(H,N)), specularGloss);
+
+    o.rgb *= (diffuse + specular) * (1.0 - emissiveParam.x) + emissiveParam.x;
+
+    #if CC_RECEIVE_SHADOW
+      float NL = max(dot(N, L), 0.001);
+      CC_SHADOW_FACTOR(o, NL);
+    #endif
+
+    return CCFragOutput(o);
+  }
+}%
+
+CCProgram shadow-caster-vs %{
+  precision highp float;
+  #include <input-standard>
+  #include <cc-local-batch>
+  #include <shared-ubos>
+  #include <cc-shadow>
+
+  #if HAS_SECOND_UV || USE_LIGHTMAP
+    in vec2 a_texCoord1;
+  #endif
+
+  out vec2 v_uv;
+  out vec2 v_uv1;
+
+  out float v_clip_depth;
+
+  vec4 vert () {
+    StandardVertInput In;
+    CCVertInput(In);
+
+    mat4 matWorld, matWorldIT;
+    CCGetWorldMatrixFull(matWorld, matWorldIT);
+
+    vec4 worldPos = matWorld * In.position;
+    vec4 clipPos = cc_matLightViewProj * worldPos;
+
+    v_uv = a_texCoord * tilingOffset.xy + tilingOffset.zw;
+    #if HAS_SECOND_UV
+      v_uv1 = a_texCoord1 * tilingOffset.xy + tilingOffset.zw;
+    #endif
+
+    v_clip_depth = clipPos.z / clipPos.w * 0.5 + 0.5;
+
+    return clipPos;
+  }
+}%
+
+CCProgram shadow-caster-fs %{
+  precision highp float;
+  #include <shared-ubos>
+  #include <packing>
+
+  in vec2 v_uv;
+  in vec2 v_uv1;
+  in float v_clip_depth;
+
+  #if USE_ALBEDO_MAP
+    uniform sampler2D albedoMap;
+    #pragma define ALBEDO_UV options([v_uv, v_uv1])
+  #endif
+
+  #if USE_ALPHA_TEST
+    #pragma define ALPHA_TEST_CHANNEL options([a, r])
+  #endif
+
+  vec4 frag () {
+    vec4 baseColor = albedo;
+
+    #if USE_ALBEDO_MAP
+      baseColor *= texture(albedoMap, ALBEDO_UV);
+    #endif
+
+    #if USE_ALPHA_TEST
+      if (baseColor.ALPHA_TEST_CHANNEL < albedoScaleAndCutoff.w) discard;
+    #endif
+
+    return packDepthToRGBA(v_clip_depth);
+  }
+}%

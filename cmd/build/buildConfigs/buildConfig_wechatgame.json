@@ -1,0 +1,42 @@
+{
+  "name": "3DTest",
+  "platform": "wechatgame",
+  "buildPath": "./build",
+  "debug": false,
+  "md5Cache": false,
+  "sourceMaps": false,
+  "replaceSplashScreen": false,
+  "mainBundleCompressionType": "merge_dep",
+  "mainBundleIsRemote": false,
+  "mergeStartScene": false,
+  "experimentalEraseModules": false,
+  "compressTexture": true,
+  "packAutoAtlas": true,
+  "startScene": "7c3e7fab-7b1e-4865-ba84-3cf81b48b9fb",
+  "scenes": [
+    {
+      "url": "db://assets/scene/main.scene",
+      "uuid": "7c3e7fab-7b1e-4865-ba84-3cf81b48b9fb"
+    },
+    {
+      "url": "db://assets/scene/scene.scene",
+      "uuid": "4424243e-e4ae-4922-9b59-732b464832a1"
+    }
+  ],
+  "outputName": "wechatgame",
+  "packages": {
+    "cocos-service": {
+      "configID": "aebd72",
+      "services": []
+    },
+    "wechatgame": {
+      "startSceneAssetBundle": false,
+      "orientation": "portrait",
+      "appid": "wx6ac3f5090a6b99c5",
+      "separateEngine": false,
+      "wasm": "js",
+      "buildOpenDataContextTemplate": false
+    }
+  },
+  "__version__": "1.2.6"
+}

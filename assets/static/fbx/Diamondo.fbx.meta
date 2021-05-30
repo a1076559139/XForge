@@ -1,0 +1,76 @@
+{
+  "ver": "2.0.12",
+  "importer": "fbx",
+  "imported": true,
+  "uuid": "e93d57a4-d2e0-409a-b037-6b247c7a33fb",
+  "files": [],
+  "subMetas": {
+    "0a48a": {
+      "importer": "gltf-mesh",
+      "uuid": "e93d57a4-d2e0-409a-b037-6b247c7a33fb@0a48a",
+      "displayName": "",
+      "id": "0a48a",
+      "name": "Cube.007.mesh",
+      "userData": {
+        "gltfIndex": 0
+      },
+      "ver": "1.1.0",
+      "imported": true,
+      "files": [
+        ".bin",
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "b4e6b": {
+      "importer": "gltf-material",
+      "uuid": "e93d57a4-d2e0-409a-b037-6b247c7a33fb@b4e6b",
+      "displayName": "",
+      "id": "b4e6b",
+      "name": "Material.material",
+      "userData": {
+        "gltfIndex": 0
+      },
+      "ver": "1.0.14",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "03d81": {
+      "importer": "gltf-scene",
+      "uuid": "e93d57a4-d2e0-409a-b037-6b247c7a33fb@03d81",
+      "displayName": "",
+      "id": "03d81",
+      "name": "Diamondo.prefab",
+      "userData": {
+        "gltfIndex": 0
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "imageMetas": [],
+    "legacyFbxImporter": false,
+    "redirect": "e93d57a4-d2e0-409a-b037-6b247c7a33fb@03d81",
+    "assetFinder": {
+      "meshes": [
+        "e93d57a4-d2e0-409a-b037-6b247c7a33fb@0a48a"
+      ],
+      "skeletons": [],
+      "textures": [],
+      "materials": [
+        "e93d57a4-d2e0-409a-b037-6b247c7a33fb@b4e6b"
+      ],
+      "scenes": [
+        "e93d57a4-d2e0-409a-b037-6b247c7a33fb@03d81"
+      ]
+    }
+  }
+}
