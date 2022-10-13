@@ -1,0 +1,27 @@
+<div class="content">
+    <ui-section header="输入" expand>
+        <ui-prop class="content-item">
+            <ui-label slot="label">类型</ui-label>
+            <ui-select slot="content" value="0">
+                <option value="0">Page</option>
+                <option value="1">Paper</option>
+                <option value="2">Pop</option>
+                <option value="3">Top</option>
+            </ui-select>
+        </ui-prop>
+
+        <ui-prop class="content-item">
+            <ui-label slot="label">名字</ui-label>
+            <!-- <ui-input slot="content" placeholder="输入界面名字如: index" value="" show-clear @change="changeHandler"> -->
+            <ui-input slot="content" placeholder="输入界面名字如: index" value="" show-clear>
+            </ui-input>
+        </ui-prop>
+
+        <ui-button class="content-item" type="primary">创建</ui-button>
+    </ui-section>
+
+    <ui-section header="输出" expand>
+        <ui-label>display</ui-label>
+        <ui-loading></ui-loading>
+    </ui-section>
+</div>

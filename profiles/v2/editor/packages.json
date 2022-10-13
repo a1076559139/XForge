@@ -1,0 +1,14 @@
+{
+  "disable-packages": {
+    "/Users/didi/Documents/CocosCreator/local/io_demo/extensions/simple-1663673150103": {
+      "name": "simple-1663673150103",
+      "time": 1663673224777
+    },
+    "/Users/didi/Documents/CocosCreator/local/io_demo/extensions/app": null,
+    "/Users/didi/Documents/CocosCreator/local/io_demo/extensions/create-view": {
+      "name": "create-view",
+      "time": 1663763633174
+    },
+    "/Users/didi/Documents/CocosCreator/Creator3D/extensions/app": null
+  }
+}

@@ -1,0 +1,91 @@
+{
+    "package_version": 2,
+    "name": "app",
+    "version": "1.0.0",
+    "author": "didizhang",
+    "editor": ">=3.6.0",
+    "description": "i18n:app.description",
+    "main": "./dist/main.js",
+    "contributions": {
+        "scene": {
+            "script": "./dist/scene.js"
+        },
+        "asset-db": {
+            "mount": {
+                "path": "./assets",
+                "readonly": false
+            }
+        },
+        "inspector": {
+            "section": {
+                "asset": {
+                    "directory": "./dist/inspector/asset-directory.js"
+                }
+            }
+        },
+        "messages": {
+            "open-panel": {
+                "methods": [
+                    "open-panel"
+                ]
+            },
+            "asset-db:asset-add": {
+                "methods": [
+                    "asset-db:asset-add"
+                ]
+            },
+            "asset-db:asset-change": {
+                "methods": [
+                    "asset-db:asset-change"
+                ]
+            },
+            "asset-db:asset-delete": {
+                "methods": [
+                    "asset-db:asset-delete"
+                ]
+            }
+        },
+        "menu": [
+            {
+                "path": "i18n:app.menuMain",
+                "label": "i18n:app.create",
+                "message": "open-panel"
+            }
+        ],
+        "assets": {
+            "menu": {
+                "methods": "./dist/menu/index.js",
+                "createMenu": "onCreateMenu",
+                "assetMenu": "onAssetMenu",
+                "dbMenu": "onDBMenu",
+                "panelMenu": "onPanelMenu"
+            }
+        }
+    },
+    "panels": {
+        "open-panel": {
+            "title": "创建",
+            "type": "dockable",
+            "main": "dist/panel",
+            "size": {
+                "min-width": 400,
+                "min-height": 300,
+                "width": 600,
+                "height": 600
+            }
+        }
+    },
+    "dependencies": {
+        "vue": "2.6.14",
+        "fs-extra": "^10.0.0"
+    },
+    "devDependencies": {
+        "@types/node": "^16.0.1",
+        "@types/fs-extra": "^9.0.5",
+        "typescript": "^4.3.4"
+    },
+    "scripts": {
+        "build": "tsc -b",
+        "watch": "tsc -w"
+    }
+}

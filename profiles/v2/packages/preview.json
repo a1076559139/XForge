@@ -1,4 +1,7 @@
 {
-  "__version__": "1.0.0",
-  "preview": {}
+  "preview": {
+    "current": {
+      "platform": "browser"
+    }
+  }
 }

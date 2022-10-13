@@ -1,0 +1,63 @@
+
+/* 竖向排列容器 */
+.vertical-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* 横向排列容器 */
+.horizontal-box {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+/* 容器子元素尺寸相对比 */
+.box-item-1 {
+    flex: 1;
+}
+
+.box-item-2 {
+    flex: 2;
+}
+
+.box-item-3 {
+    flex: 3;
+}
+
+.box-item-4 {
+    flex: 4;
+}
+
+.box-item-5 {
+    flex: 5;
+}
+
+/* 其它 */
+.app {
+    margin-top: 4px;
+    text-align: center;
+}
+
+.menu {
+    text-align: center;
+}
+
+.content {
+    width: 80%;
+    margin: auto;
+    text-align: center;
+}
+
+.content-item {
+    margin-top: 8px;
+}
+
+.create-btn {
+    float: right;
+}
+
+.display {
+    text-align: left;
+}

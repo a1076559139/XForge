@@ -1,0 +1,20 @@
+{
+  "ver": "1.1.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "f8b85634-3180-4d68-bc82-b98e57e77cf4",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "compressionType": {},
+    "isRemoteBundle": {
+      "wechatgame": true,
+      "bytedance-mini-game": true,
+      "oppo-mini-game": true,
+      "huawei-quick-game": true,
+      "vivo-mini-game": true,
+      "baidu-mini-game": true
+    },
+    "isBundle": true
+  }
+}
