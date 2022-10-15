@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Component } from 'cc';
-import { EDITOR } from 'cc/env';
+import { DEV,EDITOR } from 'cc/env';
 import http from '../../extensions/app/assets/lib/http/http'
 import * as pipeline from '../../extensions/app/assets/lib/pipeline/pipeline'
 import queue from '../../extensions/app/assets/lib/queue/queue'
@@ -8,7 +8,7 @@ import socket from '../../extensions/app/assets/lib/socket/socket'
 import storage from '../../extensions/app/assets/lib/storage/storage'
 import task from '../../extensions/app/assets/lib/task/task'
 let lib: {http:typeof http,pipeline:typeof pipeline,queue:typeof queue,socket:typeof socket,storage:typeof storage,task:typeof task} = {} as any
-if(!EDITOR) lib = {http,pipeline,queue,socket,storage,task}
+if(!EDITOR||DEV) lib = {http,pipeline,queue,socket,storage,task}
 export {lib}
 
 import EventManager from '../../extensions/app/assets/manager/event/comp/EventManager'
@@ -31,10 +31,9 @@ export const Manager: {Event:Omit<typeof EventManager,keyof Component>,Sound:Omi
 export const manager: {event:Omit<EventManager,keyof Component>,sound:Omit<SoundManager<IEffecName,IMusicName>,keyof Component>,timer:Omit<TimerManager,keyof Component>,ui:Omit<UIManager<IViewName,IMiniViewName>,keyof Component>} = {} as any
 
 let data: {} = {} as any
-if(!EDITOR) data = {}
+if(!EDITOR||DEV) data = {}
 export {data}
 
 let config: {} = {} as any
-if(!EDITOR) config = {}
+if(!EDITOR||DEV) config = {}
 export {config}
-

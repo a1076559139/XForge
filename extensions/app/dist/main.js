@@ -204,7 +204,7 @@ async function updateExecutor() {
     // return;
     let result = `/* eslint-disable */\n` +
         `import { Component } from 'cc';\n` +
-        `import { EDITOR } from 'cc/env';\n`;
+        `import { DEV,EDITOR } from 'cc/env';\n`;
     const handle = function handle(arr, module) {
         arr.forEach(function (value, index, array) {
             // storage
@@ -228,7 +228,7 @@ async function updateExecutor() {
     // lib
     handle(libs, false);
     result += `let lib: {${libs.map(varname => `${varname}:typeof ${varname}`).join(',')}} = {} as any\n`;
-    result += `if(!EDITOR) lib = {${libs.join(',')}}\n`;
+    result += `if(!EDITOR||DEV) lib = {${libs.join(',')}}\n`;
     result += 'export {lib}\n\n';
     // manager
     handle(mgrs, true);
@@ -275,12 +275,12 @@ async function updateExecutor() {
     // data
     handle(datas, false);
     result += `let data: {${datas.map(varname => `${varname.slice(5)}:${varname}`).join(',')}} = {} as any\n`;
-    result += `if(!EDITOR) data = {${datas.map(varname => `${varname.slice(5)}:new ${varname}()`).join(',')}}\n`;
+    result += `if(!EDITOR||DEV) data = {${datas.map(varname => `${varname.slice(5)}:new ${varname}()`).join(',')}}\n`;
     result += 'export {data}\n\n';
     // config
     handle(confs, false);
     result += `let config: {${confs.map(varname => `${varname.slice(7)}:${varname}`).join(',')}} = {} as any\n`;
-    result += `if(!EDITOR) config = {${confs.map(varname => `${varname.slice(7)}:new ${varname}()`).join(',')}}\n`;
+    result += `if(!EDITOR||DEV) config = {${confs.map(varname => `${varname.slice(7)}:new ${varname}()`).join(',')}}\n`;
     result += 'export {config}';
     //save
     if (readScriptSyncByURL(executorPath) !== result) {
