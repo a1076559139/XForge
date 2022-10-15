@@ -1,6 +1,8 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.close = exports.ready = exports.update = exports.template = exports.$ = void 0;
+const fs_1 = require("fs");
+const path_1 = require("path");
 exports.$ = {
     'display': '#display',
 };
@@ -12,18 +14,19 @@ exports.template = `
 function update(assetList, metaList) {
     this.assetList = assetList;
     this.metaList = metaList;
-    if (assetList.length !== 1)
+    if (assetList.length === 0)
         return this.$.display.innerText = '';
-    const dirName = assetList[0].name;
-    if (dirName == 'app-bundle') {
-        this.$.display.innerText = '框架内置的Bundle';
-    }
-    else if (dirName == 'app-view') {
-        this.$.display.innerText = '框架内置的Bundle, 用于存储UI资源';
-    }
-    else if (dirName == 'app-sound') {
-        this.$.display.innerText = '框架内置的Bundle, 用于存储Sound资源';
-    }
+    this.$.display.innerText = assetList
+        .filter((asset) => {
+        const mdFile = (0, path_1.join)(asset.file, `.${asset.name}.md`);
+        return (0, fs_1.existsSync)(mdFile);
+    })
+        .map((asset) => {
+        const mdFile = (0, path_1.join)(asset.file, `.${asset.name}.md`);
+        const mdStr = (0, fs_1.readFileSync)(mdFile, 'utf-8');
+        return assetList.length > 1 ? `${asset.url}:\n ${mdStr}` : mdStr;
+    })
+        .join('\n');
 }
 exports.update = update;
 ;

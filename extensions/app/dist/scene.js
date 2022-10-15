@@ -17,15 +17,27 @@ exports.unload = unload;
 // };
 // const result = await Editor.Message.request('scene', 'execute-scene-script', options);
 exports.methods = {
-    rotateCamera() {
-        const { director } = require('cc');
-        let mainCamera = director.getScene().getChildByName("Main Camera");
-        if (mainCamera) {
-            let euler = mainCamera.eulerAngles;
-            euler.y += 10;
-            mainCamera.setRotationFromEuler(euler);
-            return true;
+    async createPrefab(name, file, isPaper) {
+        const { Node, js } = require('cc');
+        const node = new Node(name);
+        while (true) {
+            const result = js.getClassByName(name);
+            if (result)
+                break;
+            await new Promise((next) => {
+                setTimeout(next, 100);
+            });
         }
-        return false;
+        const com = node.addComponent(name);
+        com.resetInEditor && com.resetInEditor();
+        if (isPaper) {
+            com.shade = false;
+            com.captureFocus = false;
+            com.blockInput = false;
+        }
+        // @ts-ignore
+        const info = cce.Prefab.generatePrefabDataFromNode(node);
+        node.destroy();
+        return Editor.Message.request('asset-db', 'create-asset', file, info);
     },
 };

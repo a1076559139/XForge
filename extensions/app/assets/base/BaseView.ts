@@ -17,8 +17,7 @@ const BlockEvents = [
 
 const HideEvent = Enum({
     active: 1,
-    destroy: 2,
-    postion: 3
+    destroy: 2
 });
 
 interface IEvent<E> {
@@ -438,9 +437,9 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     private setNodeAttr(attr: IShowParamAttr) {
         if (!attr) return;
         if (typeof attr.zIndex === 'number') {
-            // todo
+            // TODO
             // if (DEBUG && this.node.zIndex !== 0 && this.node.zIndex !== attr.zIndex) this.error(`zIndex被重置为${attr.zIndex}`);
-            // this.node.zIndex = attr.zIndex;
+            this.node.getComponent(UITransform).priority = attr.zIndex;
         }
 
         if (typeof attr.siblingIndex === 'number') {
@@ -466,8 +465,6 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
                 // 正式显示ui并触发系统生命周期函数
                 // 触发onLoad、onEnable
                 if (this.node.active !== true) { this.node.active = true; }
-                // todo
-                if (this.hideEvent === HideEvent.postion) { this.node.position.set(0); this.onEnable && this.onEnable(); }
 
                 // 设置属性
                 this.setNodeAttr(attr);
@@ -567,8 +564,6 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
                 if (this.isShowing === false) {
                     if (this.hideEvent === HideEvent.active) { this.node.active = false; }
                     else if (this.hideEvent === HideEvent.destroy) { app.manager.ui.release(this); }
-                    // todo
-                    else if (this.hideEvent === HideEvent.postion) { this.node.position.set(10000); this.onDisable && this.onDisable(); }
                     app.manager.ui.refreshShade();
                 }
             }

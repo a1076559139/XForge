@@ -1,4 +1,3 @@
-
 /* 竖向排列容器 */
 .vertical-box {
     display: flex;
@@ -35,13 +34,23 @@
 }
 
 /* 其它 */
-.app {
+.body {
     margin-top: 4px;
     text-align: center;
 }
 
-.menu {
-    text-align: center;
+.loading {
+    position: fixed;
+    top: 0%;
+    left: 0%;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+}
+
+.loading-item {
+    margin-top: 50%;
 }
 
 .content {

@@ -1,5 +1,8 @@
 'use strict';
 
+import { readFileSync, existsSync } from "fs";
+import { join } from "path";
+
 interface Asset {
     displayName: string;
     file: string;
@@ -51,23 +54,19 @@ export function update(this: PanelThis, assetList: Asset[], metaList: Meta[]) {
     this.assetList = assetList;
     this.metaList = metaList;
 
-    if (assetList.length !== 1) return this.$.display.innerText = '';
+    if (assetList.length === 0) return this.$.display.innerText = '';
 
-    const dirName = assetList[0].name;
-
-    if (dirName == 'app') {
-        this.$.display.innerText = 'app核心文件夹';
-    } else if (dirName == 'app-appinit') {
-        this.$.display.innerText = '框架初始化文件夹';
-    } else if (dirName == 'app-bundle') {
-        this.$.display.innerText = '框架内置的Bundle';
-    } else if (dirName == 'app-view') {
-        this.$.display.innerText = '框架内置的Bundle, 用于存储UI资源';
-    } else if (dirName == 'app-sound') {
-        this.$.display.innerText = '框架内置的Bundle, 用于存储Sound资源';
-    } else {
-        this.$.display.innerText = '';
-    }
+    this.$.display.innerText = assetList
+        .filter((asset) => {
+            const mdFile = join(asset.file, `.${asset.name}.md`);
+            return existsSync(mdFile);
+        })
+        .map((asset) => {
+            const mdFile = join(asset.file, `.${asset.name}.md`);
+            const mdStr = readFileSync(mdFile, 'utf-8');
+            return assetList.length > 1 ? `${asset.url}:\n ${mdStr}` : mdStr;
+        })
+        .join('\n');
 };
 
 export function ready(this: PanelThis) {

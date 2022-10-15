@@ -1,10 +1,10 @@
-import { Asset, AssetManager, assetManager, Component, error, EventTarget, find, instantiate, js, log, Node, Prefab, warn, Widget, _decorator } from 'cc';
+import { Asset, AssetManager, assetManager, Component, error, EventTarget, find, instantiate, js, log, Node, Prefab, UITransform, warn, Widget, _decorator } from 'cc';
 import { DEBUG, DEV, EDITOR } from 'cc/env';
 import { App, app } from '../app';
 
 const { ccclass, property } = _decorator;
 
-const dotReWriteFuns = ['emit', 'on', 'once', 'off', 'targetOff', '__initMgr'];
+const dotReWriteFuns = ['emit', 'on', 'once', 'off', 'targetOff'];
 const UserManagerRoot = 'Canvas/UserManager';
 
 const uuid = new class UUID {
@@ -20,8 +20,6 @@ const uuid = new class UUID {
 
 @ccclass('BaseManager')
 export default class BaseManager extends Component {
-    // 同node.zIndex
-    private _base_sort: number = 0;
     // 事件管理器
     private _base_event: EventTarget = new EventTarget();
 
@@ -34,12 +32,8 @@ export default class BaseManager extends Component {
         return this._base_manager_name;
     }
 
-    // sort影响manager的onFinished顺序, 通过设置node.zIndex实现, node.zIndex会在onLoad、onEnable之后、init之前被赋值
-    constructor(sort?: number);
-    constructor(...args) {
+    constructor() {
         super();
-
-        this._base_sort = typeof args[0] === 'number' ? args[0] : 0;
 
         if (EDITOR) {
             dotReWriteFuns.forEach((funName) => {
@@ -77,23 +71,13 @@ export default class BaseManager extends Component {
     }
 
     /**
-     * 禁止重写
-     * @param finish 
-     */
-    private __initMgr(finish) {
-        // todo
-        // this.node.zIndex = this._base_sort;
-        return this.init(finish);
-    }
-
-    /**
      * [无序] 自身初始化完成, init执行完毕后被调用
      */
     protected onInited() {
     }
 
     /**
-     * [有序] 所有manager初始化完成
+     * [无序] 所有manager初始化完成
      */
     protected onFinished() {
     }
@@ -361,7 +345,7 @@ export default class BaseManager extends Component {
         const sysMgr = [app.manager.event, app.manager.timer, app.manager.sound, app.manager.ui] as any as BaseManager[];
         sysMgr.forEach(function (manager: BaseManager) {
             aSync1.add(function (next) {
-                manager.__initMgr(onProgress(next, manager));
+                manager.init(onProgress(next, manager));
             });
         });
 
@@ -396,7 +380,7 @@ export default class BaseManager extends Component {
                 userManagerRoot.children.forEach(node => {
                     aSync3.add(function (next) {
                         const manager = node.getComponent(BaseManager);
-                        manager.__initMgr(onProgress(next, manager));
+                        manager.init(onProgress(next, manager));
                     });
                 });
                 aSync3.start(next);
@@ -408,8 +392,6 @@ export default class BaseManager extends Component {
                     manager.onFinished();
                 });
 
-                // todo
-                // userManagerRoot.sortAllChildren();
                 userManagerRoot.children.forEach(function (node) {
                     const manager = node.getComponent(BaseManager);
                     manager.onFinished();

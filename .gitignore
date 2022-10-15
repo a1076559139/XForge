@@ -1,4 +1,4 @@
-node_modules/
+/node_modules/
 /library/
 /temp/
 /build/
@@ -6,5 +6,6 @@ node_modules/
 /local/local.json
 /local/layout.editor.json
 /build-templates/
+/profiles/
 # local/
 # settings/

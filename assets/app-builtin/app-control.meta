@@ -18,7 +18,11 @@
       "vivo-mini-game": "merge_all_json",
       "baidu-mini-game": "merge_all_json",
       "windows": "merge_all_json",
-      "mac": "merge_all_json"
+      "mac": "merge_all_json",
+      "web-desktop": "merge_all_json",
+      "cocos-play": "merge_all_json",
+      "xiaomi-quick-game": "merge_all_json",
+      "huawei-agc": "merge_all_json"
     },
     "isRemoteBundle": {
       "wechatgame": true,
@@ -26,7 +30,11 @@
       "oppo-mini-game": true,
       "huawei-quick-game": true,
       "vivo-mini-game": true,
-      "baidu-mini-game": true
+      "baidu-mini-game": true,
+      "cocos-play": true,
+      "xiaomi-quick-game": true,
+      "web-desktop": true,
+      "web-mobile": true
     },
     "isBundle": true
   }

@@ -1,0 +1,22 @@
+<div class="content">
+    <ui-section header="输入" expand>
+        <ui-prop class="content-item">
+            <ui-label slot="label">名字</ui-label>
+            <ui-input id="name" slot="content" placeholder="输入名字如: index" :value="inputName"
+                @change="inputName=$event.target.value" show-clear>
+            </ui-input>
+        </ui-prop>
+
+        <ui-button class="content-item" type="primary" @confirm="onClickCreate">
+            创建
+        </ui-button>
+    </ui-section>
+
+    <ui-section header="输出" expand>
+        <ui-label>{{display}}</ui-label>
+    </ui-section>
+
+    <div class="loading" v-show="showLoading">
+        <ui-loading class="loading-item"></ui-loading>
+    </div>
+</div>

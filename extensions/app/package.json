@@ -29,6 +29,11 @@
                     "open-panel"
                 ]
             },
+            "update-executor": {
+                "methods": [
+                    "update-executor"
+                ]
+            },
             "asset-db:asset-add": {
                 "methods": [
                     "asset-db:asset-add"
@@ -50,6 +55,11 @@
                 "path": "i18n:app.menuMain",
                 "label": "i18n:app.create",
                 "message": "open-panel"
+            },
+            {
+                "path": "i18n:app.menuMain",
+                "label": "i18n:app.update",
+                "message": "update-executor"
             }
         ],
         "assets": {

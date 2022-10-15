@@ -1,6 +1,6 @@
-import { Asset, AssetManager, Canvas, Component, director, error, Event, find, instantiate, isValid, js, Layers, Node, Prefab, Scene, Widget, _decorator } from 'cc';
+import { Asset, AssetManager, Canvas, Component, director, error, Event, find, instantiate, isValid, js, Layers, Node, Prefab, Scene, UITransform, Widget, _decorator } from 'cc';
 import { DEBUG } from 'cc/env';
-import { IViewName, IViewNames, miniViewNames, viewNameToBox } from '../../../../../../assets/app/executor';
+import { IViewName, IViewNames, miniViewNames } from '../../../../../../assets/app/executor';
 import BaseManager from '../../../base/BaseManager';
 import BaseView, { IShowParamAttr, IShowParamOnHide, IShowParamOnShow } from '../../../base/BaseView';
 
@@ -285,17 +285,16 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     // 根据UI名字获取所在的根路径
     private getRootPath(name: string) {
-        const box = viewNameToBox[name];
         if (this.isMiniView(name)) {
             const master = this.getMiniViewMaster(name);
             const prefix = this.getPrefix(master);
             const suffix = this.getSuffix(master);
             const base = this.getSuffix(name, master);
-            return box ? `${box}/${prefix}/${suffix}/${base}/` : `${prefix}/${suffix}/${base}/`;
+            return `${prefix}/${suffix}/${base}/`;
         } else {
             const prefix = this.getPrefix(name);
             const suffix = this.getSuffix(name, prefix);
-            return box ? `${box}/${prefix}/${suffix}/` : `${prefix}/${suffix}/`;
+            return `${prefix}/${suffix}/`;
         }
     }
 
@@ -405,8 +404,9 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                         if (com.isNeedShade && com.isShowing) {
                             this.shade.parent = uiRoot;
                             this.shade.active = true;
-                            // this.shade.zIndex = node.zIndex;
-                            // this.shade.groupIndex = node.groupIndex;
+
+                            this.shade.layer = node.layer;
+                            this.shade.setSiblingIndex(node.getSiblingIndex() - 1);
 
                             let shadeIndex = this.shade.getSiblingIndex();
                             let nodeIndex = node.getSiblingIndex();
