@@ -283,15 +283,12 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     }
 
     private onCreate(): any {
-        if (this.node['_hitTest']) {
-            this.node['_hitTest'] = (...args: any[]) => {
-                if (this.blockInput) {
-                    return Node.prototype['_hitTest'].apply(this.node, args);
-                }
-                return false;
-            };
-        } else {
-            // this.error('_hitTest属性已经失效');
+        const uiTransform = this.getComponent(UITransform);
+        if (uiTransform) uiTransform.hitTest = (...args: any[]): boolean => {
+            if (this.blockInput) {
+                return UITransform.prototype.hitTest.apply(uiTransform, args)
+            }
+            return false;
         }
 
         for (let i = 0; i < BlockEvents.length; i++) {
