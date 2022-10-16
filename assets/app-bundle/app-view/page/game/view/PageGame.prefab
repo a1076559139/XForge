@@ -526,7 +526,7 @@
     "hideEvent": 1,
     "_singleton": true,
     "captureFocus": true,
-    "_shade": false,
+    "_shade": true,
     "_blockInput": true,
     "_id": ""
   },
