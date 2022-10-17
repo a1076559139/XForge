@@ -1,5 +1,5 @@
-import SoundManager from "../../extensions/app/assets/manager/sound/comp/SoundManager";
-import UIManager from "../../extensions/app/assets/manager/ui/comp/UIManager";
+import SoundManager from "../../extensions/app/assets/manager/sound/SoundManager";
+import UIManager from "../../extensions/app/assets/manager/ui/UIManager";
 
 UIManager.setting.preload = [];
 UIManager.setting.defaultUI = 'PageGame';

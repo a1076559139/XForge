@@ -1,5 +1,5 @@
 import { Component, _decorator } from 'cc';
-import BaseManager from '../../../base/BaseManager';
+import BaseManager from '../../base/BaseManager';
 const { ccclass, property } = _decorator;
 class Time {
     private _beginHour: number = 0;

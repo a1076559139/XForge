@@ -20,8 +20,8 @@
  * 
  */
 
-import path from "path";
 import { existsSync, readFileSync } from "fs-extra";
+import path from "path";
 import { AssetInfo } from "../@types/packages/asset-db/@types/public";
 import { convertDBToPath, stringCase } from "./panel/utils";
 
@@ -133,7 +133,7 @@ async function updateExecutor() {
             else if (dirname.includes('app-manager')) {
                 // 用户manager
                 if (filename.endsWith('Manager') && filename !== 'BaseManager') {
-                    if (dirname.toLowerCase().includes(`app-manager/${filename.slice(0, -7).toLowerCase()}/`)) {
+                    if (dirname.toLowerCase().includes(`app-manager/${filename.slice(0, -7).toLowerCase()}`)) {
                         mgrs.push([filename, dirname, varname, extname]);
                     }
                 }
@@ -141,7 +141,7 @@ async function updateExecutor() {
             else if (dirname.includes('app/manager')) {
                 // 系统manager
                 if (filename.endsWith('Manager') && filename !== 'BaseManager') {
-                    if (dirname.toLowerCase().includes(`app/manager/${filename.slice(0, -7).toLowerCase()}/`)) {
+                    if (dirname.toLowerCase().includes(`app/manager/${filename.slice(0, -7).toLowerCase()}`)) {
                         mgrs.push([filename, dirname, varname, extname]);
                     }
                 }

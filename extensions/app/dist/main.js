@@ -24,8 +24,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.unload = exports.load = exports.methods = void 0;
-const path_1 = __importDefault(require("path"));
 const fs_extra_1 = require("fs-extra");
+const path_1 = __importDefault(require("path"));
 const utils_1 = require("./panel/utils");
 function isVaild(info, strict = true) {
     if (!strict) {
@@ -131,7 +131,7 @@ async function updateExecutor() {
             else if (dirname.includes('app-manager')) {
                 // 用户manager
                 if (filename.endsWith('Manager') && filename !== 'BaseManager') {
-                    if (dirname.toLowerCase().includes(`app-manager/${filename.slice(0, -7).toLowerCase()}/`)) {
+                    if (dirname.toLowerCase().includes(`app-manager/${filename.slice(0, -7).toLowerCase()}`)) {
                         mgrs.push([filename, dirname, varname, extname]);
                     }
                 }
@@ -139,7 +139,7 @@ async function updateExecutor() {
             else if (dirname.includes('app/manager')) {
                 // 系统manager
                 if (filename.endsWith('Manager') && filename !== 'BaseManager') {
-                    if (dirname.toLowerCase().includes(`app/manager/${filename.slice(0, -7).toLowerCase()}/`)) {
+                    if (dirname.toLowerCase().includes(`app/manager/${filename.slice(0, -7).toLowerCase()}`)) {
                         mgrs.push([filename, dirname, varname, extname]);
                     }
                 }

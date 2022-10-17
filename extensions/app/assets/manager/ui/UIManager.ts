@@ -1,8 +1,8 @@
-import { Asset, AssetManager, Canvas, Component, director, error, Event, find, instantiate, isValid, js, Layers, Node, Prefab, Scene, UITransform, Widget, _decorator } from 'cc';
+import { Asset, AssetManager, Canvas, Component, director, error, Event, find, instantiate, isValid, js, Layers, Node, Prefab, Scene, Widget, _decorator } from 'cc';
 import { DEBUG } from 'cc/env';
-import { IViewName, IViewNames, miniViewNames } from '../../../../../../assets/app/executor';
-import BaseManager from '../../../base/BaseManager';
-import BaseView, { IShowParamAttr, IShowParamOnHide, IShowParamOnShow } from '../../../base/BaseView';
+import { IViewName, IViewNames, miniViewNames } from '../../../../../assets/app/executor';
+import BaseManager from '../../base/BaseManager';
+import BaseView, { IShowParamAttr, IShowParamOnHide, IShowParamOnShow } from '../../base/BaseView';
 
 const { ccclass, property } = _decorator;
 

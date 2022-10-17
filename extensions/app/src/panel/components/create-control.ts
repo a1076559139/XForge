@@ -1,6 +1,5 @@
-import { join } from 'path';
 import Vue from 'vue/dist/vue';
-import {  createDBDir, getTemplate, stringCase } from '../utils';
+import { createDBDir, getTemplate, stringCase } from '../utils';
 
 /**
  * 根据语言获取脚本内容

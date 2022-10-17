@@ -1,5 +1,5 @@
 import { EventTarget, _decorator } from 'cc';
-import BaseManager from '../../../base/BaseManager';
+import BaseManager from '../../base/BaseManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('EventManager')

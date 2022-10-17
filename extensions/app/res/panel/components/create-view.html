@@ -2,7 +2,8 @@
     <ui-section header="输入" expand>
         <ui-prop class="content-item">
             <ui-label slot="label">类型</ui-label>
-            <ui-select id="type" slot="content" :value="typeSelectIndex" @confirm="onChangeTypeSelect($event.target.value)">
+            <ui-select id="type" slot="content" :value="typeSelectIndex"
+                @confirm="onChangeTypeSelect($event.target.value)">
                 <option :value="index" v-for="(name,index) in typeSelects">
                     {{name}}
                 </option>
@@ -11,7 +12,8 @@
 
         <ui-prop class="content-item" v-show="showSelectPage">
             <ui-label slot="label">归属</ui-label>
-            <ui-select id="owner" slot="content" :value="pageSelectIndex" @confirm="onChangePageSelect($event.target.value)">
+            <ui-select id="owner" slot="content" :value="pageSelectIndex"
+                @confirm="onChangePageSelect($event.target.value)">
                 <option :value="index" v-for="(name,index) in pageSelects">
                     {{name}}
                 </option>
@@ -31,7 +33,7 @@
     </ui-section>
 
     <ui-section header="输出" expand>
-        <ui-label>{{display}}</ui-label>
+        <ui-label :value="display"></ui-label>
     </ui-section>
 
     <div class="loading" v-show="showLoading">
