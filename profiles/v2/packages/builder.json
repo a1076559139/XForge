@@ -1,5 +1,73 @@
 {
   "log": {
-    "level": 3
+    "level": 1
+  },
+  "common": {
+    "polyfills": {
+      "asyncFunctions": true
+    },
+    "outputName": "web-mobile",
+    "mainBundleCompressionType": "merge_all_json",
+    "platform": "web-mobile",
+    "md5Cache": true,
+    "experimentalEraseModules": true,
+    "mainBundleIsRemote": true,
+    "server": ""
+  },
+  "BuildTaskManager": {
+    "taskMap": {
+      "1666064309941": {
+        "type": "build",
+        "id": "1666064309941",
+        "progress": 1,
+        "state": "success",
+        "stage": "build",
+        "message": "2022-10-18 15:48:12 Build success in 21537 ms!",
+        "options": {
+          "name": "creator3d",
+          "platform": "web-mobile",
+          "buildPath": "project://build",
+          "debug": false,
+          "md5Cache": true,
+          "skipCompressTexture": false,
+          "sourceMaps": false,
+          "polyfills": {
+            "asyncFunctions": true
+          },
+          "experimentalEraseModules": true,
+          "useBuiltinServer": false,
+          "mainBundleIsRemote": true,
+          "mainBundleCompressionType": "merge_all_json",
+          "replaceSplashScreen": false,
+          "startScene": "5298bb0b-166e-4978-af98-0047d43757de",
+          "outputName": "web-mobile",
+          "scenes": [
+            {
+              "url": "db://assets/app-scene/main.scene",
+              "uuid": "5298bb0b-166e-4978-af98-0047d43757de",
+              "inBundle": false
+            }
+          ],
+          "web-desktop": [],
+          "packages": {
+            "web-mobile": {
+              "orientation": "auto",
+              "__version__": "1.0.1",
+              "embedWebDebugger": true
+            },
+            "cocos-service": {
+              "configID": "9c4cbd",
+              "services": [],
+              "__version__": "3.0.4"
+            }
+          },
+          "__version__": "1.3.3",
+          "web-mobile": [],
+          "server": ""
+        },
+        "time": "2022-10-18 15:47",
+        "dirty": false
+      }
+    }
   }
 }

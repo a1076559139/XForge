@@ -1,7 +1,8 @@
-import { Asset, Component, Enum, Event, js, log, Node, UITransform, warn, Widget, _decorator } from 'cc';
+import { Asset, Component, Enum, Event, js, log, UITransform, warn, Widget, _decorator } from 'cc';
 import { DEBUG, EDITOR } from 'cc/env';
 import { IMiniViewName, IMiniViewNames, IViewName } from '../../../../assets/app/executor';
-import { app } from '../app';
+import Core from '../Core';
+import Task from '../lib/task/task';
 import { IBaseControl } from './BaseControl';
 
 const { ccclass, property } = _decorator;
@@ -132,7 +133,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     protected set shade(value) {
         if (!EDITOR && this._shade !== value) {
             this._shade = value;
-            app.manager.ui.refreshShade();
+            Core.inst?.manager?.ui?.refreshShade();
         } else {
             this._shade = value;
         }
@@ -302,7 +303,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         if (this.miniViews.length === 0) return false;
         if (views.length === 0) return false;
 
-        const task = app.lib.task.createSync();
+        const task = Task.createSync();
 
         for (let index = 0; index < views.length; index++) {
             const names = views[index];
@@ -329,7 +330,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
      * @returns 
      */
     private createMixMiniViewsTask(views: IMiniViewNames = [], data?: any, onShow?: IMiniOnShow, onHide?: IMiniOnHide) {
-        const task = app.lib.task.createSync();
+        const task = Task.createSync();
 
         if (this.miniViews.length === 0) return task;
 
@@ -357,7 +358,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
                 // 先load
                 task.add((next, retry) => {
                     this.log('mixin-load', name);
-                    app.manager.ui.load(name as any, result => {
+                    Core.inst.manager.ui.load(name as any, result => {
                         result ? next() : this.scheduleOnce(retry, 0.1);
                     });
                 });
@@ -365,8 +366,8 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
                 task.add((next) => {
                     this.log('mixin-show', name);
                     if (!this._base_mini_show.has(name)) return next();
-                    const prototype = app.Manager.UI.prototype as any;
-                    prototype.show.call(app.manager.ui, {
+                    const prototype = Core.inst.Manager.UI.prototype as any;
+                    prototype.show.call(Core.inst.manager.ui, {
                         name, data,
                         attr: { zIndex: this.miniViews.indexOf(name) - this.miniViews.length },
                         onShow: (result: any) => {
@@ -384,11 +385,11 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         } else {
             // 先load
             task.add((next) => {
-                const aSync = app.lib.task.createASync();
+                const aSync = Task.createASync();
                 views.forEach(name => {
                     aSync.add((next, retry) => {
                         this.log('mixin-load', name);
-                        app.manager.ui.load(name as any, result => {
+                        Core.inst.manager.ui.load(name as any, result => {
                             result ? next() : this.scheduleOnce(retry, 0.1);
                         });
                     });
@@ -397,14 +398,14 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
             });
             // 再show
             task.add((next) => {
-                const aSync = app.lib.task.createASync();
+                const aSync = Task.createASync();
                 views.forEach(name => {
                     aSync.add((next) => {
                         this.log('mixin-show', name);
                         if (!this._base_mini_show.has(name)) return next();
 
-                        const prototype = app.Manager.UI.prototype as any;
-                        prototype.show.call(app.manager.ui, {
+                        const prototype = Core.inst.Manager.UI.prototype as any;
+                        prototype.show.call(Core.inst.manager.ui, {
                             name, data,
                             attr: { zIndex: this.miniViews.indexOf(name) - this.miniViews.length },
                             onShow: (result: any) => {
@@ -468,7 +469,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
 
                 // 设置遮罩
                 // 触发focus逻辑
-                app.manager.ui.refreshShade();
+                Core.inst.manager.ui.refreshShade();
             }
             beforeShow && beforeShow(error);
             if (!error) {
@@ -489,8 +490,8 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
                 }
 
                 this.node.emit('onShow', result);
-                app.manager.ui.emit(`${this._base_view_name}`, { event: 'onShow', result: result });
-                app.manager.ui.emit('onShow', { name: `${this._base_view_name}`, result: result });
+                Core.inst.manager.ui.emit(`${this._base_view_name}`, { event: 'onShow', result: result });
+                Core.inst.manager.ui.emit('onShow', { name: `${this._base_view_name}`, result: result });
             } else {
                 this.onError(error);
             }
@@ -512,9 +513,9 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
             if (error) return;
             if (this.miniViewsShowCustom) return;
 
-            app.manager.ui.showLoading();
+            Core.inst.manager.ui.showLoading();
             this.createMixMiniViewsTask(this.miniViews, data).start(function () {
-                app.manager.ui.hideLoading();
+                Core.inst.manager.ui.hideLoading();
             });
         }, data);
 
@@ -555,13 +556,13 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
 
                 onHide && onHide(result);
                 this.node.emit('onHide', result);
-                app.manager.ui.emit(`${this._base_view_name}`, { event: 'onHide', result: result });
-                app.manager.ui.emit('onHide', { name: `${this._base_view_name}`, result: result });
+                Core.inst.manager.ui.emit(`${this._base_view_name}`, { event: 'onHide', result: result });
+                Core.inst.manager.ui.emit('onHide', { name: `${this._base_view_name}`, result: result });
 
                 if (this.isShowing === false) {
                     if (this.hideEvent === HideEvent.active) { this.node.active = false; }
-                    else if (this.hideEvent === HideEvent.destroy) { app.manager.ui.release(this); }
-                    app.manager.ui.refreshShade();
+                    else if (this.hideEvent === HideEvent.destroy) { Core.inst.manager.ui.release(this); }
+                    Core.inst.manager.ui.refreshShade();
                 }
             }
             this._base_view_state = this._base_showing ? ViewState.Showed : ViewState.Hid;
@@ -603,8 +604,8 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         }
 
         this.node.emit(event, result);
-        app.manager.ui.emit(`${this._base_view_name}`, { event: event, result: result });
-        app.manager.ui.emit(event, { name: `${this._base_view_name}`, result: result });
+        Core.inst.manager.ui.emit(`${this._base_view_name}`, { event: event, result: result });
+        Core.inst.manager.ui.emit(event, { name: `${this._base_view_name}`, result: result });
     }
 
     /**
@@ -612,7 +613,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
      * this.load('view/duannei', cc.Prefab)
      */
     protected load<T extends Asset>(path: string, type: new () => T, callback?: (result: T) => any) {
-        app.manager.ui.loadInner(this, path, type, callback);
+        Core.inst.manager.ui.loadInner(this, path, type, callback);
     }
 
     protected log(str, ...args) {

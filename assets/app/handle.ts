@@ -1,4 +1,4 @@
-import { app } from "../../extensions/app/assets/app";
+import { app } from "./app";
 
 app.cccReady = function () {
 

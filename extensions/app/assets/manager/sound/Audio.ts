@@ -1,5 +1,4 @@
-import { AudioClip, AudioSource, warn } from 'cc';
-import { DEV } from 'cc/env';
+import { AudioClip, AudioSource } from 'cc';
 
 export default class Audio {
     private volume = 1;
@@ -40,10 +39,6 @@ export default class Audio {
     }
 
     resume() {
-        if (this.audioSource.state !== AudioSource.AudioState.PAUSED) {
-            if (DEV) warn('不可以resume一个不是paused状态的音频');
-            return;
-        }
         this.audioSource.play();
         return this;
     }

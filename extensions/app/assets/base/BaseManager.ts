@@ -1,6 +1,7 @@
-import { Asset, AssetManager, assetManager, Component, error, EventTarget, find, instantiate, js, log, Node, Prefab, UITransform, warn, Widget, _decorator } from 'cc';
+import { Asset, AssetManager, assetManager, Component, error, EventTarget, find, instantiate, js, log, Node, Prefab, warn, Widget, _decorator } from 'cc';
 import { DEBUG, DEV, EDITOR } from 'cc/env';
-import { App, app } from '../app';
+import Core from '../Core';
+import Task from '../lib/task/task';
 
 const { ccclass, property } = _decorator;
 
@@ -43,16 +44,14 @@ export default class BaseManager extends Component {
             });
         }
 
-        if (app && app.appReady) {
-            if (this._base_manager_name !== 'Manager' && this._base_manager_name.slice(-7) === 'Manager') {
-                const managerName = this._base_manager_name.slice(0, - 7);
-                app.Manager[managerName] = this.constructor;
-                app.manager[managerName.toLowerCase()] = this;
-            } else if (EDITOR) {
-                error(`[${this._base_manager_name}] [error] manager命名错误(应为 xxxxManager 以Manager结尾)`);
-            } else if (DEBUG) {
-                error(`[${this._base_manager_name}] [error] manager命名错误(应为 xxxxManager 以Manager结尾)`);
-            }
+        if (this._base_manager_name !== 'Manager' && this._base_manager_name.slice(-7) === 'Manager') {
+            const managerName = this._base_manager_name.slice(0, - 7);
+            Core.inst.Manager[managerName] = this.constructor;
+            Core.inst.manager[managerName.toLowerCase()] = this;
+        } else if (EDITOR) {
+            error(`[${this._base_manager_name}] [error] manager命名错误(应为 xxxxManager 以Manager结尾)`);
+        } else if (DEBUG) {
+            error(`[${this._base_manager_name}] [error] manager命名错误(应为 xxxxManager 以Manager结尾)`);
         }
     }
 
@@ -267,7 +266,7 @@ export default class BaseManager extends Component {
      * @param cb 
      */
     public static getBundle(name: string, cb: (bundle: AssetManager.Bundle) => void) {
-        app.lib.task.excute((retry) => {
+        Task.excute((retry) => {
             assetManager.loadBundle(name, (err, bundle) => {
                 if (bundle && !err) {
                     cb(bundle);
@@ -341,8 +340,8 @@ export default class BaseManager extends Component {
         };
 
         // 初始化系统manager
-        const aSync1 = app.lib.task.createASync();
-        const sysMgr = [app.manager.event, app.manager.timer, app.manager.sound, app.manager.ui] as any as BaseManager[];
+        const aSync1 = Task.createASync();
+        const sysMgr = [Core.inst.manager.event, Core.inst.manager.timer, Core.inst.manager.sound, Core.inst.manager.ui] as any as BaseManager[];
         sysMgr.forEach(function (manager: BaseManager) {
             aSync1.add(function (next) {
                 manager.init(onProgress(next, manager));
@@ -350,7 +349,7 @@ export default class BaseManager extends Component {
         });
 
         // 加载用户manager
-        const aSync2 = app.lib.task.createASync();
+        const aSync2 = Task.createASync();
         const userManagerRoot = find(UserManagerRoot);
         urls.forEach(function (url) {
             aSync2.add(function (next, retry) {
@@ -368,15 +367,15 @@ export default class BaseManager extends Component {
             });
         });
 
-        app.lib.task.createAny()
+        Task.createAny()
             .add([
                 next => aSync1.start(next),
                 next => aSync2.start(next),
             ])
             .add(function (next) {
-                app.emit(App.EventType.EVENT_SYS_MANAGER_INITED);
+                Core.inst.emit(Core.EventType.EVENT_SYS_MANAGER_INITED);
                 // 初始化用户manager
-                const aSync3 = app.lib.task.createASync();
+                const aSync3 = Task.createASync();
                 userManagerRoot.children.forEach(node => {
                     aSync3.add(function (next) {
                         const manager = node.getComponent(BaseManager);
@@ -386,8 +385,8 @@ export default class BaseManager extends Component {
                 aSync3.start(next);
             })
             .start(function () {
-                app.emit(App.EventType.EVENT_USER_MANAGER_INITED);
-                app.emit(App.EventType.EVENT_MANAGER_INITED);
+                Core.inst.emit(Core.EventType.EVENT_USER_MANAGER_INITED);
+                Core.inst.emit(Core.EventType.EVENT_MANAGER_INITED);
                 sysMgr.forEach(function (manager: BaseManager) {
                     manager.onFinished();
                 });
@@ -396,7 +395,7 @@ export default class BaseManager extends Component {
                     const manager = node.getComponent(BaseManager);
                     manager.onFinished();
                 });
-                app.emit(App.EventType.EVENT_MANAGER_FINISHED);
+                Core.inst.emit(Core.EventType.EVENT_MANAGER_FINISHED);
                 complete && complete(totalAsset);
             });
     }

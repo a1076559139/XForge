@@ -306,6 +306,9 @@ exports.methods = {
     ['update-executor']() {
         callUpdateExecutor();
     },
+    ['asset-db:ready']() {
+        callUpdateExecutor();
+    },
     ['asset-db:asset-add'](uuid, info) {
         if (!isVaild(info))
             return;
@@ -326,7 +329,13 @@ exports.methods = {
  * @en Hooks triggered after extension loading is complete
  * @zh 扩展加载完成后触发的钩子
  */
-function load() { }
+function load() {
+    Editor.Message.request('asset-db', 'query-ready')
+        .then(ready => {
+        if (ready)
+            callUpdateExecutor();
+    });
+}
 exports.load = load;
 /**
  * @en Hooks triggered after extension uninstallation is complete

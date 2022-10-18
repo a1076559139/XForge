@@ -1,6 +1,6 @@
 import { Component, warn, _decorator } from 'cc';
 import { EDITOR } from 'cc/env';
-import { App, app } from '../app';
+import Core from '../Core';
 import BaseManager from './BaseManager';
 const { ccclass, property } = _decorator;
 
@@ -54,14 +54,14 @@ export default abstract class BaseAppInit extends Component {
         this.onProgress(++this._base_completed, this._base_total);
         // 全部加载完成
         if (this._base_completed === this._base_total) {
-            app.emit(App.EventType.EVENT_APPINIT_FINISHED);
-            return app.manager.ui.showDefault(() => {
+            Core.inst.emit(Core.EventType.EVENT_APPINIT_FINISHED);
+            return Core.inst.manager.ui.showDefault(() => {
                 // 销毁当前节点
                 this.node.active = false;
                 this.node.parent = null;
                 this.node.destroy();
                 // 播放默认音乐
-                app.manager.sound.playDefaultMusic();
+                Core.inst.manager.sound.playDefaultMusic();
             });
         }
         // 系统部分加载完毕，开始加载用户自定义
