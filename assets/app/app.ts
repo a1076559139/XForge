@@ -14,10 +14,10 @@ export class App extends Core<typeof executor> {
         super(executor)
     }
 
-    appReady: Function = null;
-    appInited: Function = null;
-    cccReady: Function = null;
-    cccInited: Function = null;
+    appReady: () => any = null;
+    appInited: () => any = null;
+    cccReady: () => any = null;
+    cccInited: () => any = null;
 }
 
 export const app = App.inst;
@@ -30,6 +30,6 @@ if (DEBUG) {
 if (!EDITOR) {
     app.cccReady && app.cccReady();
     app.appReady && app.appReady();
-    game.once(Game.EVENT_ENGINE_INITED, function () { app.cccInited && app.cccInited(); });
-    app.once(App.EventType.EVENT_APPINIT_FINISHED, function () { app.appInited && app.appInited(); });
+    app.cccInited && game.once(Game.EVENT_ENGINE_INITED, function () { app.cccInited(); });
+    app.appInited && app.once(App.EventType.EVENT_APPINIT_FINISHED, function () { app.appInited(); });
 }

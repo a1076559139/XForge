@@ -3,8 +3,6 @@ import EventManager from './manager/event/EventManager';
 import SoundManager from './manager/sound/SoundManager';
 import TimerManager from './manager/timer/TimerManager';
 import UIManager from './manager/ui/UIManager';
-// @ts-ignore
-// 忽略报错
 
 enum EventType {
     /**AppInit准备完毕 */
@@ -18,8 +16,6 @@ enum EventType {
     /**所有Manager准备完毕 */
     EVENT_MANAGER_FINISHED = 'EVENT_MANAGER_FINISHED'
 }
-
-const EventMap = {};
 
 type ILib = Object;
 type IData = Object;
@@ -47,6 +43,7 @@ interface ICore {
     Manager: IManager
 }
 
+const EventMap = {};
 export default class Core<T extends ICore> extends EventTarget {
     /**
      * 版本号规则：破坏性.新功能.修复BUG
@@ -96,8 +93,8 @@ export default class Core<T extends ICore> extends EventTarget {
         EventMap[event] = true;
         super.emit(event, ...args);
     }
+}
 
-    log(str: string, ...args: any[]) { console.log(`[app] [log] ${str}`, ...args); }
-    warn(str: string, ...args: any[]) { console.warn(`[app] [warn] ${str}`, ...args); }
-    error(str: string, ...args: any[]) { console.error(`[app] [error] ${str}`, ...args); }
+if (!Core.inst) {
+    new Core({ lib: {}, config: {}, data: {}, Manager: {}, manager: {} } as any);
 }
