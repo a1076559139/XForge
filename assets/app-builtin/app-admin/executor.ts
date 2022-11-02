@@ -7,7 +7,7 @@ import EventManager from '../../../extensions/app/assets/manager/event/EventMana
 import SoundManager from '../../../extensions/app/assets/manager/sound/SoundManager'
 import TimerManager from '../../../extensions/app/assets/manager/timer/TimerManager'
 import UIManager from '../../../extensions/app/assets/manager/ui/UIManager'
-export enum viewNamesEnum { 'PageGame'}
+export enum viewNamesEnum { 'PageGame','PopTip'}
 export const miniViewNames = {"PaperGameIndex":"PaperGame"}
 export enum musicNamesEnum { 'music/bgm'}
 export enum effecNamesEnum { 'effect/btn'}

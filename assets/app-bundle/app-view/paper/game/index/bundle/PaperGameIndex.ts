@@ -1,13 +1,20 @@
-import { _decorator } from 'cc';
+import { instantiate, _decorator } from 'cc';
 import BaseView from '../../../../../../../extensions/app/assets/base/BaseView';
 const { ccclass, property } = _decorator;
 @ccclass('PaperGameIndex')
 export class PaperGameIndex extends BaseView {
     public static get isViewValid(): boolean {
-        return false;
+        return true;
     }
     // 初始化的相关逻辑写在这
-    onLoad() { }
+    onLoad() { 
+        this.load('Bag', (result) => {
+            this.log(this.viewName, result);
+            const node = instantiate(result)
+            node.parent = this.node;
+            node.setSiblingIndex(0);
+        })
+    }
 
     // 界面打开时的相关逻辑写在这(onShow可被多次调用-它与onHide不成对)
     onShow(params: any) { }

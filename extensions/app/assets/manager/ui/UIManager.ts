@@ -1,4 +1,4 @@
-import { Asset, AssetManager, Canvas, Component, director, error, Event, find, instantiate, isValid, js, Node, path, Prefab, Scene, Widget, _decorator } from 'cc';
+import { Asset, AssetManager, Canvas, Component, director, error, Event, find, instantiate, isValid, js, Node, path, Prefab, Scene, UITransform, Widget, _decorator } from 'cc';
 import { DEBUG } from 'cc/env';
 import { IViewName, IViewNames, miniViewNames } from '../../../../../assets/app-builtin/app-admin/executor';
 import BaseManager from '../../base/BaseManager';
@@ -7,9 +7,9 @@ import BaseView, { IShowParamAttr, IShowParamOnHide, IShowParamOnShow } from '..
 const { ccclass, property } = _decorator;
 
 const BlockEvents = [
-    'touchstart', 'touchmove', 'touchend', 'touchcancel',
-    'mousedown', 'mousemove', 'mouseup',
-    'mouseenter', 'mouseleave', 'mousewheel'
+    Node.EventType.TOUCH_START, Node.EventType.TOUCH_MOVE, Node.EventType.TOUCH_END, Node.EventType.TOUCH_CANCEL,
+    Node.EventType.MOUSE_DOWN, Node.EventType.MOUSE_MOVE, Node.EventType.MOUSE_UP,
+    Node.EventType.MOUSE_ENTER, Node.EventType.MOUSE_LEAVE, Node.EventType.MOUSE_WHEEL
 ];
 
 interface IShowParams<T, IShow = any, IHide = any> {
@@ -25,6 +25,8 @@ interface IShowParams<T, IShow = any, IHide = any> {
 }
 
 const UIRoot = 'Canvas/UserInterface';
+const MaskTouchEnabledFlg = 1 << 0;
+const LoadingTouchEnabledFlg = 1 << 1;
 
 @ccclass('UIManager')
 export default class UIManager<UIName extends string, MiniName extends string> extends BaseManager {
@@ -53,7 +55,8 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     private currPage: BaseView = null;
     private currFocus: BaseView = null;
     private touchEnabled: boolean = true;
-    private getUITouchEnabled: boolean = true;
+    private touchEnabledFlag: number = 0;
+    private touchMaskMap = new Map<string, boolean>();
 
     // 记录正在加载中的有效的ui
     private uiLoadingMap: Map<UIName, string[]> = new Map();//{ [uiName: string]: string[] } = {};
@@ -94,7 +97,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     private stopPropagation(event: Event) {
-        if (!this.getUITouchEnabled || !this.touchEnabled) {
+        if (this.touchEnabledFlag !== 0 || !this.touchEnabled) {
             this.log('触摸屏蔽');
             event.propagationStopped = true;
             // event.stopPropagation();
@@ -336,9 +339,9 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 获取子界面的主界面的名字
      */
-    private getMiniViewMaster(name: string): IViewName {
-        return miniViewNames[name] || '';
-    }
+    // private getMiniViewMaster(name: string): IViewName {
+    //     return miniViewNames[name] || '';
+    // }
 
     /**
      * 根据UI名字获取场景内的节点
@@ -433,9 +436,8 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                         if (com.isNeedShade && com.isShowing) {
                             this.shade.parent = uiRoot;
                             this.shade.active = true;
-
                             this.shade.layer = node.layer;
-                            this.shade.setSiblingIndex(node.getSiblingIndex() - 1);
+                            this.shade.getComponent(UITransform).priority = node.getComponent(UITransform)?.priority || 0;
 
                             let shadeIndex = this.shade.getSiblingIndex();
                             let nodeIndex = node.getSiblingIndex();
@@ -473,7 +475,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     private createUILoadingUUID(name: UIName) {
-        this.getUITouchEnabled = false;
+        this.touchEnabledFlag += LoadingTouchEnabledFlg;
         const uuid = this.createUUID();
         if (!this.uiLoadingMap.has(name)) this.uiLoadingMap.set(name, []);
         this.uiLoadingMap.get(name).push(uuid);
@@ -481,7 +483,11 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     private checkUILoadingUUID(name: UIName, uuid: string) {
-        this.getUITouchEnabled = true;
+        if (this.touchEnabledFlag >= LoadingTouchEnabledFlg) {
+            this.touchEnabledFlag -= LoadingTouchEnabledFlg;
+        } else {
+            this.error('checkUILoadingUUID', '错误的调用');
+        }
         if (!this.uiLoadingMap.has(name)) return false;
         const index = this.uiLoadingMap.get(name).indexOf(uuid);
         if (index === -1) return false;
@@ -793,6 +799,20 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             if (exclude && exclude.indexOf(name) !== -1) return;
             value.length = 0;
         });
+    }
+
+    public addTouchMask() {
+        this.touchEnabledFlag |= MaskTouchEnabledFlg;
+        const uuid = this.createUUID();
+        this.touchMaskMap.set(uuid, true);
+        return uuid;
+    }
+
+    public removeTouchMask(uuid: string) {
+        this.touchMaskMap.delete(uuid);
+        if (this.touchMaskMap.size === 0) {
+            this.touchEnabledFlag ^= MaskTouchEnabledFlg;
+        }
     }
 
     /**

@@ -1,4 +1,4 @@
-import { Asset, Component, Enum, Event, js, log, UITransform, warn, Widget, _decorator } from 'cc';
+import { Asset, Component, Enum, Event, js, log, Node, Prefab, UITransform, warn, Widget, _decorator } from 'cc';
 import { DEBUG, EDITOR } from 'cc/env';
 import { IMiniViewName, IMiniViewNames, IViewName } from '../../../../assets/app-builtin/app-admin/executor';
 import Core from '../Core';
@@ -10,9 +10,9 @@ const dotReWriteFuns = ['resetInEditor', 'node_stopPropagation', 'parent_stopPro
 const dotCallFuns = ['show', 'focus'];
 
 const BlockEvents = [
-    'touchstart', 'touchmove', 'touchend', 'touchcancel',
-    'mousedown', 'mousemove', 'mouseup',
-    'mouseenter', 'mouseleave', 'mousewheel'
+    Node.EventType.TOUCH_START, Node.EventType.TOUCH_MOVE, Node.EventType.TOUCH_END, Node.EventType.TOUCH_CANCEL,
+    Node.EventType.MOUSE_DOWN, Node.EventType.MOUSE_MOVE, Node.EventType.MOUSE_UP,
+    Node.EventType.MOUSE_ENTER, Node.EventType.MOUSE_LEAVE, Node.EventType.MOUSE_WHEEL
 ];
 
 const HideEvent = Enum({
@@ -614,12 +614,11 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     /**
      * 加载bundle/resources里面的资源
      * @param path 相对于bundle/resources的路径
-     * @param type 资源类型
      * @param callback 回调
-     * this.load('duannei', cc.Prefab, function(){})
+     * this.load('Bag', Prefab, function(){})
      */
-    protected load<T extends Asset>(path: string, type: new () => T, callback?: (result: T) => any) {
-        Core.inst.manager.ui.loadInner(this, path, type, callback);
+    protected load(path: string,  callback?: (result: Prefab) => any) {
+        Core.inst.manager.ui.loadInner(this, path, Prefab, callback);
     }
 
     protected log(str, ...args) {

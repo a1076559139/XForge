@@ -180,9 +180,9 @@ exports.default = vue_1.default.extend({
             queryViewMeta.userData = getMetaUserData(uiName);
             await Editor.Message.request('asset-db', 'save-asset-meta', bundlePath, JSON.stringify(queryViewMeta)).catch(_ => null);
             (0, fs_1.writeFileSync)((0, path_1.join)((0, utils_1.convertPathToDir)(uiPath), `.${name}.md`), `${uiName}所在文件夹, 通过${isPaper ? '在page中配置miniViews属性并调用showMiniViews方法' : 'app.manager.ui.show'}的方式加载`);
-            (0, fs_1.writeFileSync)((0, path_1.join)((0, utils_1.convertPathToDir)(bundlePath), '.bundle.md'), '存放脚本与预制体的文件夹, UI脚本与预制体一定在根目录下，其它脚本与预制体放到resources目录下');
-            (0, fs_1.writeFileSync)((0, path_1.join)((0, utils_1.convertPathToDir)(nativePath), '.native.md'), '存放UI静态资源的文件夹(⚠️:脚本或动态预制体请放到bundle/resources目录下)');
-            (0, fs_1.writeFileSync)((0, path_1.join)((0, utils_1.convertPathToDir)(bundleResPath), '.resources.md'), '只能存放脚本与预制体, 里面的资源可在UI脚本内通过this.load加载(⚠️:图片等其他资源一定不要放在此文件夹内)');
+            (0, fs_1.writeFileSync)((0, path_1.join)((0, utils_1.convertPathToDir)(bundlePath), '.bundle.md'), '存储脚本与预制体的文件夹, UI脚本与预制体一定在根目录下，其它脚本与预制体放到resources目录下');
+            (0, fs_1.writeFileSync)((0, path_1.join)((0, utils_1.convertPathToDir)(nativePath), '.native.md'), '存储UI静态资源的文件夹(⚠️:脚本或动态预制体请放到bundle/resources目录下)');
+            (0, fs_1.writeFileSync)((0, path_1.join)((0, utils_1.convertPathToDir)(bundleResPath), '.resources.md'), '只能存储脚本与预制体, 里面的资源可在UI脚本内通过this.load加载(⚠️:图片等其他资源一定不要放在此文件夹内)');
             this.showLoading = false;
             this.display = `[成功] 创建成功`;
         }
