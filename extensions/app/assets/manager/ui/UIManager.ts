@@ -1,6 +1,6 @@
-import { Asset, AssetManager, Canvas, Component, director, error, Event, find, instantiate, isValid, js, Layers, Node, Prefab, Scene, Widget, _decorator } from 'cc';
+import { Asset, AssetManager, Canvas, Component, director, error, Event, find, instantiate, isValid, js, Node, path, Prefab, Scene, Widget, _decorator } from 'cc';
 import { DEBUG } from 'cc/env';
-import { IViewName, IViewNames, miniViewNames } from '../../../../../assets/app/executor';
+import { IViewName, IViewNames, miniViewNames } from '../../../../../assets/app-builtin/app-admin/executor';
 import BaseManager from '../../base/BaseManager';
 import BaseView, { IShowParamAttr, IShowParamOnHide, IShowParamOnShow } from '../../base/BaseView';
 
@@ -20,10 +20,10 @@ interface IShowParams<T, IShow = any, IHide = any> {
     onShow?: IShowParamOnShow<IShow>,
     onHide?: IShowParamOnHide<IHide>,
     onError?: (result: string, code: 0 | 1) => any,
+    onInvalid?: () => any,
     attr?: IShowParamAttr
 }
 
-const Bundle = 'app-view';
 const UIRoot = 'Canvas/UserInterface';
 
 @ccclass('UIManager')
@@ -74,7 +74,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             });
         }
 
-        super.init(finish, { bundle: Bundle, preload: setting.preload });
+        super.init(finish, { preload: setting.preload });
     }
 
     protected onLoad() {
@@ -121,13 +121,21 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         return com;
     }
 
+    private innerLoad(name: string, path: string, type: new () => Asset, progress: (finish: number, total: number, item: AssetManager.RequestItem) => void, finish: (result: Asset) => any) {
+        BaseManager.getBundle(this.getUIBundleName(name), (bundle) => {
+            bundle.load(path, type, progress, (err, asset) => {
+                finish(err ? null : asset);
+            });
+        })
+    }
+
     /**
-     * 加载内部资源
+     * 加载ui内部资源
      */
-    public loadInner<T extends Asset>(target: Component, path: string, type: new () => T, callback?: (result: T) => any) {
+    public loadInner<T extends Asset>(target: Component, resPath: string, type: new () => T, callback?: (result: T) => any) {
         const view = target.node.getComponent(BaseView) || this.getViewComInParent(target.node);
         if (view) {
-            super.load({ path: `${this.getRootPath(view.viewName)}${path}`, type }, callback);
+            this.innerLoad(view.viewName, path.join('resources', resPath), type, null, callback);
         } else {
             callback && callback(null);
         }
@@ -171,15 +179,10 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
         // 异步加载
         const path = this.getUIPath(name);
-        super.load({ path, type: Prefab }, progress, (prefab) => {
-            if (prefab) {
-                this.prefabCache[name] = prefab;
-                complete && complete(prefab, false);
-            } else {
-                complete && complete(null, false);
-            }
-        });
-
+        this.innerLoad(name, path, Prefab, progress, (prefab) => {
+            if (prefab) this.prefabCache[name] = prefab;
+            complete && complete(prefab, false);
+        })
         return false;
     }
 
@@ -248,6 +251,13 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     /**
+     * 获取UI所在的bundle名字
+     */
+    private getUIBundleName(uiName: string) {
+        return `app-view_${uiName}`;
+    }
+
+    /**
      * 获取前缀，并首字母转小写
      * @param {String} uiName 驼峰命名法，前缀小写。例如：PopInfo，前缀为pop
      */
@@ -258,7 +268,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         let children = this.UIRoot.children;
         for (let index = 0; index < children.length; index++) {
             const uiRoot = children[index];
-            // 'PopInfo'.indexOf('Pop')
             if (uiName.indexOf(uiRoot.name) === 0) {
                 if (lowercase) {
                     return uiRoot.name.toLowerCase();
@@ -275,32 +284,32 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * @param {String} uiName 驼峰命名法，前缀小写。例如：PopInfo，后缀为info
      * @param {String} prefix [可选] 直接给出前缀
      */
-    private getSuffix(uiName: string, prefix?: string): string {
-        if (!prefix) {
-            prefix = this.getPrefix(uiName);
-        }
-        const str = uiName.slice(prefix.length || 0);
-        return str.charAt(0).toLowerCase() + str.slice(1);
-    }
+    // private getSuffix(uiName: string, prefix?: string): string {
+    //     if (!prefix) {
+    //         prefix = this.getPrefix(uiName);
+    //     }
+    //     const str = uiName.slice(prefix.length || 0);
+    //     return str.charAt(0).toLowerCase() + str.slice(1);
+    // }
 
     // 根据UI名字获取所在的根路径
-    private getRootPath(name: string) {
-        if (this.isMiniView(name)) {
-            const master = this.getMiniViewMaster(name);
-            const prefix = this.getPrefix(master);
-            const suffix = this.getSuffix(master);
-            const base = this.getSuffix(name, master);
-            return `${prefix}/${suffix}/${base}/`;
-        } else {
-            const prefix = this.getPrefix(name);
-            const suffix = this.getSuffix(name, prefix);
-            return `${prefix}/${suffix}/`;
-        }
-    }
+    // private getRootPath(name: string) {
+    //     if (this.isMiniView(name)) {
+    //         const master = this.getMiniViewMaster(name);
+    //         const prefix = this.getPrefix(master);
+    //         const suffix = this.getSuffix(master);
+    //         const base = this.getSuffix(name, master);
+    //         return `${prefix}/${suffix}/${base}/`;
+    //     } else {
+    //         const prefix = this.getPrefix(name);
+    //         const suffix = this.getSuffix(name, prefix);
+    //         return `${prefix}/${suffix}/`;
+    //     }
+    // }
 
     // 根据UI名字获取UI路径
     private getUIPath(name: string) {
-        return `${this.getRootPath(name)}view/${name}`;
+        return name;
     }
 
     // 根据UI名字获取其根节点是谁
@@ -331,7 +340,9 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         return miniViewNames[name] || '';
     }
 
-    // 根据UI名字获取场景内的节点
+    /**
+     * 根据UI名字获取场景内的节点
+     */
     private getUIInScene(name: string): Node;
     private getUIInScene(name: string, multiple: false): Node;
     private getUIInScene(name: string, multiple: true): Node[];
@@ -349,7 +360,9 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         }
     }
 
-    // 根据UI名字获取展示中的节点
+    /**
+     * 根据UI名字获取展示中的节点
+     */
     private getUIInShowing(name: string): Node;
     private getUIInShowing(name: string, multiple: false): Node;
     private getUIInShowing(name: string, multiple: true): Node[];
@@ -369,9 +382,25 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         }
     }
 
-    // 根据ui名字获取它的脚本类
+    /**
+     * 根据UI名字获取它的脚本类
+     */
     private getUIClass(name: string): typeof BaseView {
         return js.getClassByName(name) as (typeof BaseView);
+    }
+
+    /**
+     * 检查UI是否有效
+     */
+    private getUIValid(name: string, callback: (valid: boolean) => any) {
+        BaseManager.getBundle(this.getUIBundleName(name), () => {
+            const View = this.getUIClass(name);
+            if (View && View.isViewValid) {
+                callback(true);
+            } else {
+                callback(false);
+            }
+        })
     }
 
     /**
@@ -438,8 +467,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             this.warn(`节点名与预制名不一致，已重置为预制名: ${this.getUIPath(prefab.name)}`);
             node.name = prefab.name;
         }
-        node.layer
-        Layers.Enum.UI_3D
         node.parent = this.getUIParent(prefab.name);
         node.getComponent(Widget)?.updateAlignment();
         return node;
@@ -594,15 +621,9 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * @param param0 
      * @returns 
      */
-    public show<UI extends BaseView>({ name, data, queue, onShow, onHide, onError, top = true, attr = null }
+    public show<UI extends BaseView>({ name, data, queue, onShow, onHide, onError, onInvalid, top = true, attr = null }
         //@ts-ignore
         : IShowParams<UIName, Parameters<UI['onShow']>[0], ReturnType<UI['onHide']>>): boolean {
-        // 判断ui是否有效
-        const View = this.getUIClass(name);
-        if (View && !View.isViewValid) {
-            this.log(`[${name}] 当前View无效`);
-            return false;
-        }
 
         // 加入队列中
         if (queue) return this.putInUIQueue({ name, data, queue, onShow, onHide, onError, top, attr });
@@ -657,16 +678,22 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                             onError && onError(error, 1);
                         }
                     },
-                    (name: string, path: string, type: Asset, callback: (result: Asset) => any) => {
-                        super.load({ path: `${this.getRootPath(name)}${path}`, type }, callback);
+                    (name: string, path: string, type: typeof Asset, callback: (result: Asset) => any) => {
+                        this.innerLoad(name, path, type, null, callback)
                     }
                 );
             }
         });
 
-        show();
-
-        return true;
+        // 判断ui是否有效
+        this.getUIValid(name, (valid) => {
+            if (valid) {
+                show();
+            } else {
+                onInvalid && onInvalid();
+                onError && onError(`${name} 无效`, 0);
+            }
+        })
     }
 
     /**

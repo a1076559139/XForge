@@ -36,12 +36,12 @@ exports.default = vue_1.default.extend({
             const type = this.typeSelects[this.typeSelectIndex];
             const name = this.inputName;
             if (/^[a-zA-Z0-9_]+$/.test(name) === false) {
-                this.display = `[错误] 名字不合法, 请删除\n/^[a-zA-Z0-9_]+$/.test(${name})`;
+                this.display = `[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/`;
                 return;
             }
             this.showLoading = true;
-            const file = `db://assets/app-builtin/app-model/${type}.${name}.ts`;
-            const result = await Editor.Message.request('asset-db', 'create-asset', file, getScript(type, name)).catch(_ => null);
+            const fileUrl = `db://assets/app-builtin/app-model/${type}.${name}.ts`;
+            const result = await Editor.Message.request('asset-db', 'create-asset', fileUrl, getScript(type, name)).catch(_ => null);
             if (!result)
                 this.display = `[错误] 创建失败`;
             this.showLoading = false;

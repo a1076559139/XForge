@@ -1,10 +1,14 @@
-import { Component, warn, _decorator } from 'cc';
+import { assetManager, Component, warn, _decorator } from 'cc';
 import { EDITOR } from 'cc/env';
 import Core from '../Core';
 import BaseManager from './BaseManager';
 const { ccclass, property } = _decorator;
 
-const dotReWriteFuns = ['startInit', 'nextInit', 'getAppAssetNum'];
+const AdminBundleName = 'app-admin';
+const ModelBundleName = 'app-model';
+const ControlBundlename = 'app-control';
+const ExtendBundlename = 'app-extend';
+const DotReWriteFuns = ['startInit', 'nextInit', 'getAppAssetNum'];
 
 @ccclass('BaseAppInit')
 export default abstract class BaseAppInit extends Component {
@@ -17,7 +21,7 @@ export default abstract class BaseAppInit extends Component {
     constructor() {
         super();
         if (EDITOR) {
-            dotReWriteFuns.forEach((funName) => {
+            DotReWriteFuns.forEach((funName) => {
                 if (BaseAppInit.prototype[funName] !== this[funName]) {
                     warn(`[AppInit] [warn] 不应该重写父类方法{${funName}}`);
                 }
@@ -26,26 +30,62 @@ export default abstract class BaseAppInit extends Component {
     }
 
     /**
-     * [不可重写] 开始初始化
+     * [避免重写] 开始初始化
      */
     protected startInit() {
-        BaseManager.init(() => {
-            // 获得app初始化所加载的资源总量
-            this._base_app_total = this.getAppAssetNum();
-            this._base_user_total = this.getUserAssetNum();
+        Core.inst.lib.task.createAny()
+            .add([
+                (next, retry) => {
+                    // 加载model
+                    assetManager.loadBundle(ModelBundleName, (err) => {
+                        if (err) return retry(0.1);
+                        next();
+                    })
+                },
+                (next, retry) => {
+                    // 加载control
+                    assetManager.loadBundle(ControlBundlename, (err) => {
+                        if (err) return retry(0.1);
+                        next();
+                    })
+                },
+                (next, retry) => {
+                    // 加载extend
+                    assetManager.loadBundle(ExtendBundlename, (err) => {
+                        if (err) return retry(0.1);
+                        next();
+                    })
+                }
+            ])
+            .add([
+                (next, retry) => {
+                    // 加载admin
+                    assetManager.loadBundle(AdminBundleName, (err) => {
+                        if (err) return retry(0.1);
+                        next();
+                    })
+                },
+                (next) => {
+                    // 加载manager
+                    BaseManager.init(next);
+                }
+            ])
+            .start(() => {
+                // 获得app初始化所加载的资源总量
+                this._base_app_total = this.getAppAssetNum();
+                this._base_user_total = this.getUserAssetNum();
 
-            this._base_completed = 0;
-            this._base_total = this._base_app_total + this._base_user_total;
+                this._base_completed = 0;
+                this._base_total = this._base_app_total + this._base_user_total;
 
-            this.onProgress(0, this._base_total);
+                this.onProgress(0, this._base_total);
 
-            // 初始化app, 使用complete来实现onUserInit的切换以确保manager已完全加载
-            BaseManager.initManagers(() => this.nextInit(), (): any => { this.onUserInit(this._base_completed - this._base_app_total); });
-        });
-
+                // 初始化app, 使用complete来实现onUserInit的切换以确保manager已完全加载
+                BaseManager.initManagers(() => this.nextInit(), (): any => { this.onUserInit(this._base_completed - this._base_app_total); });
+            })
     }
     /**
-     * [不可重写] 初始化下一步，用户部分每完成一步需要调用一次
+     * [避免重写] 初始化下一步，用户部分每完成一步需要调用一次
      */
     protected nextInit(): any {
         if (this._base_completed === this._base_total) {
@@ -69,8 +109,12 @@ export default abstract class BaseAppInit extends Component {
             this.onUserInit(this._base_completed - this._base_app_total);
         }
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////        以下可重写        ////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
-     * [不可重写] 获得系统资源总量
+     * [不可重写] 获得用户资源总量
      */
     protected getAppAssetNum(): number {
         return BaseManager.getInitAssetNum();

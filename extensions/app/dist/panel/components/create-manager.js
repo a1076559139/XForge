@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs_extra_1 = require("fs-extra");
+const fs_1 = require("fs");
 const vue_1 = __importDefault(require("vue/dist/vue"));
 const utils_1 = require("../utils");
 /**
@@ -41,41 +41,41 @@ exports.default = vue_1.default.extend({
         async onClickCreate() {
             const name = this.inputName;
             if (/^[a-zA-Z0-9_]+$/.test(name) === false) {
-                this.display = `[错误] 名字不合法, 请删除\n/^[a-zA-Z0-9_]+$/.test(${name})`;
+                this.display = `[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/`;
                 return;
             }
             const managerName = `${(0, utils_1.stringCase)(name)}Manager`;
             const managerPath = `db://assets/app-builtin/app-manager/${(0, utils_1.stringCase)(name, true)}`;
-            const scriptFile = `${managerPath}/${managerName}.ts`;
-            const prefabFile = `${managerPath}/${managerName}.prefab`;
+            const scriptUrl = `${managerPath}/${managerName}.ts`;
+            const prefabUrl = `${managerPath}/${managerName}.prefab`;
             this.display = '创建中';
             this.showLoading = true;
-            if ((0, fs_extra_1.existsSync)((0, utils_1.convertDBToPath)(managerPath))) {
+            if ((0, fs_1.existsSync)((0, utils_1.convertPathToDir)(managerPath))) {
                 this.showLoading = false;
                 this.display = `[错误] 目录已存在, 请删除\n${managerPath}`;
                 return;
             }
-            if (!await (0, utils_1.createDBDir)(managerPath)) {
+            if (!await (0, utils_1.createPath)(managerPath)) {
                 this.showLoading = false;
                 this.display = `[错误] 创建目录失败\n${managerPath}`;
                 return;
             }
             // 创建script
-            const createScriptResult = await Editor.Message.request('asset-db', 'create-asset', scriptFile, getScript(managerName)).catch(_ => null);
+            const createScriptResult = await Editor.Message.request('asset-db', 'create-asset', scriptUrl, getScript(managerName)).catch(_ => null);
             if (!createScriptResult) {
                 this.showLoading = false;
-                this.display = `[错误] 创建脚本失败\n${scriptFile}`;
+                this.display = `[错误] 创建脚本失败\n${scriptUrl}`;
                 return;
             }
             // 创建prefab
             const createPrefabResult = await Editor.Message.request('scene', 'execute-scene-script', {
                 name: 'app',
                 method: 'createPrefab',
-                args: [managerName, prefabFile]
+                args: [managerName, prefabUrl]
             });
             if (!createPrefabResult) {
                 this.showLoading = false;
-                this.display = `[错误] 创建预制体失败\n${prefabFile}`;
+                this.display = `[错误] 创建预制体失败\n${prefabUrl}`;
                 return;
             }
             this.showLoading = false;

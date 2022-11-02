@@ -24,7 +24,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.unload = exports.load = exports.methods = void 0;
-const fs_extra_1 = require("fs-extra");
+const fs_1 = require("fs");
 const path_1 = __importDefault(require("path"));
 const utils_1 = require("./panel/utils");
 function isVaild(info, strict = true) {
@@ -61,9 +61,9 @@ function isVaild(info, strict = true) {
 }
 const viewSelect = ['Page', 'Paper', 'Pop', 'Top'];
 const viewRegExp = RegExp(`^(${viewSelect.join('|')})`);
-function readScriptSyncByURL(url) {
-    const filepath = (0, utils_1.convertDBToPath)(url);
-    return (0, fs_extra_1.existsSync)(filepath) ? (0, fs_extra_1.readFileSync)(filepath, 'utf8') : '';
+function readFileSyncByURL(url) {
+    const filepath = (0, utils_1.convertPathToDir)(url);
+    return (0, fs_1.existsSync)(filepath) ? (0, fs_1.readFileSync)(filepath, 'utf8') : '';
 }
 function isTSDefault(value) {
     const extname = value[3];
@@ -78,23 +78,25 @@ function isTSDefault(value) {
     // }
     // return false;
     // storage,db://assets/app/lib/storage,storage,ts
-    const filepath = path_1.default.join((0, utils_1.convertDBToPath)(value[1]), filename + '.ts');
-    const js = (0, fs_extra_1.readFileSync)(filepath, 'utf8');
+    const filepath = path_1.default.join((0, utils_1.convertPathToDir)(value[1]), filename + '.ts');
+    const js = (0, fs_1.readFileSync)(filepath, 'utf8');
     return js.search(/export\s+default/) >= 0;
 }
-const executorPath = 'db://assets/app/executor.ts';
-const executorDir = (0, utils_1.convertDBToPath)('db://assets/app');
+const executorFile = 'executor.ts';
+const executorPath = 'db://assets/app-builtin/app-admin';
+const executorUrl = executorPath + '/' + executorFile;
+const executorDir = (0, utils_1.convertPathToDir)(executorPath);
 const keyWords = [
     'lib', 'manager', 'Manager', 'data', 'config',
     'IViewName', 'IViewNames', 'IMiniViewName', 'IMiniViewNames', 'IMusicName', 'IMusicNames', 'IEffecName', 'IEffecNames',
     'miniViewNames', 'viewNamesEnum', 'musicNamesEnum', 'effecNamesEnum'
 ];
-async function updateExecutor() {
+async function updateExecutor(async = false) {
     // const results = await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/{app-builtin,app-bundle}/**/*.!(png|jpg|json)' }).catch(_ => []);
-    const result1 = await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-builtin/{app-control,app-manager/*,app-model}/*.{ts,prefab}' }).catch(_ => []);
-    const result2 = await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-bundle/app-sound/{music,effect}/*.*' }).catch(_ => []);
-    const result3 = await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-bundle/app-view/{page,pop,top,paper/*}/*/view/*.{ts,prefab}' }).catch(_ => []);
-    const result4 = await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://app/{lib,manager}/**/*.{ts,prefab}' }).catch(_ => []);
+    const result1 = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-builtin/{app-control,app-manager/*,app-model}/*.{ts,prefab}' }).catch(_ => []);
+    const result2 = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-bundle/app-sound/{music,effect}/*.*' }).catch(_ => []);
+    const result3 = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-bundle/app-view/{page,pop,top,paper/*}/*/bundle/*.{ts,prefab}' }).catch(_ => []);
+    const result4 = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://app/{lib,manager}/**/*.{ts,prefab}' }).catch(_ => []);
     const results = result1.slice().concat(result2).concat(result3).concat(result4);
     const libs = [];
     const mgrs = [];
@@ -197,14 +199,9 @@ async function updateExecutor() {
             }
         }
     }
-    // console.log('libs', libs);
-    // console.log('mgrs', mgrs);
-    // console.log('datas', datas);
-    // console.log('confs', confs);
-    // return;
     let result = `/* eslint-disable */\n` +
         `import { Component } from 'cc';\n` +
-        `import { DEV,EDITOR } from 'cc/env';\n`;
+        `import { DEV,EDITOR } from 'cc/env';\n\n`;
     const handle = function handle(arr, module) {
         arr.forEach(function (value, index, array) {
             // storage
@@ -214,22 +211,22 @@ async function updateExecutor() {
             // storage
             const varname = value[2];
             if (isTSDefault(value)) {
-                result += `import ${varname} from '${path_1.default.join(path_1.default.relative(executorDir, (0, utils_1.convertDBToPath)(dirname)), filename)}'\n`;
+                result += `import ${varname} from '${path_1.default.join(path_1.default.relative(executorDir, (0, utils_1.convertPathToDir)(dirname)), filename)}'\n`;
             }
             else if (module) {
-                result += `import {${varname}} from '${path_1.default.join(path_1.default.relative(executorDir, (0, utils_1.convertDBToPath)(dirname)), filename)}'\n`;
+                result += `import {${varname}} from '${path_1.default.join(path_1.default.relative(executorDir, (0, utils_1.convertPathToDir)(dirname)), filename)}'\n`;
             }
             else {
-                result += `import * as ${varname} from '${path_1.default.join(path_1.default.relative(executorDir, (0, utils_1.convertDBToPath)(dirname)), filename)}'\n`;
+                result += `import * as ${varname} from '${path_1.default.join(path_1.default.relative(executorDir, (0, utils_1.convertPathToDir)(dirname)), filename)}'\n`;
             }
             array[index] = varname;
         });
     };
     // lib
-    handle(libs, false);
-    result += `let lib: {${libs.map(varname => `${varname}:typeof ${varname}`).join(',')}} = {} as any\n`;
-    result += `if(!EDITOR||DEV) lib = {${libs.join(',')}}\n`;
-    result += 'export {lib}\n\n';
+    // handle(libs, false);
+    // result += `let lib: {${libs.map(varname => `${varname}:typeof ${varname}`).join(',')}} = {} as any\n`;
+    // result += `if(!EDITOR||DEV) lib = {${libs.join(',')}}\n`;
+    // result += 'export {lib}\n\n';
     // manager
     handle(mgrs, true);
     let MgrStr = '';
@@ -282,22 +279,30 @@ async function updateExecutor() {
     result += `let config: {${confs.map(varname => `${varname.slice(7)}:${varname}`).join(',')}} = {} as any\n`;
     result += `if(!EDITOR||DEV) config = {${confs.map(varname => `${varname.slice(7)}:new ${varname}()`).join(',')}}\n`;
     result += 'export {config}';
-    //save
-    if (readScriptSyncByURL(executorPath) !== result) {
-        await Editor.Message.request('asset-db', 'create-asset', executorPath, result, {
+    // save
+    if (readFileSyncByURL(executorUrl) !== result) {
+        // if(async)
+        // writeFileSync(path.join(executorDir, executorFile), result, 'utf-8');
+        await Editor.Message.request('asset-db', 'create-asset', executorUrl, result, {
             overwrite: true
         });
     }
 }
 let timer = null;
-function callUpdateExecutor() {
+function callUpdateExecutor(sync = false) {
     if (timer)
         return;
-    timer = setTimeout(() => {
-        updateExecutor().finally(() => {
-            timer = null;
-        });
-    }, 100);
+    if (sync) {
+        updateExecutor(true);
+        callUpdateExecutor(false);
+    }
+    else {
+        timer = setTimeout(() => {
+            updateExecutor(false).finally(() => {
+                timer = null;
+            });
+        }, 500);
+    }
 }
 exports.methods = {
     ['open-panel']() {
@@ -322,7 +327,7 @@ exports.methods = {
     ['asset-db:asset-delete'](uuid, info) {
         if (!isVaild(info))
             return;
-        callUpdateExecutor();
+        callUpdateExecutor(true);
     }
 };
 /**

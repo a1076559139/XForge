@@ -2,12 +2,11 @@
   "ver": "1.1.0",
   "importer": "directory",
   "imported": true,
-  "uuid": "02cad078-c5bb-4711-85ac-5421f81c2d11",
+  "uuid": "f80d601b-2b80-4b5d-86be-7eb22abe2e84",
   "files": [],
   "subMetas": {},
   "userData": {
     "compressionType": {},
-    "isRemoteBundle": {},
-    "bundleName": "PageGame"
+    "isRemoteBundle": {}
   }
 }

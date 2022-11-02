@@ -1,6 +1,6 @@
-import { existsSync } from 'fs-extra';
+import { existsSync } from 'fs';
 import Vue from 'vue/dist/vue';
-import { convertDBToPath, createDBDir, getTemplate, stringCase } from '../utils';
+import { convertPathToDir, createPath, getTemplate, stringCase } from '../utils';
 
 /**
  * 根据语言获取脚本内容
@@ -40,35 +40,35 @@ export default Vue.extend({
             const name = this.inputName;
 
             if (/^[a-zA-Z0-9_]+$/.test(name) === false) {
-                this.display = `[错误] 名字不合法, 请删除\n/^[a-zA-Z0-9_]+$/.test(${name})`;
+                this.display = `[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/`;
                 return;
             }
 
             const managerName = `${stringCase(name)}Manager`;
             const managerPath = `db://assets/app-builtin/app-manager/${stringCase(name, true)}`;
-            const scriptFile = `${managerPath}/${managerName}.ts`;
-            const prefabFile = `${managerPath}/${managerName}.prefab`;
+            const scriptUrl = `${managerPath}/${managerName}.ts`;
+            const prefabUrl = `${managerPath}/${managerName}.prefab`;
 
             this.display = '创建中';
             this.showLoading = true;
 
-            if (existsSync(convertDBToPath(managerPath))) {
+            if (existsSync(convertPathToDir(managerPath))) {
                 this.showLoading = false;
                 this.display = `[错误] 目录已存在, 请删除\n${managerPath}`;
                 return;
             }
 
-            if (!await createDBDir(managerPath)) {
+            if (!await createPath(managerPath)) {
                 this.showLoading = false;
                 this.display = `[错误] 创建目录失败\n${managerPath}`;
                 return;
             }
 
             // 创建script
-            const createScriptResult = await Editor.Message.request('asset-db', 'create-asset', scriptFile, getScript(managerName)).catch(_ => null);
+            const createScriptResult = await Editor.Message.request('asset-db', 'create-asset', scriptUrl, getScript(managerName)).catch(_ => null);
             if (!createScriptResult) {
                 this.showLoading = false;
-                this.display = `[错误] 创建脚本失败\n${scriptFile}`;
+                this.display = `[错误] 创建脚本失败\n${scriptUrl}`;
                 return;
             }
 
@@ -76,11 +76,11 @@ export default Vue.extend({
             const createPrefabResult = await Editor.Message.request('scene', 'execute-scene-script', {
                 name: 'app',
                 method: 'createPrefab',
-                args: [managerName, prefabFile]
+                args: [managerName, prefabUrl]
             });
             if (!createPrefabResult) {
                 this.showLoading = false;
-                this.display = `[错误] 创建预制体失败\n${prefabFile}`;
+                this.display = `[错误] 创建预制体失败\n${prefabUrl}`;
                 return;
             }
 

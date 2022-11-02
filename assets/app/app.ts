@@ -1,7 +1,7 @@
 import { Game, game } from "cc";
-import { DEBUG, EDITOR } from "cc/env";
+import { DEBUG, DEV, EDITOR } from "cc/env";
 import Core from "../../extensions/app/assets/Core";
-import * as executor from './executor';
+import * as executor from '../app-builtin/app-admin/executor';
 
 export class App extends Core<typeof executor> {
     protected static _inst: App = null;
@@ -27,7 +27,7 @@ if (DEBUG) {
     window['App'] = App;
 }
 
-if (!EDITOR) {
+if (!EDITOR || DEV) {
     app.cccReady && app.cccReady();
     app.appReady && app.appReady();
     app.cccInited && game.once(Game.EVENT_ENGINE_INITED, function () { app.cccInited(); });

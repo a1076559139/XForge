@@ -1,0 +1,30 @@
+{
+  "ver": "1.1.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "e89ce5b7-465b-4ba5-ac10-1218ae96c041",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "compressionType": {},
+    "isRemoteBundle": {
+      "web-desktop": true,
+      "web-mobile": true,
+      "wechatgame": true,
+      "baidu-mini-game": true,
+      "xiaomi-quick-game": true,
+      "vivo-mini-game": true,
+      "cocos-play": true,
+      "huawei-quick-game": true,
+      "oppo-mini-game": true,
+      "bytedance-mini-game": true,
+      "mac": true,
+      "windows": true,
+      "ios": true,
+      "huawei-agc": true,
+      "ohos": true,
+      "android": true
+    },
+    "isBundle": true
+  }
+}

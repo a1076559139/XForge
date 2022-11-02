@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs-extra';
+import { readFileSync } from 'fs';
 import { join } from 'path';
 
 const Assets = join(__dirname, '../../res/panel');

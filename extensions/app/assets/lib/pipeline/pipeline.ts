@@ -18,7 +18,7 @@ export interface IReceiver {
 /**
  * 指令
  */
-export class Command {
+class Command {
     static create(receiver: IReceiver): Command {
         return new Command(receiver);
     }
@@ -51,7 +51,7 @@ export class Command {
 /**
  * 链式指令
  */
-export class ChainCommand extends Command {
+class ChainCommand extends Command {
     static create(receiver: IReceiver): ChainCommand {
         return new ChainCommand(receiver);
     }
@@ -100,7 +100,7 @@ export class ChainCommand extends Command {
 /**
  * 调用者
  */
-export class Invoker {
+class Invoker {
     static create(data?: any): Invoker {
         return new Invoker(data);
     }
@@ -141,3 +141,7 @@ export class Invoker {
         }
     }
 }
+const pipeline = {
+    Command, ChainCommand, Invoker
+}
+export default pipeline;

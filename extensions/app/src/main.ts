@@ -20,10 +20,10 @@
  * 
  */
 
-import { existsSync, readFileSync } from "fs-extra";
+import { existsSync, readFileSync } from "fs";
 import path from "path";
 import { AssetInfo } from "../@types/packages/asset-db/@types/public";
-import { convertDBToPath, stringCase } from "./panel/utils";
+import { convertPathToDir, stringCase } from "./panel/utils";
 
 function isVaild(info: AssetInfo, strict = true) {
     if (!strict) {
@@ -58,8 +58,8 @@ function isVaild(info: AssetInfo, strict = true) {
 const viewSelect = ['Page', 'Paper', 'Pop', 'Top'];
 const viewRegExp = RegExp(`^(${viewSelect.join('|')})`);
 
-function readScriptSyncByURL(url: string) {
-    const filepath = convertDBToPath(url);
+function readFileSyncByURL(url: string) {
+    const filepath = convertPathToDir(url);
     return existsSync(filepath) ? readFileSync(filepath, 'utf8') : '';
 }
 
@@ -77,24 +77,26 @@ function isTSDefault(value: string[]) {
     // return false;
     // storage,db://assets/app/lib/storage,storage,ts
 
-    const filepath = path.join(convertDBToPath(value[1]), filename + '.ts');
+    const filepath = path.join(convertPathToDir(value[1]), filename + '.ts');
     const js = readFileSync(filepath, 'utf8');
     return js.search(/export\s+default/) >= 0;
 }
 
-const executorPath = 'db://assets/app/executor.ts';
-const executorDir = convertDBToPath('db://assets/app');
+const executorFile = 'executor.ts'
+const executorPath = 'db://assets/app-builtin/app-admin';
+const executorUrl = executorPath + '/' + executorFile;
+const executorDir = convertPathToDir(executorPath);
 const keyWords = [
     'lib', 'manager', 'Manager', 'data', 'config',
     'IViewName', 'IViewNames', 'IMiniViewName', 'IMiniViewNames', 'IMusicName', 'IMusicNames', 'IEffecName', 'IEffecNames',
     'miniViewNames', 'viewNamesEnum', 'musicNamesEnum', 'effecNamesEnum'
 ];
-async function updateExecutor() {
+async function updateExecutor(async = false) {
     // const results = await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/{app-builtin,app-bundle}/**/*.!(png|jpg|json)' }).catch(_ => []);
-    const result1: AssetInfo[] = await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-builtin/{app-control,app-manager/*,app-model}/*.{ts,prefab}' }).catch(_ => []);
-    const result2: AssetInfo[] = await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-bundle/app-sound/{music,effect}/*.*' }).catch(_ => []);
-    const result3: AssetInfo[] = await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-bundle/app-view/{page,pop,top,paper/*}/*/view/*.{ts,prefab}' }).catch(_ => []);
-    const result4: AssetInfo[] = await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://app/{lib,manager}/**/*.{ts,prefab}' }).catch(_ => []);
+    const result1: AssetInfo[] = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-builtin/{app-control,app-manager/*,app-model}/*.{ts,prefab}' }).catch(_ => []);
+    const result2: AssetInfo[] = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-bundle/app-sound/{music,effect}/*.*' }).catch(_ => []);
+    const result3: AssetInfo[] = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-bundle/app-view/{page,pop,top,paper/*}/*/bundle/*.{ts,prefab}' }).catch(_ => []);
+    const result4: AssetInfo[] = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://app/{lib,manager}/**/*.{ts,prefab}' }).catch(_ => []);
     const results: AssetInfo[] = result1.slice().concat(result2).concat(result3).concat(result4);
 
     const libs: any[] = [];
@@ -196,15 +198,9 @@ async function updateExecutor() {
         }
     }
 
-    // console.log('libs', libs);
-    // console.log('mgrs', mgrs);
-    // console.log('datas', datas);
-    // console.log('confs', confs);
-    // return;
-
     let result = `/* eslint-disable */\n` +
         `import { Component } from 'cc';\n` +
-        `import { DEV,EDITOR } from 'cc/env';\n`;
+        `import { DEV,EDITOR } from 'cc/env';\n\n`;
 
     const handle = function handle(arr: any[], module: boolean) {
         arr.forEach(function (value, index, array) {
@@ -215,21 +211,21 @@ async function updateExecutor() {
             // storage
             const varname = value[2];
             if (isTSDefault(value)) {
-                result += `import ${varname} from '${path.join(path.relative(executorDir, convertDBToPath(dirname)), filename)}'\n`;
+                result += `import ${varname} from '${path.join(path.relative(executorDir, convertPathToDir(dirname)), filename)}'\n`;
             } else if (module) {
-                result += `import {${varname}} from '${path.join(path.relative(executorDir, convertDBToPath(dirname)), filename)}'\n`;
+                result += `import {${varname}} from '${path.join(path.relative(executorDir, convertPathToDir(dirname)), filename)}'\n`;
             } else {
-                result += `import * as ${varname} from '${path.join(path.relative(executorDir, convertDBToPath(dirname)), filename)}'\n`;
+                result += `import * as ${varname} from '${path.join(path.relative(executorDir, convertPathToDir(dirname)), filename)}'\n`;
             }
             array[index] = varname;
         });
     };
 
     // lib
-    handle(libs, false);
-    result += `let lib: {${libs.map(varname => `${varname}:typeof ${varname}`).join(',')}} = {} as any\n`;
-    result += `if(!EDITOR||DEV) lib = {${libs.join(',')}}\n`;
-    result += 'export {lib}\n\n';
+    // handle(libs, false);
+    // result += `let lib: {${libs.map(varname => `${varname}:typeof ${varname}`).join(',')}} = {} as any\n`;
+    // result += `if(!EDITOR||DEV) lib = {${libs.join(',')}}\n`;
+    // result += 'export {lib}\n\n';
 
     // manager
     handle(mgrs, true);
@@ -283,22 +279,29 @@ async function updateExecutor() {
     result += `if(!EDITOR||DEV) config = {${confs.map(varname => `${varname.slice(7)}:new ${varname}()`).join(',')}}\n`;
     result += 'export {config}';
 
-    //save
-    if (readScriptSyncByURL(executorPath) !== result) {
-        await Editor.Message.request('asset-db', 'create-asset', executorPath, result, {
+    // save
+    if (readFileSyncByURL(executorUrl) !== result) {
+        // if(async)
+        // writeFileSync(path.join(executorDir, executorFile), result, 'utf-8');
+        await Editor.Message.request('asset-db', 'create-asset', executorUrl, result, {
             overwrite: true
         })
     }
 }
 
 let timer: NodeJS.Timeout | null = null;
-function callUpdateExecutor() {
+function callUpdateExecutor(sync = false) {
     if (timer) return;
-    timer = setTimeout(() => {
-        updateExecutor().finally(() => {
-            timer = null;
-        })
-    }, 100);
+    if (sync) {
+        updateExecutor(true);
+        callUpdateExecutor(false);
+    } else {
+        timer = setTimeout(() => {
+            updateExecutor(false).finally(() => {
+                timer = null;
+            })
+        }, 500);
+    }
 }
 
 export const methods: { [key: string]: (...any: any) => any } = {
@@ -321,7 +324,7 @@ export const methods: { [key: string]: (...any: any) => any } = {
     },
     ['asset-db:asset-delete'](uuid, info) {
         if (!isVaild(info)) return;
-        callUpdateExecutor();
+        callUpdateExecutor(true);
     }
 };
 

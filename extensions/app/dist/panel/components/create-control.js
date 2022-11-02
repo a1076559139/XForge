@@ -35,24 +35,24 @@ exports.default = vue_1.default.extend({
         async onClickCreate() {
             const name = this.inputName;
             if (/^[a-zA-Z0-9_]+$/.test(name) === false) {
-                this.display = `[错误] 名字不合法, 请删除\n/^[a-zA-Z0-9_]+$/.test(${name})`;
+                this.display = `[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/`;
                 return;
             }
             const controlName = `${(0, utils_1.stringCase)(name)}Control`;
             const controlPath = `db://assets/app-builtin/app-control`;
-            const scriptFile = `${controlPath}/${controlName}.ts`;
+            const scriptUrl = `${controlPath}/${controlName}.ts`;
             this.display = '创建中';
             this.showLoading = true;
-            if (!await (0, utils_1.createDBDir)(controlPath)) {
+            if (!await (0, utils_1.createPath)(controlPath)) {
                 this.showLoading = false;
                 this.display = `[错误] 创建目录失败\n${controlPath}`;
                 return;
             }
             // 创建script
-            const createScriptResult = await Editor.Message.request('asset-db', 'create-asset', scriptFile, getScript(controlName)).catch(_ => null);
+            const createScriptResult = await Editor.Message.request('asset-db', 'create-asset', scriptUrl, getScript(controlName)).catch(_ => null);
             if (!createScriptResult) {
                 this.showLoading = false;
-                this.display = `[错误] 创建脚本失败\n${scriptFile}`;
+                this.display = `[错误] 创建脚本失败\n${scriptUrl}`;
                 return;
             }
             this.showLoading = false;

@@ -26,7 +26,7 @@ function update(assetList, metaList) {
         const mdStr = (0, fs_1.readFileSync)(mdFile, 'utf-8');
         return assetList.length > 1 ? `${asset.url}:\n ${mdStr}` : mdStr;
     })
-        .join('\n');
+        .join('\n') || '一个平平无奇的文件夹';
 }
 exports.update = update;
 ;

@@ -1,6 +1,6 @@
 'use strict';
 
-import { readFileSync, existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
 interface Asset {
@@ -66,7 +66,7 @@ export function update(this: PanelThis, assetList: Asset[], metaList: Meta[]) {
             const mdStr = readFileSync(mdFile, 'utf-8');
             return assetList.length > 1 ? `${asset.url}:\n ${mdStr}` : mdStr;
         })
-        .join('\n');
+        .join('\n') || '一个平平无奇的文件夹';
 };
 
 export function ready(this: PanelThis) {

@@ -10,6 +10,23 @@
     "bundleName": "resources",
     "priority": 8,
     "compressionType": {},
-    "isRemoteBundle": {}
+    "isRemoteBundle": {
+      "android": true,
+      "ohos": true,
+      "huawei-agc": true,
+      "ios": true,
+      "windows": true,
+      "mac": true,
+      "bytedance-mini-game": true,
+      "oppo-mini-game": true,
+      "huawei-quick-game": true,
+      "cocos-play": true,
+      "vivo-mini-game": true,
+      "xiaomi-quick-game": true,
+      "baidu-mini-game": true,
+      "wechatgame": true,
+      "web-desktop": true,
+      "web-mobile": true
+    }
   }
 }

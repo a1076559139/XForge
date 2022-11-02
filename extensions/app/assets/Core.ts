@@ -1,4 +1,10 @@
 import { Component, EventTarget } from 'cc';
+import http from './lib/http/http';
+import pipeline from './lib/pipeline/pipeline';
+import Queue from './lib/queue/queue';
+import Socket from './lib/socket/socket';
+import storage from './lib/storage/storage';
+import task from './lib/task/task';
 import EventManager from './manager/event/EventManager';
 import SoundManager from './manager/sound/SoundManager';
 import TimerManager from './manager/timer/TimerManager';
@@ -17,9 +23,8 @@ enum EventType {
     EVENT_MANAGER_FINISHED = 'EVENT_MANAGER_FINISHED'
 }
 
-type ILib = Object;
-type IData = Object;
-type IConfig = Object;
+type IData = { [key in string]: any };
+type IConfig = { [key in string]: any };
 
 interface IManager {
     Event: Omit<typeof EventManager, keyof Component>,
@@ -36,7 +41,6 @@ interface Imanager {
 }
 
 interface ICore {
-    lib: ILib,
     data: IData,
     config: IConfig,
     manager: Imanager,
@@ -58,7 +62,7 @@ export default class Core<T extends ICore> extends EventTarget {
     }
 
     // 库
-    lib: T['lib'] = {};
+    lib = { task, http, queue: Queue, socket: Socket, storage, pipeline };
     // 数据
     config: T['config'] = {};
     data: T['data'] = {};
@@ -69,7 +73,6 @@ export default class Core<T extends ICore> extends EventTarget {
     constructor(params: T) {
         super();
         Core._inst = this;
-        this.lib = params.lib;
         this.data = params.data;
         this.config = params.config;
         this.Manager = params.Manager;
@@ -96,5 +99,5 @@ export default class Core<T extends ICore> extends EventTarget {
 }
 
 if (!Core.inst) {
-    new Core({ lib: {}, config: {}, data: {}, Manager: {}, manager: {} } as any);
+    new Core({ config: {}, data: {}, Manager: {}, manager: {} } as any);
 }

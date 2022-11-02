@@ -2,12 +2,12 @@
   "ver": "1.1.40",
   "importer": "prefab",
   "imported": true,
-  "uuid": "5777e1d1-7ffa-42e5-855c-7839fff16d63",
+  "uuid": "95783772-f187-4c78-aba0-05347c52c790",
   "files": [
     ".json"
   ],
   "subMetas": {},
   "userData": {
-    "syncNodeName": "PageGame"
+    "syncNodeName": "PaperGameIndex"
   }
 }

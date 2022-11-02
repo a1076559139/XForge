@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "fs-extra";
+import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
 
@@ -26,7 +26,7 @@ export function stringCase(str: string, lower = false) {
 /**
  * db下的路径转换为真实路径
  */
-export function convertDBToPath(path: string) {
+export function convertPathToDir(path: string) {
     if (path.startsWith('db://assets')) {
         path = Editor.Utils.Path.join(Editor.Project.path, path.slice(5));
     } else if (path.startsWith('db://app')) {
@@ -36,9 +36,9 @@ export function convertDBToPath(path: string) {
 }
 
 /**
- * 根据路径创建目录
+ * 根据db下的路径创建目录
  */
-export async function createDBDir(path: string, subPaths?: string[]) {
+export async function createPath(path: string, subPaths?: string[]) {
     let pathHead = 'db://assets';
 
     if (!path && !path.startsWith(pathHead)) {
@@ -59,8 +59,8 @@ export async function createDBDir(path: string, subPaths?: string[]) {
     for (let index = 0; index < pathArr.length; index++) {
         pathHead += '/' + pathArr[index];
 
-        if (!existsSync(convertDBToPath(pathHead))) {
-            const result = Editor.Message.request('asset-db', 'create-asset', pathHead, null).catch(_ => null);
+        if (!existsSync(convertPathToDir(pathHead))) {
+            const result = await Editor.Message.request('asset-db', 'create-asset', pathHead, null).catch(_ => null);
             if (!result) return false;
         }
     }
@@ -69,12 +69,30 @@ export async function createDBDir(path: string, subPaths?: string[]) {
     if (subPaths) {
         for (let index = 0; index < subPaths.length; index++) {
             const path = `${pathHead}/${subPaths[index]}`;
-            if (!existsSync(convertDBToPath(path))) {
-                const result = Editor.Message.request('asset-db', 'create-asset', path, null).catch(_ => null);
+            if (!existsSync(convertPathToDir(path))) {
+                const result = await Editor.Message.request('asset-db', 'create-asset', path, null).catch(_ => null);
                 if (!result) return false;
             }
         }
     }
 
     return true;
+}
+
+
+/**
+ * 等待文件存在
+ * @param file 真实路径，不是基于db下的
+ */
+export function delayFileExists(file: string) {
+    let timer: NodeJS.Timer | null = null;
+    return new Promise((next) => {
+        timer = setInterval(() => {
+            if (existsSync(file)) {
+                if (timer) clearInterval(timer);
+                timer = null;
+                next(null);
+            }
+        }, 100)
+    })
 }

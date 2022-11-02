@@ -1,5 +1,5 @@
 import { AssetManager, AudioClip, Game, game, sys, _decorator } from 'cc';
-import { IEffecName, IMusicName } from '../../../../../assets/app/executor';
+import { IEffecName, IMusicName } from '../../../../../assets/app-builtin/app-admin/executor';
 import BaseManager from '../../base/BaseManager';
 import AudioEngine from './AudioEngine';
 const { ccclass, property } = _decorator;
@@ -22,7 +22,7 @@ const storage = {
     }
 };
 
-const Bundle = 'app-sound';
+const BundleName = 'app-sound';
 
 @ccclass('SoundManager')
 export default class SoundManager<E extends string, M extends string> extends BaseManager {
@@ -70,7 +70,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
             this.warn('effectMuteCacheKey不能为空');
         }
 
-        super.init(finish, { bundle: Bundle, preload: SoundManager.setting.preload });
+        super.init(finish, { bundle: BundleName, preload: SoundManager.setting.preload });
     }
 
     protected onLoad() {

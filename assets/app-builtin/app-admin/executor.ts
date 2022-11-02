@@ -1,23 +1,14 @@
 /* eslint-disable */
 import { Component } from 'cc';
 import { DEV,EDITOR } from 'cc/env';
-import http from '../../extensions/app/assets/lib/http/http'
-import * as pipeline from '../../extensions/app/assets/lib/pipeline/pipeline'
-import queue from '../../extensions/app/assets/lib/queue/queue'
-import socket from '../../extensions/app/assets/lib/socket/socket'
-import storage from '../../extensions/app/assets/lib/storage/storage'
-import task from '../../extensions/app/assets/lib/task/task'
-let lib: {http:typeof http,pipeline:typeof pipeline,queue:typeof queue,socket:typeof socket,storage:typeof storage,task:typeof task} = {} as any
-if(!EDITOR||DEV) lib = {http,pipeline,queue,socket,storage,task}
-export {lib}
 
-import {GameManager} from '../app-builtin/app-manager/game/GameManager'
-import EventManager from '../../extensions/app/assets/manager/event/EventManager'
-import SoundManager from '../../extensions/app/assets/manager/sound/SoundManager'
-import TimerManager from '../../extensions/app/assets/manager/timer/TimerManager'
-import UIManager from '../../extensions/app/assets/manager/ui/UIManager'
+import {GameManager} from '../app-manager/game/GameManager'
+import EventManager from '../../../extensions/app/assets/manager/event/EventManager'
+import SoundManager from '../../../extensions/app/assets/manager/sound/SoundManager'
+import TimerManager from '../../../extensions/app/assets/manager/timer/TimerManager'
+import UIManager from '../../../extensions/app/assets/manager/ui/UIManager'
 export enum viewNamesEnum { 'PageGame'}
-export const miniViewNames = {"nerver":""}
+export const miniViewNames = {"PaperGameIndex":"PaperGame"}
 export enum musicNamesEnum { 'music/bgm'}
 export enum effecNamesEnum { 'effect/btn'}
 export type IViewName = keyof typeof viewNamesEnum

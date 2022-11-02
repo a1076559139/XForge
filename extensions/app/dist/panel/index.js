@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs_extra_1 = require("fs-extra");
+const fs_1 = require("fs");
 const path_1 = require("path");
 const Assets = (0, path_1.join)(__dirname, '../../res/panel');
 const app_create_1 = __importDefault(require("./components/app-create"));
@@ -13,8 +13,8 @@ const app_create_1 = __importDefault(require("./components/app-create"));
  */
 // Editor.Panel.define = Editor.Panel.define || function(options: any) { return options }
 module.exports = Editor.Panel.define({
-    template: (0, fs_extra_1.readFileSync)((0, path_1.join)(Assets, 'index.html'), 'utf-8'),
-    style: (0, fs_extra_1.readFileSync)((0, path_1.join)(Assets, 'styles/index.css'), 'utf-8'),
+    template: (0, fs_1.readFileSync)((0, path_1.join)(Assets, 'index.html'), 'utf-8'),
+    style: (0, fs_1.readFileSync)((0, path_1.join)(Assets, 'styles/index.css'), 'utf-8'),
     $: {
         app: '#app'
     },

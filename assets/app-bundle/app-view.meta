@@ -18,7 +18,6 @@
       "xiaomi-quick-game": true,
       "web-desktop": true,
       "web-mobile": true
-    },
-    "isBundle": true
+    }
   }
 }

@@ -1,11 +1,11 @@
-import { readFileSync } from 'fs-extra';
+import { readFileSync } from 'fs';
 import { join } from 'path';
 import Vue from 'vue/dist/vue';
 
-import ViewComponent from './create-view';
+import ControlComponent from './create-control';
 import ManagerComponent from './create-manager';
 import ModelComponent from './create-model';
-import ControlComponent from './create-control';
+import ViewComponent from './create-view';
 
 const Assets = join(__dirname, '../../../res/panel');
 const Menus = ['ViewComponent', 'ManagerComponent', 'ModelComponent', 'ControlComponent'];

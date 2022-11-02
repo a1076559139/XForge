@@ -1,8 +1,7 @@
 import { Asset, Component, Enum, Event, js, log, UITransform, warn, Widget, _decorator } from 'cc';
 import { DEBUG, EDITOR } from 'cc/env';
-import { IMiniViewName, IMiniViewNames, IViewName } from '../../../../assets/app/executor';
+import { IMiniViewName, IMiniViewNames, IViewName } from '../../../../assets/app-builtin/app-admin/executor';
 import Core from '../Core';
-import Task from '../lib/task/task';
 import { IBaseControl } from './BaseControl';
 
 const { ccclass, property } = _decorator;
@@ -173,7 +172,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
      * 自定义加载子view顺序
      * 设为true后，请手动调用showMiniViews，同时miniViewShowStepByStep失效
      */
-    protected miniViewsShowCustom = false;
+    protected miniViewsShowCustom = true;
 
     /**
      * 当前view名字
@@ -303,7 +302,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         if (this.miniViews.length === 0) return false;
         if (views.length === 0) return false;
 
-        const task = Task.createSync();
+        const task = Core.inst.lib.task.createSync();
 
         for (let index = 0; index < views.length; index++) {
             const names = views[index];
@@ -324,31 +323,27 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     }
 
     /**
-     * 创建自定义记载任务
+     * 创建自定义加载任务
      * @param views 
      * @param data 
      * @returns 
      */
     private createMixMiniViewsTask(views: IMiniViewNames = [], data?: any, onShow?: IMiniOnShow, onHide?: IMiniOnHide) {
-        const task = Task.createSync();
+        const task = Core.inst.lib.task.createSync();
 
         if (this.miniViews.length === 0) return task;
 
         views = views.filter(name => {
             if (this._base_mini_show.has(name)) {
                 this.warn(`重复融合${name}, 已跳过`);
-            } else if (this.miniViews.indexOf(name) === -1) {
-                this.warn(`${name}不在miniViews中, 已跳过`);
-            } else {
-                const cls = js.getClassByName(name) as any as (typeof BaseView);
-                if (!cls || !cls.isViewValid) {
-                    this.warn(`${name}无效, 已跳过`);
-                } else {
-                    this._base_mini_show.add(name);
-                    return true;
-                }
+                return false;
             }
-            return false;
+            if (this.miniViews.indexOf(name) === -1) {
+                this.warn(`${name}不在miniViews中, 已跳过`);
+                return false;
+            }
+            this._base_mini_show.add(name);
+            return true;
         });
 
         if (views.length === 0) return task;
@@ -376,6 +371,10 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
                             if (onShow) onShow(name, result);
                             next();
                         },
+                        onInvalid: () => {
+                            this.warn(`${name}无效, 已跳过`);
+                            next();
+                        },
                         onHide: onHide ? (result: any) => {
                             onHide(name, result);
                         } : undefined
@@ -385,7 +384,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         } else {
             // 先load
             task.add((next) => {
-                const aSync = Task.createASync();
+                const aSync = Core.inst.lib.task.createASync();
                 views.forEach(name => {
                     aSync.add((next, retry) => {
                         this.log('mixin-load', name);
@@ -398,7 +397,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
             });
             // 再show
             task.add((next) => {
-                const aSync = Task.createASync();
+                const aSync = Core.inst.lib.task.createASync();
                 views.forEach(name => {
                     aSync.add((next) => {
                         this.log('mixin-show', name);
@@ -412,6 +411,10 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
                                 this._base_mini_showing.set(miniViewCurrOnShow._base_view_name as IMiniViewName, miniViewCurrOnShow);
                                 miniViewCurrOnShow._base_master = this;
                                 if (onShow) onShow(name, result);
+                                next();
+                            },
+                            onInvalid: () => {
+                                this.warn(`${name}无效, 已跳过`);
                                 next();
                             },
                             onHide: onHide ? (result: any) => {
@@ -609,8 +612,11 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     }
 
     /**
-     * 加载内部动态资源
-     * this.load('view/duannei', cc.Prefab)
+     * 加载bundle/resources里面的资源
+     * @param path 相对于bundle/resources的路径
+     * @param type 资源类型
+     * @param callback 回调
+     * this.load('duannei', cc.Prefab, function(){})
      */
     protected load<T extends Asset>(path: string, type: new () => T, callback?: (result: T) => any) {
         Core.inst.manager.ui.loadInner(this, path, type, callback);

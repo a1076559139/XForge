@@ -1,12 +1,11 @@
 import { Asset, AssetManager, assetManager, Component, error, EventTarget, find, instantiate, js, log, Node, Prefab, warn, Widget, _decorator } from 'cc';
 import { DEBUG, DEV, EDITOR } from 'cc/env';
 import Core from '../Core';
-import Task from '../lib/task/task';
 
 const { ccclass, property } = _decorator;
 
-const dotReWriteFuns = ['emit', 'on', 'once', 'off', 'targetOff'];
 const UserManagerRoot = 'Canvas/UserManager';
+const DotReWriteFuns = ['emit', 'on', 'once', 'off', 'targetOff'];
 
 const uuid = new class UUID {
     private index = 0;
@@ -18,6 +17,8 @@ const uuid = new class UUID {
         return `${Date.now()}-${this.index}`;
     }
 };
+
+const BundleName = 'app-manager';
 
 @ccclass('BaseManager')
 export default class BaseManager extends Component {
@@ -37,7 +38,7 @@ export default class BaseManager extends Component {
         super();
 
         if (EDITOR) {
-            dotReWriteFuns.forEach((funName) => {
+            DotReWriteFuns.forEach((funName) => {
                 if (BaseManager.prototype[funName] !== this[funName]) {
                     warn(`[${this._base_manager_name}] [warn] 不应该重写父类方法{${funName}}`);
                 }
@@ -99,13 +100,23 @@ export default class BaseManager extends Component {
         }
 
         // 预加载
-        BaseManager.getBundle(bundle, function (result) {
-            preload.forEach((path: string) => {
-                result.preload(path, function (error, res) {
-                    if (DEV) log(`[preload] ${bundle} ${path} ${!!res} ${error}`);
+        if (bundle) {
+            assetManager.loadBundle(bundle, function (err, bundle) {
+                if (err) return;
+                preload.forEach((path: string) => {
+                    bundle.preload(path, function (error, res) {
+                        if (DEV) log(`[preload] ${bundle} ${path} ${!!res} ${error}`);
+                    });
                 });
             });
-        });
+        } else {
+            preload.forEach(function (name) {
+                assetManager.loadBundle(name, function (err, bundle) {
+                    if (err) return;
+                    bundle.preloadDir('/');
+                });
+            })
+        }
 
         finish && finish();
     }
@@ -240,7 +251,6 @@ export default class BaseManager extends Component {
     /**
      * manager asset bundle
      */
-    private static bundleName: string = 'app-manager';
     private static bundle: AssetManager.Bundle = null;
 
     /**
@@ -253,8 +263,9 @@ export default class BaseManager extends Component {
     /**
      * 初始化操作
      */
-    public static init(onFinish: Function) {
-        this.getBundle(this.bundleName, (bundle) => {
+    public static init(onFinish?: Function) {
+        if (this.bundle) return onFinish && onFinish();
+        this.getBundle(BundleName, (bundle) => {
             this.bundle = bundle;
             onFinish && onFinish();
         });
@@ -266,7 +277,7 @@ export default class BaseManager extends Component {
      * @param cb 
      */
     public static getBundle(name: string, cb: (bundle: AssetManager.Bundle) => void) {
-        Task.excute((retry) => {
+        Core.inst.lib.task.excute((retry) => {
             assetManager.loadBundle(name, (err, bundle) => {
                 if (bundle && !err) {
                     cb(bundle);
@@ -315,13 +326,14 @@ export default class BaseManager extends Component {
         return pathArr;
     }
 
+    private static inited = false;
     /**
      * 静态方法，初始化manager，该方法必须在场景初始化完毕之后调用
-     * @param {(completeAsset:Number, totalAsset:Number)=>{}} progress 
-     * @param {(totalAsset:Number)=>{}} complete 
      */
-    public static initManagers(progress, complete) {
+    public static initManagers(progress: (completeAsset: Number, totalAsset: Number) => {}, complete: (totalAsset: Number) => {}) {
         if (!this.bundle) throw Error('请先初始化');
+        if (this.inited) return warn('不允许重复初始化');
+        this.inited = true;
 
         const bundle = this.bundle;
         const urls = this.getInitAssetUrls();
@@ -340,7 +352,7 @@ export default class BaseManager extends Component {
         };
 
         // 初始化系统manager
-        const aSync1 = Task.createASync();
+        const aSync1 = Core.inst.lib.task.createASync();
         const sysMgr = [Core.inst.manager.event, Core.inst.manager.timer, Core.inst.manager.sound, Core.inst.manager.ui] as any as BaseManager[];
         sysMgr.forEach(function (manager: BaseManager) {
             aSync1.add(function (next) {
@@ -349,7 +361,7 @@ export default class BaseManager extends Component {
         });
 
         // 加载用户manager
-        const aSync2 = Task.createASync();
+        const aSync2 = Core.inst.lib.task.createASync();
         const userManagerRoot = find(UserManagerRoot);
         urls.forEach(function (url) {
             aSync2.add(function (next, retry) {
@@ -367,7 +379,7 @@ export default class BaseManager extends Component {
             });
         });
 
-        Task.createAny()
+        Core.inst.lib.task.createAny()
             .add([
                 next => aSync1.start(next),
                 next => aSync2.start(next),
@@ -375,7 +387,7 @@ export default class BaseManager extends Component {
             .add(function (next) {
                 Core.inst.emit(Core.EventType.EVENT_SYS_MANAGER_INITED);
                 // 初始化用户manager
-                const aSync3 = Task.createASync();
+                const aSync3 = Core.inst.lib.task.createASync();
                 userManagerRoot.children.forEach(node => {
                     aSync3.add(function (next) {
                         const manager = node.getComponent(BaseManager);
