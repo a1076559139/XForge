@@ -6,10 +6,15 @@ import { getTemplate } from '../utils';
  */
 function getScript(type: string, name: string) {
     if (type === 'data' || type === 'config') {
-        return "export default class " + name.charAt(0).toUpperCase() + name.slice(1).toLowerCase() + " {\r\n" +
+        const BaseModel = '../../../extensions/app/assets/base/BaseModel';
+        const className = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()
+        return "import { IModel } from '" + BaseModel + "';\r\n" +
+            "export default class " + className + " implements IModel<" + className + "> {\r\n" +
             "}";
     } else {
-        return '// 存放接口';
+        return '// 存放直接导出的interface、type或enum等\r\n\r\n' +
+            '// export type IString = string;\r\n' +
+            '// export enum Type { None };';
     }
 }
 
@@ -20,7 +25,7 @@ export default Vue.extend({
             inputName: '',
             display: '',
 
-            typeSelects: ['data', 'config', 'interface'],
+            typeSelects: ['data', 'config', 'export'],
             typeSelectIndex: 0,
 
             showLoading: false
