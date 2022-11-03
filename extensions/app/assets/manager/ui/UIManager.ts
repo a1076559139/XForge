@@ -77,7 +77,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             });
         }
 
-        super.init(finish, { preload: setting.preload });
+        super.init(finish, { preload: setting.preload.map(name => this.getUIBundleName(name)) });
     }
 
     protected onLoad() {
@@ -801,6 +801,9 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         });
     }
 
+    /**
+     * 添加触摸屏蔽
+     */
     public addTouchMask() {
         this.touchEnabledFlag |= MaskTouchEnabledFlg;
         const uuid = this.createUUID();
@@ -808,6 +811,10 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         return uuid;
     }
 
+    /**
+     * 移除触摸屏蔽
+     * @param uuid addTouchMask的返回值
+     */
     public removeTouchMask(uuid: string) {
         this.touchMaskMap.delete(uuid);
         if (this.touchMaskMap.size === 0) {
