@@ -142,6 +142,7 @@ export default class EcsEntity extends Component {
         return true;
     }
 
+    private isEntityDestroy = false;
     private _isEntityValid = false;
     /**标记是否有效 */
     public get isEntityValid() {
@@ -167,6 +168,8 @@ export default class EcsEntity extends Component {
     }
 
     protected onDestroy() {
+        if (this.isEntityDestroy) return;
+        this.isEntityDestroy = true;
         this.isEntityValid = false;
         // 移除所有组件
         this.destoryAllComponents();
@@ -192,6 +195,8 @@ export default class EcsEntity extends Component {
      * 而且，destroy是由cocos控制的，他的触发时机总是在当前帧的最后才调用
      */
     kill() {
+        if (this.isEntityDestroy) return;
+        this.isEntityDestroy = true;
         // 移除所有组件
         this.destoryAllComponents();
         // 设为无效
