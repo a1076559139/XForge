@@ -173,7 +173,7 @@ export default class EcsEntity extends Component {
         this.isEntityValid = false;
         // 移除所有组件
         this.destoryAllComponents();
-        //@ts-ignore
+        // @ts-ignore
         this.ecs.removeEntity(this);
     }
 
@@ -201,8 +201,10 @@ export default class EcsEntity extends Component {
         this.destoryAllComponents();
         // 设为无效
         this.isEntityValid = false;
-        //@ts-ignore
+        // @ts-ignore
         this.ecs.removeEntity(this);
+        // 销毁自身
+        this.destroy();
         // 销毁节点
         if (this.node) this.node.destroy();
     }
