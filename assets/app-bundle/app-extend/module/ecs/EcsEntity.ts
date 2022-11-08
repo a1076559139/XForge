@@ -175,6 +175,8 @@ export default class EcsEntity extends Component {
         this.destoryAllComponents();
         // @ts-ignore
         this.ecs.removeEntity(this);
+        // 销毁节点
+        if (this.node?.isValid) this.node.destroy();
     }
 
     private destoryAllComponents() {
@@ -203,10 +205,8 @@ export default class EcsEntity extends Component {
         this.isEntityValid = false;
         // @ts-ignore
         this.ecs.removeEntity(this);
-        // 销毁自身
-        this.destroy();
-        // 销毁节点
-        if (this.node) this.node.destroy();
+        // 销毁(由于继承自cc.Component，需要判断node是否存在)
+        if (this.node?.isValid) this.destroy();
     }
 
     /**
