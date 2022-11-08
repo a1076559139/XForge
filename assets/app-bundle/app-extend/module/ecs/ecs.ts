@@ -613,29 +613,29 @@ export class ECS {
     // };
 
     /**
-     * 添加一个系统
-     */
-    public addSystem(System: typeof EcsSystem) {
+    * 添加一个系统
+    */
+    public addSystem<T extends typeof EcsSystem>(System: T): InstanceType<T> {
         const system = new System();
         this.systemManager.add(system);
         system['onEnable']();
-        return system;
+        return system as InstanceType<T>;
     }
 
     /**
      * 获取一个系统
      */
-    public getSystem(System: typeof EcsSystem) {
-        return this.systemManager.get(System);
+    public getSystem<T extends typeof EcsSystem>(System: T): InstanceType<T> {
+        return this.systemManager.get(System) as InstanceType<T>;
     }
 
     /**
      * 移除一个系统
      */
-    public removeSystem(System: typeof EcsSystem) {
+    public removeSystem<T extends typeof EcsSystem>(System: T): InstanceType<T> {
         const system = this.systemManager.remove(System);
         if (system) system['onDisable']();
-        return system;
+        return system as InstanceType<T>;
     }
 
     /**
