@@ -206,7 +206,7 @@ export default class EcsEntity extends Component {
         // @ts-ignore
         this.ecs.removeEntity(this);
         // 销毁(由于继承自cc.Component，需要判断node是否存在)
-        if (this.node?.isValid) this.destroy();
+        if (this.node?.isValid) this.node.destroy();
     }
 
     /**
