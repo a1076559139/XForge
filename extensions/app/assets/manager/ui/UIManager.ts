@@ -1,8 +1,9 @@
-import { Asset, AssetManager, Canvas, Component, director, error, Event, find, instantiate, isValid, js, Node, path, Prefab, Scene, UITransform, Widget, _decorator } from 'cc';
+import { Asset, AssetManager, Canvas, Component, director, error, Event, find, instantiate, isValid, js, Node, Prefab, Scene, UITransform, Widget, _decorator } from 'cc';
 import { DEBUG } from 'cc/env';
 import { IViewName, IViewNames, miniViewNames } from '../../../../../assets/app-builtin/app-admin/executor';
 import BaseManager from '../../base/BaseManager';
 import BaseView, { IShowParamAttr, IShowParamOnHide, IShowParamOnShow } from '../../base/BaseView';
+import Core from '../../Core';
 
 const { ccclass, property } = _decorator;
 
@@ -77,7 +78,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             });
         }
 
-        super.init(finish, { preload: setting.preload.map(name => this.getUIBundleName(name)) });
+        super.init(finish, { preload: setting.preload.map(name => this.getUINativeName(name)) });
     }
 
     protected onLoad() {
@@ -124,69 +125,76 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         return com;
     }
 
-    private innerLoad(name: string, path: string, type: new () => Asset, progress: (finish: number, total: number, item: AssetManager.RequestItem) => void, finish: (result: Asset) => any) {
-        BaseManager.getBundle(this.getUIBundleName(name), (bundle) => {
-            bundle.load(path, type, progress, (err, asset) => {
-                finish(err ? null : asset);
-            });
-        })
-    }
-
     /**
      * 加载ui内部资源
      */
-    public loadInner<T extends Asset>(target: Component, resPath: string, type: new () => T, callback?: (result: T) => any) {
+    public loadInner<T extends Asset>(target: Component, resPath: string, resType: typeof Asset, callback?: (result: T) => any) {
         const view = target.node.getComponent(BaseView) || this.getViewComInParent(target.node);
         if (view) {
-            this.innerLoad(view.viewName, path.join('resources', resPath), type, null, callback);
+            Core.inst.manager.loader.load({
+                bundle: this.getUIResName(view.viewName),
+                path: resPath,
+                type: resType,
+                onComplete: callback
+            })
         } else {
             callback && callback(null);
         }
     }
 
     /**
-     * 预加载
-     * @param {string} name ui名字
-     * @param {(num:number,total:number)=>any} progress 
-     * @param {(result: any)=>any} complete
-     * @returns {boolean} 是否本地缓存
-     * @example
-     * load(name, complete)
-     * load(name, progress, complete)
-     * 
+     * 安装UI
      */
-    public load(name: UIName | MiniName): boolean;
-    public load(name: UIName | MiniName, complete: (result: any, sync: boolean) => any): boolean;
-    public load(name: UIName | MiniName, progress: (finish: number, total: number, item: AssetManager.RequestItem) => void, complete: (result: any, sync: boolean) => any): boolean;
-    public load(name: UIName | MiniName, ...args: Function[]): boolean {
+    private installUI(name: string, complete?: (result: boolean) => any, progress?: (finish: number, total: number, item: AssetManager.RequestItem) => void) {
+        if (this.prefabCache[name]) {
+            return complete && this.scheduleOnce(() => complete(true));
+        }
+        Core.inst.lib.task.createASync()
+            .add((next) => {
+                Core.inst.manager.loader.loadBundle({
+                    bundle: this.getUIResName(name),
+                    onComplete: next,
+                })
+            })
+            .add((next) => {
+                Core.inst.manager.loader.load({
+                    bundle: this.getUINativeName(name),
+                    path: this.getUIPath(name),
+                    type: Prefab,
+                    onProgress: progress,
+                    onComplete: next
+                })
+            })
+            .start((results: [AssetManager.Bundle, Prefab]) => {
+                if (!results[0] || !results[1]) return complete && complete(false);
+                this.prefabCache[name] = results[1];
+                return complete && complete(true);
+            })
+    }
+
+    /**
+     * 加载UI
+     */
+    public load(name: UIName | MiniName): void;
+    public load(name: UIName | MiniName, complete: (result: any) => any): void;
+    public load(name: UIName | MiniName, progress: (finish: number, total: number, item: AssetManager.RequestItem) => void, complete: (result: any) => any): void;
+    public load(name: UIName | MiniName, ...args: Function[]): void {
         const progress = (args[1] && args[0]) as (finish: number, total: number, item: AssetManager.RequestItem) => void;
-        const complete = (args[1] || args[0]) as (result: any, sync: boolean) => any;
+        const complete = (args[1] || args[0]) as (result: any) => any;
 
         // 验证name是否为真
         if (!name) {
             this.error('load fail');
-            complete && this.scheduleOnce(function () {
-                complete(null, true);
+            return complete && this.scheduleOnce(function () {
+                complete(null);
             });
-            return true;
-        }
-
-        // 判断有无缓存prefab
-        let prefab = this.prefabCache[name];
-        if (prefab) {
-            complete && this.scheduleOnce(function () {
-                complete(prefab, true);
-            });
-            return true;
         }
 
         // 异步加载
-        const path = this.getUIPath(name);
-        this.innerLoad(name, path, Prefab, progress, (prefab) => {
-            if (prefab) this.prefabCache[name] = prefab;
-            complete && complete(prefab, false);
-        })
-        return false;
+        this.installUI(name, (result) => {
+            if (!result) return complete && complete(null);
+            return complete && complete(this.prefabCache[name]);
+        }, progress);
     }
 
     /**
@@ -238,7 +246,10 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         const nodes = this.getUIInScene(uiName, true);
         if (nodes.length === 0 || nodes.every(node => !isValid(node))) {
             delete this.prefabCache[uiName];
-            super.release(this.getUIPath(uiName), Prefab);
+            Core.inst.manager.loader.releaseAll(this.getUIResName(uiName));
+            Core.inst.manager.loader.releaseAll(this.getUINativeName(uiName));
+            Core.inst.manager.loader.removeBundle(this.getUIResName(uiName));
+            Core.inst.manager.loader.removeBundle(this.getUINativeName(uiName));
         }
     }
 
@@ -254,10 +265,17 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     /**
-     * 获取UI所在的bundle名字
+     * 获取UI所在的native名字
      */
-    private getUIBundleName(uiName: string) {
+    private getUINativeName(uiName: string) {
         return `app-view_${uiName}`;
+    }
+
+    /**
+     * 获取UI所在的resources名字
+     */
+    private getUIResName(uiName: string) {
+        return `app-view_${uiName}_Res`;
     }
 
     /**
@@ -281,34 +299,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         }
         this.error(`[getPrefix] ${uiName}`);
     }
-
-    /**
-     * 获取后缀，并首字母转小写
-     * @param {String} uiName 驼峰命名法，前缀小写。例如：PopInfo，后缀为info
-     * @param {String} prefix [可选] 直接给出前缀
-     */
-    // private getSuffix(uiName: string, prefix?: string): string {
-    //     if (!prefix) {
-    //         prefix = this.getPrefix(uiName);
-    //     }
-    //     const str = uiName.slice(prefix.length || 0);
-    //     return str.charAt(0).toLowerCase() + str.slice(1);
-    // }
-
-    // 根据UI名字获取所在的根路径
-    // private getRootPath(name: string) {
-    //     if (this.isMiniView(name)) {
-    //         const master = this.getMiniViewMaster(name);
-    //         const prefix = this.getPrefix(master);
-    //         const suffix = this.getSuffix(master);
-    //         const base = this.getSuffix(name, master);
-    //         return `${prefix}/${suffix}/${base}/`;
-    //     } else {
-    //         const prefix = this.getPrefix(name);
-    //         const suffix = this.getSuffix(name, prefix);
-    //         return `${prefix}/${suffix}/`;
-    //     }
-    // }
 
     // 根据UI名字获取UI路径
     private getUIPath(name: string) {
@@ -335,13 +325,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     private isMiniView(name: string): boolean {
         return Object.prototype.hasOwnProperty.call(miniViewNames, name);
     }
-
-    /**
-     * 获取子界面的主界面的名字
-     */
-    // private getMiniViewMaster(name: string): IViewName {
-    //     return miniViewNames[name] || '';
-    // }
 
     /**
      * 根据UI名字获取场景内的节点
@@ -394,14 +377,18 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     /**
      * 检查UI是否有效
+     * -1 加载失败
+     * 0 UI无效
+     * 1 UI有效
      */
-    private getUIValid(name: string, callback: (valid: boolean) => any) {
-        BaseManager.getBundle(this.getUIBundleName(name), () => {
+    private getUIValid(name: string, callback: (valid: -1 | 0 | 1) => any) {
+        this.installUI(name, (result) => {
+            if (!result) return callback(-1);
             const View = this.getUIClass(name);
             if (View && View.isViewValid) {
-                callback(true);
+                callback(1);
             } else {
-                callback(false);
+                callback(0);
             }
         })
     }
@@ -496,9 +483,9 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     // 获取UI节点
-    private getUI(name: UIName, cb?: (node: Node) => any) {
+    private getUI(name: UIName, callback: (node: Node) => any) {
         if (!name) {
-            return cb && cb(null);
+            return callback && this.scheduleOnce(() => callback(null));
         }
 
         // 生成一个UI加载的UUID
@@ -507,20 +494,21 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         // 判断是否已经存在节点并且是单例模式
         const node = this.getUIInScene(name);
         if (isValid(node) && node.getComponent(BaseView).isSingleton === true) {
-            return cb && this.scheduleOnce(() => {
+            const maskUUID = this.addTouchMask();
+            return this.scheduleOnce(() => {
+                this.removeTouchMask(maskUUID);
                 // 验证本次加载是否有效
                 if (this.checkUILoadingUUID(name, uuid) === false) return;
-                if (isValid(node)) { cb(node); }
-                else { this.getUI(name, cb); }
+                if (isValid(node)) { callback(node); }
+                else { this.getUI(name, callback); }
             });
         }
 
         // 加载prefab
-        const isSync = this.load(name, (prefab: Prefab, sync) => {
+        this.showLoading();
+        this.load(name, (prefab: Prefab) => {
             // 验证本次加载是否有效
-            if (this.checkUILoadingUUID(name, uuid) === false) {
-                return !sync && this.hideLoading();
-            }
+            if (this.checkUILoadingUUID(name, uuid) === false) return this.hideLoading();
 
             // 验证是否是单例(一个单例会有被同时load多次的情况，因为判断一个ui是否是单例，必须要至少实例化一个后才能获取)
             let node = this.getUIInScene(name);
@@ -528,17 +516,9 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 node = this.analyPrefab(prefab);
             }
 
-            if (cb) {
-                cb(node) !== false && !sync && this.hideLoading();
-            } else {
-                !sync && this.hideLoading();
-            }
+            callback(node);
+            this.hideLoading();
         });
-
-        // 动态加载
-        if (!isSync) {
-            this.showLoading();
-        }
     }
 
     /**
@@ -628,7 +608,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * @returns 
      */
     public show<UI extends BaseView>({ name, data, queue, onShow, onHide, onError, onInvalid, top = true, attr = null }
-        //@ts-ignore
+        // @ts-ignore
         : IShowParams<UIName, Parameters<UI['onShow']>[0], ReturnType<UI['onHide']>>): boolean {
 
         // 加入队列中
@@ -638,8 +618,13 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             if (!node) {
                 this.error(`show ${name} 不存在或加载失败`);
                 // 没有指定onError会自动发起重试
-                onError ? onError(`${name} 不存在或加载失败`, 0) : this.scheduleOnce(show, 0.1);
-                return onError ? true : false;
+                if (onError) return onError(`${name} 不存在或加载失败`, 0);
+
+                this.showLoading();
+                return this.scheduleOnce(() => {
+                    show();
+                    this.hideLoading();
+                }, 0.1);
             }
 
             const com: BaseView = node.getComponent(name as any);
@@ -647,12 +632,12 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             if (name.indexOf('Page') >= 0 && !this.isMiniView(name)) {
                 node.setSiblingIndex(0);
                 com.constructor.prototype.show.call(com, data, attr,
-                    //@ts-ignore
+                    // @ts-ignore
                     (result: Parameters<UI['onShow']>) => {
                         this.uiShowingMap.set(com, name);
                         onShow && onShow(result);
                     },
-                    //@ts-ignore
+                    // @ts-ignore
                     (result: ReturnType<UI['onHide']>) => {
                         this.uiShowingMap.delete(com);
                         onHide && onHide(result);
@@ -685,20 +670,34 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                         }
                     },
                     (name: string, path: string, type: typeof Asset, callback: (result: Asset) => any) => {
-                        this.innerLoad(name, path, type, null, callback)
+                        Core.inst.manager.loader.load({
+                            bundle: this.getUIResName(name),
+                            path: path,
+                            type: type,
+                            onComplete: callback
+                        })
                     }
                 );
             }
         });
 
+        show();
+        return;
+
         // 判断ui是否有效
-        this.getUIValid(name, (valid) => {
-            if (valid) {
-                show();
-            } else {
-                onInvalid && onInvalid();
-                onError && onError(`${name} 无效`, 0);
-            }
+        this.showLoading();
+        Core.inst.lib.task.excute((retry) => {
+            this.getUIValid(name, (valid) => {
+                if (valid === -1) return retry(0.1);
+
+                if (valid === 0) {
+                    onInvalid && onInvalid();
+                    onError && onError(`${name} 无效`, 0);
+                } else {
+                    show();
+                }
+                this.hideLoading();
+            })
         })
     }
 

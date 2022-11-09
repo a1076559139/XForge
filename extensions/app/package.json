@@ -37,7 +37,7 @@
             "asset-db:ready": {
                 "methods": [
                     "asset-db:ready"
-                ] 
+                ]
             },
             "asset-db:asset-add": {
                 "methods": [

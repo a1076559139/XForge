@@ -23,7 +23,7 @@ function getScript(name) {
         "}";
 }
 exports.default = vue_1.default.extend({
-    template: (0, utils_1.getTemplate)('create-control'),
+    template: utils_1.getTemplate('create-control'),
     data() {
         return {
             inputName: '',
@@ -38,12 +38,12 @@ exports.default = vue_1.default.extend({
                 this.display = `[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/`;
                 return;
             }
-            const controlName = `${(0, utils_1.stringCase)(name)}Control`;
+            const controlName = `${utils_1.stringCase(name)}Control`;
             const controlPath = `db://assets/app-builtin/app-control`;
             const scriptUrl = `${controlPath}/${controlName}.ts`;
             this.display = '创建中';
             this.showLoading = true;
-            if (!await (0, utils_1.createPath)(controlPath)) {
+            if (!await utils_1.createPath(controlPath)) {
                 this.showLoading = false;
                 this.display = `[错误] 创建目录失败\n${controlPath}`;
                 return;

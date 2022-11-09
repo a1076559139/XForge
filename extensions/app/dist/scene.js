@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.methods = exports.unload = exports.load = void 0;
 const path_1 = require("path");
-module.paths.push((0, path_1.join)(Editor.App.path, 'node_modules'));
+module.paths.push(path_1.join(Editor.App.path, 'node_modules'));
 function load() { }
 exports.load = load;
 ;

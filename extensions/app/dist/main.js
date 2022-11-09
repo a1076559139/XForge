@@ -62,8 +62,8 @@ function isVaild(info, strict = true) {
 const viewSelect = ['Page', 'Paper', 'Pop', 'Top'];
 const viewRegExp = RegExp(`^(${viewSelect.join('|')})`);
 function readFileSyncByURL(url) {
-    const filepath = (0, utils_1.convertPathToDir)(url);
-    return (0, fs_1.existsSync)(filepath) ? (0, fs_1.readFileSync)(filepath, 'utf8') : '';
+    const filepath = utils_1.convertPathToDir(url);
+    return fs_1.existsSync(filepath) ? fs_1.readFileSync(filepath, 'utf8') : '';
 }
 function isTSDefault(value) {
     const extname = value[3];
@@ -78,14 +78,14 @@ function isTSDefault(value) {
     // }
     // return false;
     // storage,db://assets/app/lib/storage,storage,ts
-    const filepath = path_1.default.join((0, utils_1.convertPathToDir)(value[1]), filename + '.ts');
-    const js = (0, fs_1.readFileSync)(filepath, 'utf8');
+    const filepath = path_1.default.join(utils_1.convertPathToDir(value[1]), filename + '.ts');
+    const js = fs_1.readFileSync(filepath, 'utf8');
     return js.search(/export\s+default/) >= 0;
 }
 const executorFile = 'executor.ts';
 const executorPath = 'db://assets/app-builtin/app-admin';
 const executorUrl = executorPath + '/' + executorFile;
-const executorDir = (0, utils_1.convertPathToDir)(executorPath);
+const executorDir = utils_1.convertPathToDir(executorPath);
 const keyWords = [
     'lib', 'manager', 'Manager', 'data', 'config',
     'IViewName', 'IViewNames', 'IMiniViewName', 'IMiniViewNames', 'IMusicName', 'IMusicNames', 'IEffecName', 'IEffecNames',
@@ -95,7 +95,7 @@ async function updateExecutor(async = false) {
     // const results = await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/{app-builtin,app-bundle}/**/*.!(png|jpg|json)' }).catch(_ => []);
     const result1 = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-builtin/{app-control,app-manager/*,app-model}/*.{ts,prefab}' }).catch(_ => []);
     const result2 = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-bundle/app-sound/{music,effect}/*.*' }).catch(_ => []);
-    const result3 = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-bundle/app-view/{page,pop,top,paper/*}/*/bundle/*.{ts,prefab}' }).catch(_ => []);
+    const result3 = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-bundle/app-view/{page,pop,top,paper/*}/*/native/*.{ts,prefab}' }).catch(_ => []);
     const result4 = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://app/{lib,manager}/**/*.{ts,prefab}' }).catch(_ => []);
     const results = result1.slice().concat(result2).concat(result3).concat(result4);
     const libs = [];
@@ -168,21 +168,21 @@ async function updateExecutor(async = false) {
                 // viewKeys
                 if (['page', 'paper', 'pop', 'top'].indexOf(viewDirArray[0].toLowerCase()) >= 0) {
                     // 主界面
-                    if (filename === `${(0, utils_1.stringCase)(viewDirArray[0], false)}${(0, utils_1.stringCase)(viewDirArray[1], false)}`) {
+                    if (filename === `${utils_1.stringCase(viewDirArray[0], false)}${utils_1.stringCase(viewDirArray[1], false)}`) {
                         viewKeys[filename] = filename;
                     }
                     // 子界面
-                    else if (filename === `${(0, utils_1.stringCase)(viewDirArray[0], false)}${(0, utils_1.stringCase)(viewDirArray[1], false)}${(0, utils_1.stringCase)(viewDirArray[2], false)}`) {
-                        miniViewKeys[filename] = `${(0, utils_1.stringCase)(viewDirArray[0], false)}${(0, utils_1.stringCase)(viewDirArray[1], false)}`;
+                    else if (filename === `${utils_1.stringCase(viewDirArray[0], false)}${utils_1.stringCase(viewDirArray[1], false)}${utils_1.stringCase(viewDirArray[2], false)}`) {
+                        miniViewKeys[filename] = `${utils_1.stringCase(viewDirArray[0], false)}${utils_1.stringCase(viewDirArray[1], false)}`;
                     }
                 }
                 else {
-                    if (filename === `${(0, utils_1.stringCase)(viewDirArray[1], false)}${(0, utils_1.stringCase)(viewDirArray[2], false)}`) {
+                    if (filename === `${utils_1.stringCase(viewDirArray[1], false)}${utils_1.stringCase(viewDirArray[2], false)}`) {
                         viewKeys[filename] = filename;
                     }
                     // 子界面
-                    else if (filename === `${(0, utils_1.stringCase)(viewDirArray[1], false)}${(0, utils_1.stringCase)(viewDirArray[2], false)}${(0, utils_1.stringCase)(viewDirArray[3], false)}`) {
-                        miniViewKeys[filename] = `${(0, utils_1.stringCase)(viewDirArray[0], false)}${(0, utils_1.stringCase)(viewDirArray[1], false)}`;
+                    else if (filename === `${utils_1.stringCase(viewDirArray[1], false)}${utils_1.stringCase(viewDirArray[2], false)}${utils_1.stringCase(viewDirArray[3], false)}`) {
+                        miniViewKeys[filename] = `${utils_1.stringCase(viewDirArray[0], false)}${utils_1.stringCase(viewDirArray[1], false)}`;
                     }
                 }
             }
@@ -211,13 +211,13 @@ async function updateExecutor(async = false) {
             // storage
             const varname = value[2];
             if (isTSDefault(value)) {
-                result += `import ${varname} from '${path_1.default.join(path_1.default.relative(executorDir, (0, utils_1.convertPathToDir)(dirname)), filename)}'\n`;
+                result += `import ${varname} from '${path_1.default.join(path_1.default.relative(executorDir, utils_1.convertPathToDir(dirname)), filename)}'\n`;
             }
             else if (module) {
-                result += `import {${varname}} from '${path_1.default.join(path_1.default.relative(executorDir, (0, utils_1.convertPathToDir)(dirname)), filename)}'\n`;
+                result += `import {${varname}} from '${path_1.default.join(path_1.default.relative(executorDir, utils_1.convertPathToDir(dirname)), filename)}'\n`;
             }
             else {
-                result += `import * as ${varname} from '${path_1.default.join(path_1.default.relative(executorDir, (0, utils_1.convertPathToDir)(dirname)), filename)}'\n`;
+                result += `import * as ${varname} from '${path_1.default.join(path_1.default.relative(executorDir, utils_1.convertPathToDir(dirname)), filename)}'\n`;
             }
             array[index] = varname;
         });

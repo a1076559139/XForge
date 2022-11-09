@@ -18,12 +18,12 @@ function update(assetList, metaList) {
         return this.$.display.innerText = '';
     this.$.display.innerText = assetList
         .filter((asset) => {
-        const mdFile = (0, path_1.join)(asset.file, `.${asset.name}.md`);
-        return (0, fs_1.existsSync)(mdFile);
+        const mdFile = path_1.join(asset.file, `.${asset.name}.md`);
+        return fs_1.existsSync(mdFile);
     })
         .map((asset) => {
-        const mdFile = (0, path_1.join)(asset.file, `.${asset.name}.md`);
-        const mdStr = (0, fs_1.readFileSync)(mdFile, 'utf-8');
+        const mdFile = path_1.join(asset.file, `.${asset.name}.md`);
+        const mdStr = fs_1.readFileSync(mdFile, 'utf-8');
         return assetList.length > 1 ? `${asset.url}:\n ${mdStr}` : mdStr;
     })
         .join('\n') || '一个平平无奇的文件夹';

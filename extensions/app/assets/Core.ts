@@ -6,6 +6,7 @@ import Socket from './lib/socket/socket';
 import storage from './lib/storage/storage';
 import task from './lib/task/task';
 import EventManager from './manager/event/EventManager';
+import LoaderManager from './manager/loader/LoaderManager';
 import SoundManager from './manager/sound/SoundManager';
 import TimerManager from './manager/timer/TimerManager';
 import UIManager from './manager/ui/UIManager';
@@ -27,6 +28,7 @@ type IData = { [key in string]: any };
 type IConfig = { [key in string]: any };
 
 interface IManager {
+    Loader: Omit<typeof LoaderManager, keyof Component>,
     Event: Omit<typeof EventManager, keyof Component>,
     Sound: Omit<typeof SoundManager, keyof Component>,
     Timer: Omit<typeof TimerManager, keyof Component>,
@@ -34,6 +36,7 @@ interface IManager {
 }
 
 interface Imanager {
+    loader: Omit<LoaderManager, keyof Component>,
     event: Omit<EventManager, keyof Component>,
     sound: Omit<SoundManager<any, any>, keyof Component>,
     timer: Omit<TimerManager, keyof Component>,

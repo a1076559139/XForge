@@ -23,7 +23,7 @@ function getScript(type, name) {
     }
 }
 exports.default = vue_1.default.extend({
-    template: (0, utils_1.getTemplate)('create-model'),
+    template: utils_1.getTemplate('create-model'),
     data() {
         return {
             inputName: '',

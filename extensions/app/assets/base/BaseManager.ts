@@ -1,5 +1,5 @@
-import { Asset, AssetManager, assetManager, Component, error, EventTarget, find, instantiate, js, log, Node, Prefab, warn, Widget, _decorator } from 'cc';
-import { DEBUG, DEV, EDITOR } from 'cc/env';
+import { AssetManager, assetManager, Component, error, EventTarget, find, instantiate, js, log, Node, Prefab, warn, Widget, _decorator } from 'cc';
+import { DEBUG, EDITOR } from 'cc/env';
 import Core from '../Core';
 
 const { ccclass, property } = _decorator;
@@ -24,9 +24,6 @@ const BundleName = 'app-manager';
 export default class BaseManager extends Component {
     // 事件管理器
     private _base_event: EventTarget = new EventTarget();
-
-    // asset bundle
-    private _base_bundle_name: string = '';
 
     // manager名字
     private _base_manager_name: string = js.getClassName(this);
@@ -87,8 +84,6 @@ export default class BaseManager extends Component {
      * @param {Function} finish 
      */
     protected init(finish?: Function, { bundle, preload }: { bundle?: string, preload?: string[] } = {}) {
-        this._base_bundle_name = bundle || '';
-
         // 无预加载
         if (!preload || !preload.length) {
             return finish && finish();
@@ -104,9 +99,7 @@ export default class BaseManager extends Component {
             assetManager.loadBundle(bundle, function (err, bundle) {
                 if (err) return;
                 preload.forEach((path: string) => {
-                    bundle.preload(path, function (error, res) {
-                        if (DEV) log(`[preload] ${bundle} ${path} ${!!res} ${error}`);
-                    });
+                    bundle.preload(path);
                 });
             });
         } else {
@@ -123,98 +116,6 @@ export default class BaseManager extends Component {
 
     protected createUUID() {
         return uuid.create();
-    }
-
-    /**
-     * 预加载
-     */
-    public preload(paths: string | string[], type: typeof Asset, onProgress: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete: (error: Error, items: AssetManager.RequestItem[]) => void): void;
-    public preload(paths: string | string[], onProgress: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete: (error: Error, items: AssetManager.RequestItem[]) => void): void;
-    public preload(paths: string | string[], type: typeof Asset, onComplete: (error: Error, items: AssetManager.RequestItem[]) => void): void;
-    public preload(paths: string | string[], type: typeof Asset): void;
-    public preload(paths: string | string[], onComplete: (error: Error, items: AssetManager.RequestItem[]) => void): void;
-    public preload(paths: string | string[]): void;
-    public preload(...args: any[]) {
-        if (!this._base_bundle_name) return this.error('请先初始化');
-
-        BaseManager.getBundle(this._base_bundle_name, function (bundle) {
-            bundle.preload(args[0], args[1], args[2], args[3]);
-        });
-    }
-
-    /**
-     * 预加载
-     */
-    public preloadDir(dir: string, type: typeof Asset, onProgress: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete: (error: Error, items: AssetManager.RequestItem[]) => void): void;
-    public preloadDir(dir: string, onProgress: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete: (error: Error, items: AssetManager.RequestItem[]) => void): void;
-    public preloadDir(dir: string, type: typeof Asset, onComplete: (error: Error, items: AssetManager.RequestItem[]) => void): void;
-    public preloadDir(dir: string, type: typeof Asset): void;
-    public preloadDir(dir: string, onComplete: (error: Error, items: AssetManager.RequestItem[]) => void): void;
-    public preloadDir(dir: string): void;
-    public preloadDir(...args: any[]) {
-        if (!this._base_bundle_name) return this.error('请先初始化');
-
-        BaseManager.getBundle(this._base_bundle_name, function (bundle) {
-            bundle.preloadDir(args[0], args[1], args[2], args[3]);
-        });
-    }
-
-    /**
-     * 加载
-     * @param {*} res 
-     * @param {(num:Number,total:Number)=>{}} progress 
-     * @param {(success:Boolean)=>{}} complete
-     * @example
-     * load(resUrl, complete)
-     * load(resUrl, progress, complete)
-     */
-    public load(res: { path: string, type: Function | Asset } | string, progress?: Function, complete?: Function) {
-        if (!this._base_bundle_name) return this.error('请先初始化');
-
-        if (!complete) {
-            complete = progress;
-            progress = undefined;
-        }
-
-        if (!res) {
-            this.error(`load fail. url is ${JSON.stringify(res)}`);
-            return complete && complete(null);
-        }
-
-        const args = [];
-
-        if (typeof res === 'string') {
-            args.push(res);
-        } else {
-            args.push(res.path);
-            args.push(res.type);
-        }
-
-        if (progress) {
-            args.push(progress);
-        }
-
-        args.push((err, res) => {
-            if (err) {
-                this.error(`load "${args[0]}" fail`);
-                complete && complete(null);
-            } else {
-                complete && complete(res);
-            }
-        });
-
-        BaseManager.getBundle(this._base_bundle_name, function (bundle) {
-            bundle.load(args[0], args[1], args[2], args[3]);
-        });
-    }
-
-    /**
-     * 销毁操作
-     * @param {*} res
-     */
-    public release(res: string, type?: typeof Asset) {
-        const bundle = assetManager.getBundle(this._base_bundle_name);
-        bundle && bundle.release(res, type);
     }
 
     protected log(str: any, ...args: any) {
@@ -257,7 +158,7 @@ export default class BaseManager extends Component {
      * 系统内置manager的数量
      */
     public static get sysMgrCount() {
-        return 4;
+        return 5;
     }
 
     /**
@@ -265,25 +166,12 @@ export default class BaseManager extends Component {
      */
     public static init(onFinish?: Function) {
         if (this.bundle) return onFinish && onFinish();
-        this.getBundle(BundleName, (bundle) => {
-            this.bundle = bundle;
-            onFinish && onFinish();
-        });
-    }
-
-    /**
-     * 初始化Bundle [一定成功]
-     * @param name 
-     * @param cb 
-     */
-    public static getBundle(name: string, cb: (bundle: AssetManager.Bundle) => void) {
+        // 一定会加载成功
         Core.inst.lib.task.excute((retry) => {
-            assetManager.loadBundle(name, (err, bundle) => {
-                if (bundle && !err) {
-                    cb(bundle);
-                } else {
-                    setTimeout(retry, 500);
-                }
+            assetManager.loadBundle(BundleName, (err, bundle) => {
+                if (err) return retry(0.1)
+                this.bundle = bundle;
+                onFinish && onFinish();
             });
         });
     }
@@ -353,7 +241,7 @@ export default class BaseManager extends Component {
 
         // 初始化系统manager
         const aSync1 = Core.inst.lib.task.createASync();
-        const sysMgr = [Core.inst.manager.event, Core.inst.manager.timer, Core.inst.manager.sound, Core.inst.manager.ui] as any as BaseManager[];
+        const sysMgr = [Core.inst.manager.event, Core.inst.manager.timer, Core.inst.manager.loader, Core.inst.manager.sound, Core.inst.manager.ui] as any as BaseManager[];
         sysMgr.forEach(function (manager: BaseManager) {
             aSync1.add(function (next) {
                 manager.init(onProgress(next, manager));
@@ -368,7 +256,7 @@ export default class BaseManager extends Component {
                 bundle.load(url, Prefab, function (err, prefab: Prefab) {
                     if (err || !prefab) {
                         log(`[BaseManager] [log] [initManager] load ${url} fail, retry...`);
-                        setTimeout(retry, 500);
+                        retry(0.1);
                     } else {
                         const node: Node = instantiate(prefab);
                         node.active = true;

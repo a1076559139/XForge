@@ -4,8 +4,8 @@ exports.delayFileExists = exports.createPath = exports.convertPathToDir = export
 const fs_1 = require("fs");
 const path_1 = require("path");
 function getTemplate(name) {
-    const Assets = (0, path_1.join)(__dirname, '../../res/panel');
-    return (0, fs_1.readFileSync)((0, path_1.join)(Assets, `components/${name}.html`), 'utf-8');
+    const Assets = path_1.join(__dirname, '../../res/panel');
+    return fs_1.readFileSync(path_1.join(Assets, `components/${name}.html`), 'utf-8');
 }
 exports.getTemplate = getTemplate;
 /**
@@ -56,7 +56,7 @@ async function createPath(path, subPaths) {
     // 创建主目录
     for (let index = 0; index < pathArr.length; index++) {
         pathHead += '/' + pathArr[index];
-        if (!(0, fs_1.existsSync)(convertPathToDir(pathHead))) {
+        if (!fs_1.existsSync(convertPathToDir(pathHead))) {
             const result = await Editor.Message.request('asset-db', 'create-asset', pathHead, null).catch(_ => null);
             if (!result)
                 return false;
@@ -66,7 +66,7 @@ async function createPath(path, subPaths) {
     if (subPaths) {
         for (let index = 0; index < subPaths.length; index++) {
             const path = `${pathHead}/${subPaths[index]}`;
-            if (!(0, fs_1.existsSync)(convertPathToDir(path))) {
+            if (!fs_1.existsSync(convertPathToDir(path))) {
                 const result = await Editor.Message.request('asset-db', 'create-asset', path, null).catch(_ => null);
                 if (!result)
                     return false;
@@ -84,7 +84,7 @@ function delayFileExists(file) {
     let timer = null;
     return new Promise((next) => {
         timer = setInterval(() => {
-            if ((0, fs_1.existsSync)(file)) {
+            if (fs_1.existsSync(file)) {
                 if (timer)
                     clearInterval(timer);
                 timer = null;

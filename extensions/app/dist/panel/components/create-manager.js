@@ -29,7 +29,7 @@ function getScript(name) {
         "}";
 }
 exports.default = vue_1.default.extend({
-    template: (0, utils_1.getTemplate)('create-manager'),
+    template: utils_1.getTemplate('create-manager'),
     data() {
         return {
             inputName: '',
@@ -44,18 +44,18 @@ exports.default = vue_1.default.extend({
                 this.display = `[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/`;
                 return;
             }
-            const managerName = `${(0, utils_1.stringCase)(name)}Manager`;
-            const managerPath = `db://assets/app-builtin/app-manager/${(0, utils_1.stringCase)(name, true)}`;
+            const managerName = `${utils_1.stringCase(name)}Manager`;
+            const managerPath = `db://assets/app-builtin/app-manager/${utils_1.stringCase(name, true)}`;
             const scriptUrl = `${managerPath}/${managerName}.ts`;
             const prefabUrl = `${managerPath}/${managerName}.prefab`;
             this.display = '创建中';
             this.showLoading = true;
-            if ((0, fs_1.existsSync)((0, utils_1.convertPathToDir)(managerPath))) {
+            if (fs_1.existsSync(utils_1.convertPathToDir(managerPath))) {
                 this.showLoading = false;
                 this.display = `[错误] 目录已存在, 请删除\n${managerPath}`;
                 return;
             }
-            if (!await (0, utils_1.createPath)(managerPath)) {
+            if (!await utils_1.createPath(managerPath)) {
                 this.showLoading = false;
                 this.display = `[错误] 创建目录失败\n${managerPath}`;
                 return;

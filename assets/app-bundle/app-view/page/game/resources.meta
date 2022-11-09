@@ -1,0 +1,32 @@
+{
+  "ver": "1.1.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "76428132-c0f1-43eb-a01c-57834ae82ae0",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "compressionType": {},
+    "isRemoteBundle": {
+      "web-desktop": true,
+      "web-mobile": true,
+      "android": true,
+      "ohos": true,
+      "huawei-agc": true,
+      "ios": true,
+      "windows": true,
+      "mac": true,
+      "bytedance-mini-game": true,
+      "oppo-mini-game": true,
+      "huawei-quick-game": true,
+      "cocos-play": true,
+      "vivo-mini-game": true,
+      "xiaomi-quick-game": true,
+      "baidu-mini-game": true,
+      "wechatgame": true
+    },
+    "isBundle": true,
+    "bundleName": "app-view_PageGame_Res",
+    "priority": 8
+  }
+}
