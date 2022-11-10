@@ -110,7 +110,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * @param target 
      * @returns 
      */
-    private getViewComInParent(target: Node) {
+    private getViewInParents(target: Node) {
         let node = target;
         let com: BaseView = null;
 
@@ -128,13 +128,13 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 加载ui内部资源
      */
-    public loadInner<T extends Asset>(target: Component, resPath: string, resType: typeof Asset, callback?: (result: T) => any) {
-        const view = target.node.getComponent(BaseView) || this.getViewComInParent(target.node);
+    public loadRes<T extends Asset>(target: Component, path: string, type: typeof Asset, callback?: (result: T) => any) {
+        const view = target.node.getComponent(BaseView) || this.getViewInParents(target.node);
         if (view) {
             Core.inst.manager.loader.load({
                 bundle: this.getUIResName(view.viewName),
-                path: resPath,
-                type: resType,
+                path: path,
+                type: type,
                 onComplete: callback
             })
         } else {

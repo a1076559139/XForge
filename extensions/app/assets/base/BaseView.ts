@@ -1,4 +1,4 @@
-import { Asset, Component, Enum, Event, js, log, Node, Prefab, UITransform, warn, Widget, _decorator } from 'cc';
+import { Asset, Component, Enum, Event, js, log, Node, UITransform, warn, Widget, _decorator } from 'cc';
 import { DEBUG, EDITOR } from 'cc/env';
 import { IMiniViewName, IMiniViewNames, IViewName } from '../../../../assets/app-builtin/app-admin/executor';
 import Core from '../Core';
@@ -612,13 +612,13 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     }
 
     /**
-     * 加载bundle/resources里面的资源
-     * @param path 相对于bundle/resources的路径
+     * 加载UI目录下resources里面的资源
+     * @param path 相对于resources的路径
      * @param callback 回调
      * this.load('Bag', Prefab, function(){})
      */
-    protected load(path: string,  callback?: (result: Prefab) => any) {
-        Core.inst.manager.ui.loadInner(this, path, Prefab, callback);
+    protected load<T extends typeof Asset>(path: string, type: T, callback?: (result: InstanceType<T>) => any) {
+        Core.inst.manager.ui.loadRes(this, path, type, callback);
     }
 
     protected log(str, ...args) {
