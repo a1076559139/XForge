@@ -126,23 +126,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     /**
-     * 加载ui内部资源
-     */
-    public loadRes<T extends Asset>(target: Component, path: string, type: typeof Asset, callback?: (result: T) => any) {
-        const view = target.node.getComponent(BaseView) || this.getViewInParents(target.node);
-        if (view) {
-            Core.inst.manager.loader.load({
-                bundle: this.getUIResName(view.viewName),
-                path: path,
-                type: type,
-                onComplete: callback
-            })
-        } else {
-            callback && callback(null);
-        }
-    }
-
-    /**
      * 安装UI
      */
     private installUI(name: string, complete?: (result: boolean) => any, progress?: (finish: number, total: number, item: AssetManager.RequestItem) => void) {
@@ -170,6 +153,36 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 this.prefabCache[name] = results[1];
                 return complete && complete(true);
             })
+    }
+
+    /**
+     * 卸载UI
+     */
+    private uninstallUI(name: string) {
+        delete this.prefabCache[name];
+        const naBundle = this.getUINativeName(name);
+        const resBundle = this.getUIResName(name);
+        Core.inst.manager.loader.releaseAll(resBundle);
+        Core.inst.manager.loader.releaseAll(naBundle);
+        Core.inst.manager.loader.removeBundle(resBundle);
+        Core.inst.manager.loader.removeBundle(naBundle);
+    }
+
+    /**
+     * 加载ui内部资源
+     */
+    public loadRes<T extends Asset>(target: Component, path: string, type: typeof Asset, callback?: (result: T) => any) {
+        const view = target.node.getComponent(BaseView) || this.getViewInParents(target.node);
+        if (view) {
+            Core.inst.manager.loader.load({
+                bundle: this.getUIResName(view.viewName),
+                path: path,
+                type: type,
+                onComplete: callback
+            })
+        } else {
+            callback && callback(null);
+        }
     }
 
     /**
@@ -245,11 +258,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         // 当全部释放时才清除缓存
         const nodes = this.getUIInScene(uiName, true);
         if (nodes.length === 0 || nodes.every(node => !isValid(node))) {
-            delete this.prefabCache[uiName];
-            Core.inst.manager.loader.releaseAll(this.getUIResName(uiName));
-            Core.inst.manager.loader.releaseAll(this.getUINativeName(uiName));
-            Core.inst.manager.loader.removeBundle(this.getUIResName(uiName));
-            Core.inst.manager.loader.removeBundle(this.getUINativeName(uiName));
+            this.uninstallUI(uiName);
         }
     }
 
