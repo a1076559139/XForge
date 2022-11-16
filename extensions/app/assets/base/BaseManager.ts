@@ -4,7 +4,7 @@ import Core from '../Core';
 
 const { ccclass, property } = _decorator;
 
-const UserManagerRoot = 'Canvas/UserManager';
+const UserManagerRoot = 'Root2D/UserManager';
 const DotReWriteFuns = ['emit', 'on', 'once', 'off', 'targetOff'];
 
 const uuid = new class UUID {

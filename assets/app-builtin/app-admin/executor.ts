@@ -8,8 +8,8 @@ import LoaderManager from '../../../extensions/app/assets/manager/loader/LoaderM
 import SoundManager from '../../../extensions/app/assets/manager/sound/SoundManager'
 import TimerManager from '../../../extensions/app/assets/manager/timer/TimerManager'
 import UIManager from '../../../extensions/app/assets/manager/ui/UIManager'
-export enum viewNamesEnum { 'PageGame','PopTip'}
-export const miniViewNames = {"PaperGameIndex":"PaperGame"}
+export enum viewNamesEnum { 'PageGame','PopTip','PageHome'}
+export const miniViewNames = {"PaperGameIndex":"PaperGame","PaperHomeIndex":"PaperHome"}
 export enum musicNamesEnum { 'music/bgm'}
 export enum effecNamesEnum { 'effect/btn'}
 export type IViewName = keyof typeof viewNamesEnum

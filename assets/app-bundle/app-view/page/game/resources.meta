@@ -2,7 +2,7 @@
   "ver": "1.1.0",
   "importer": "directory",
   "imported": true,
-  "uuid": "76428132-c0f1-43eb-a01c-57834ae82ae0",
+  "uuid": "245708a5-e105-469d-b2b3-4711518a56f7",
   "files": [],
   "subMetas": {},
   "userData": {
@@ -25,8 +25,8 @@
       "baidu-mini-game": true,
       "wechatgame": true
     },
+    "priority": 8,
     "isBundle": true,
-    "bundleName": "app-view_PageGame_Res",
-    "priority": 8
+    "bundleName": "app-view_PageGame_Res"
   }
 }

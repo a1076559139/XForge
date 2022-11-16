@@ -16,7 +16,13 @@ export class PaperGameIndex extends BaseView {
         return result;
     }
 
-    private onClickOpen() {
+    private backPageHome() {
+        app.manager.ui.show({
+            name: 'PageHome'
+        })
+    }
+
+    private showPopTip() {
         app.manager.ui.show({
             name: 'PopTip'
         })

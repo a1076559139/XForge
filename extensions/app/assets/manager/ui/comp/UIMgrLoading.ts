@@ -1,12 +1,14 @@
 import { Component, Graphics, UIOpacity, UITransform, _decorator } from 'cc';
-const { ccclass, executeInEditMode, requireComponent } = _decorator;
+const { ccclass, property, requireComponent } = _decorator;
 
 @ccclass('UIMgrLoading')
-// @executeInEditMode()
 @requireComponent(Graphics)
 @requireComponent(UIOpacity)
 @requireComponent(UITransform)
 export default class UIMgrLoading extends Component {
+    @property({ tooltip: '等待几秒后开始动画' })
+    private delay = 0;
+
     private progress = 0;
     private ringScale = 1;
     private reverse = false;
@@ -29,7 +31,7 @@ export default class UIMgrLoading extends Component {
                 this.reverse = false;
                 uiOpacity.opacity = 255;
                 this.onDraw();
-            }, 2.5);
+            }, this.delay);
         }
         this.show = true;
     }

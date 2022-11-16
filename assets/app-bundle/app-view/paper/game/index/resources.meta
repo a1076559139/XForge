@@ -2,7 +2,7 @@
   "ver": "1.1.0",
   "importer": "directory",
   "imported": true,
-  "uuid": "0b9c9a14-0e62-46c5-b3da-b097661dc489",
+  "uuid": "5be1fc41-8937-4a9a-8eb0-2d8bf8c01982",
   "files": [],
   "subMetas": {},
   "userData": {
@@ -25,6 +25,7 @@
       "baidu-mini-game": true,
       "wechatgame": true
     },
+    "priority": 8,
     "isBundle": true,
     "bundleName": "app-view_PaperGameIndex_Res"
   }

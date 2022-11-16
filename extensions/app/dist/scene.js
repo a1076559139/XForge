@@ -17,9 +17,10 @@ exports.unload = unload;
 // };
 // const result = await Editor.Message.request('scene', 'execute-scene-script', options);
 exports.methods = {
-    async createPrefab(name, file, isPaper) {
-        const { Node, js } = require('cc');
+    async createPrefab(name, file, is2D, isPaper) {
+        const { Node, js, Layers } = require('cc');
         const node = new Node(name);
+        node.layer = is2D ? Layers.Enum.UI_2D : Layers.Enum.UI_3D;
         while (true) {
             const result = js.getClassByName(name);
             if (result)
@@ -30,7 +31,12 @@ exports.methods = {
         }
         const com = node.addComponent(name);
         com.resetInEditor && com.resetInEditor();
-        if (isPaper) {
+        if (name.toLocaleLowerCase().startsWith('page')) {
+            com.shade = false;
+            com.blockInput = is2D ? true : false;
+            com.captureFocus = is2D ? true : false;
+        }
+        else if (name.toLocaleLowerCase().startsWith('paper')) {
             com.shade = false;
             com.captureFocus = false;
             com.blockInput = false;

@@ -1,0 +1,48 @@
+{
+  "ver": "1.1.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "d84f6f8a-5d54-4ef2-9101-9e9685dbd0fa",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "compressionType": {
+      "web-desktop": "merge_all_json",
+      "web-mobile": "merge_all_json",
+      "android": "merge_all_json",
+      "ohos": "merge_all_json",
+      "huawei-agc": "merge_all_json",
+      "ios": "merge_all_json",
+      "windows": "merge_all_json",
+      "mac": "merge_all_json",
+      "bytedance-mini-game": "subpackage",
+      "oppo-mini-game": "subpackage",
+      "huawei-quick-game": "subpackage",
+      "cocos-play": "zip",
+      "vivo-mini-game": "subpackage",
+      "xiaomi-quick-game": "subpackage",
+      "baidu-mini-game": "subpackage",
+      "wechatgame": "subpackage"
+    },
+    "isRemoteBundle": {
+      "web-desktop": true,
+      "web-mobile": true,
+      "android": true,
+      "ohos": true,
+      "huawei-agc": true,
+      "ios": true,
+      "windows": true,
+      "mac": true,
+      "bytedance-mini-game": false,
+      "oppo-mini-game": false,
+      "huawei-quick-game": false,
+      "cocos-play": true,
+      "vivo-mini-game": false,
+      "xiaomi-quick-game": false,
+      "baidu-mini-game": false,
+      "wechatgame": false
+    },
+    "isBundle": true,
+    "bundleName": "app-view_PaperHomeIndex"
+  }
+}

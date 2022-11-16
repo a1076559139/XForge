@@ -4,6 +4,7 @@ import { IMiniViewNames } from '../../../../../app-builtin/app-admin/executor';
 const { ccclass, property } = _decorator;
 @ccclass('PageGame')
 export class PageGame extends BaseView {
+    // 子界面
     protected miniViews: IMiniViewNames = ['PaperGameIndex'];
     // 初始化的相关逻辑写在这
     onLoad() { }
@@ -11,7 +12,7 @@ export class PageGame extends BaseView {
     // 界面打开时的相关逻辑写在这(onShow可被多次调用-它与onHide不成对)
     onShow(params: any) {
         this.showMiniViews({
-            views: ['PaperGameIndex']
+            views: this.miniViews
         })
     }
 

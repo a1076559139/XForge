@@ -1,0 +1,32 @@
+{
+  "ver": "1.1.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "cbffdfa4-4d31-4dad-b27c-8bdcedd7649c",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "compressionType": {},
+    "isRemoteBundle": {
+      "web-desktop": true,
+      "web-mobile": true,
+      "android": true,
+      "ohos": true,
+      "huawei-agc": true,
+      "ios": true,
+      "windows": true,
+      "mac": true,
+      "bytedance-mini-game": true,
+      "oppo-mini-game": true,
+      "huawei-quick-game": true,
+      "cocos-play": true,
+      "vivo-mini-game": true,
+      "xiaomi-quick-game": true,
+      "baidu-mini-game": true,
+      "wechatgame": true
+    },
+    "priority": 8,
+    "isBundle": true,
+    "bundleName": "app-view_PaperHomeIndex_Res"
+  }
+}

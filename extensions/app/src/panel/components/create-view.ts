@@ -125,6 +125,7 @@ export default Vue.extend({
         return {
             showLoading: false,
             showSelectPage: false,
+            showSelectGroup: true,
 
             inputName: '',
             display: '',
@@ -132,13 +133,25 @@ export default Vue.extend({
             typeSelects: ['page', 'paper', 'pop', 'top'],
             typeSelectIndex: 0,
 
+            groupSelects: ['2D', '3D'],
+            groupSelectIndex: 0,
+
             pageSelects: [] as string[],
             pageSelectIndex: 0,
         };
     },
     methods: {
+        onChangeGroupSelect(index: string) {
+            this.groupSelectIndex = Number(index);
+        },
         onChangeTypeSelect(index: string) {
             this.typeSelectIndex = Number(index);
+
+            if (index == '0') {
+                this.showSelectGroup = true;
+            } else {
+                this.showSelectGroup = false;
+            }
 
             if (index == '1') {
                 this.pageSelectIndex = 0;
@@ -152,6 +165,7 @@ export default Vue.extend({
             this.pageSelectIndex = Number(index);
         },
         async onClickCreate() {
+            const isPage = this.typeSelectIndex == 0;
             const isPaper = this.typeSelectIndex == 1;
 
             const owner = this.pageSelects[this.pageSelectIndex];
@@ -163,6 +177,7 @@ export default Vue.extend({
                 return;
             }
 
+            const is2D = isPage ? this.groupSelectIndex == 0 : true;
             const uiName = isPaper ?
                 `${stringCase(type)}${stringCase(PageBaseName[owner])}${stringCase(name)}` :
                 `${stringCase(type)}${stringCase(name)}`;
@@ -203,7 +218,7 @@ export default Vue.extend({
             const createPrefabResult = await Editor.Message.request('scene', 'execute-scene-script', {
                 name: 'app',
                 method: 'createPrefab',
-                args: [uiName, prefabUrl, isPaper]
+                args: [uiName, prefabUrl, is2D]
             }).catch(_ => null);
             if (!createPrefabResult) {
                 this.showLoading = false;

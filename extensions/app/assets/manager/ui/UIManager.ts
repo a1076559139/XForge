@@ -1,4 +1,4 @@
-import { Asset, AssetManager, Canvas, Component, director, error, Event, find, instantiate, isValid, js, Node, Prefab, Scene, UITransform, Widget, _decorator } from 'cc';
+import { Asset, AssetManager, Canvas, Component, director, error, Event, find, instantiate, isValid, js, Layers, Node, Prefab, Scene, UITransform, Widget, _decorator } from 'cc';
 import { DEBUG } from 'cc/env';
 import { IViewName, IViewNames, miniViewNames } from '../../../../../assets/app-builtin/app-admin/executor';
 import BaseManager from '../../base/BaseManager';
@@ -25,7 +25,9 @@ interface IShowParams<T, IShow = any, IHide = any> {
     attr?: IShowParamAttr
 }
 
-const UIRoot = 'Canvas/UserInterface';
+const UIRoot3D = 'Root3D/UserInterface';
+const UIRoot2D = 'Root2D/UserInterface';
+const UITypes = ['Page', 'Paper', 'Pop', 'Top'];
 const MaskTouchEnabledFlg = 1 << 0;
 const LoadingTouchEnabledFlg = 1 << 1;
 
@@ -45,7 +47,8 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     private loading: Node = null;
     private shade: Node = null;
-    private UIRoot: Node = null;
+    private UIRoot2D: Node = null;
+    private UIRoot3D: Node = null;
 
     private loadingCount: number = 0;
 
@@ -88,13 +91,39 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             canvas.on(BlockEvents[i], this.stopPropagation, this, true);
         }
 
-        this.UIRoot = find(UIRoot);
+        this.UIRoot3D = find(UIRoot3D);
+        this.UIRoot2D = find(UIRoot2D);
+        this.initUITypes();
+
         this.shade = instantiate(this.shadePre);
         this.loading = instantiate(this.loadingPre);
-        this.shade.parent = this.UIRoot;
-        this.loading.parent = this.UIRoot;
+        this.shade.parent = this.UIRoot2D;
+        this.loading.parent = this.UIRoot2D;
         this.shade.active = false;
         this.loading.active = false;
+    }
+
+    private initUITypes() {
+        UITypes.forEach((type) => {
+            const d3 = new Node(type);
+            d3.layer = Layers.Enum.UI_3D;
+            d3.parent = this.UIRoot3D;
+
+            const d2 = new Node(type);
+            d2.layer = Layers.Enum.UI_2D;
+            d2.parent = this.UIRoot2D;
+            d2.addComponent(UITransform);
+            const widget = d2.addComponent(Widget);
+            widget.isAlignBottom = true;
+            widget.isAlignLeft = true;
+            widget.isAlignRight = true;
+            widget.isAlignTop = true;
+            widget.top = 0;
+            widget.left = 0;
+            widget.right = 0;
+            widget.bottom = 0;
+            widget.alignMode = Widget.AlignMode.ON_WINDOW_RESIZE;
+        })
     }
 
     private stopPropagation(event: Event) {
@@ -295,14 +324,13 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     private getPrefix(uiName: string, lowercase: true): 'page' | 'pop' | 'top';
     private getPrefix(uiName: string, lowercase: false): 'Page' | 'Pop' | 'Top';
     private getPrefix(uiName: string, lowercase = true): string {
-        let children = this.UIRoot.children;
-        for (let index = 0; index < children.length; index++) {
-            const uiRoot = children[index];
-            if (uiName.indexOf(uiRoot.name) === 0) {
+        for (let index = 0; index < UITypes.length; index++) {
+            const name = UITypes[index];
+            if (uiName.indexOf(name) === 0) {
                 if (lowercase) {
-                    return uiRoot.name.toLowerCase();
+                    return name.toLowerCase();
                 } else {
-                    return uiRoot.name;
+                    return name;
                 }
             }
         }
@@ -314,18 +342,42 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         return name;
     }
 
-    // 根据UI名字获取其根节点是谁
-    private getUIParent(name: string): Node {
+    /**
+     * 根据UI名字获取其父节点是谁
+     */
+    private getUIParent(name: string, is2D: boolean): Node {
         const prefix = this.isMiniView(name) ? 'paper' : this.getPrefix(name);
-        let children = this.UIRoot.children;
-        for (let index = 0; index < children.length; index++) {
-            const uiRoot = children[index];
-            if (uiRoot.name.toLowerCase() === prefix) {
-                return uiRoot;
+
+        for (let index = 0; index < UITypes.length; index++) {
+            const name = UITypes[index];
+            if (name.toLowerCase() === prefix) {
+                if (is2D) {
+                    return this.UIRoot2D.getChildByName(name);
+                } else {
+                    return this.UIRoot3D.getChildByName(name);
+                }
             }
         }
-        this.error(`找不到${name}对应的UIRoot`);
+
+        this.error(`找不到${name}对应的Parent`);
         return null;
+    }
+
+    /**
+     * 根据UI名字查询可能的父节点
+     */
+    private searchUIParents(name: string): Node[] {
+        const prefix = this.isMiniView(name) ? 'paper' : this.getPrefix(name);
+
+        for (let index = 0; index < UITypes.length; index++) {
+            const name = UITypes[index];
+            if (name.toLowerCase() === prefix) {
+                return [this.UIRoot2D.getChildByName(name), this.UIRoot3D.getChildByName(name)]
+            }
+        }
+
+        this.error(`搜索不到${name}对应的Parents`);
+        return [];
     }
 
     /**
@@ -342,17 +394,21 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     private getUIInScene(name: string, multiple: false): Node;
     private getUIInScene(name: string, multiple: true): Node[];
     private getUIInScene(name: string, multiple = false) {
-        const parent = this.getUIParent(name);
+        const parents = this.searchUIParents(name);
 
-        if (multiple) {
-            return parent.children.filter(function (node) {
-                return node.name === name && isValid(node);
-            });
-        } else {
-            return parent.children.find(function (node) {
-                return node.name === name && isValid(node);
-            }) || null;
+        for (let index = 0; index < parents.length; index++) {
+            const parent = parents[index];
+
+            if (multiple) {
+                const result = parent.children.filter(node => node.name === name);
+                if (result.length) return result.filter(node => isValid(node));
+            } else {
+                const result = parent.children.find(node => node.name === name);
+                if (result) return isValid(result) ? result : null;
+            }
         }
+
+        return multiple ? [] : null;
     }
 
     /**
@@ -409,7 +465,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         // 借助refreshShade实现onFocus、onLostFocus(onFocus不会被每次都触发，只有产生变化时才触发)
         let onFocus = false;
         // 倒序遍历uiRoots
-        let uiRoots = this.UIRoot.children;
+        let uiRoots = this.UIRoot2D.children;
         for (let index = uiRoots.length - 1; index >= 0; index--) {
             const uiRoot = uiRoots[index];
             if (uiRoot !== this.shade && uiRoot !== this.loading) {
@@ -465,7 +521,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             this.warn(`节点名与预制名不一致，已重置为预制名: ${this.getUIPath(prefab.name)}`);
             node.name = prefab.name;
         }
-        node.parent = this.getUIParent(prefab.name);
+        node.parent = this.getUIParent(prefab.name, node.layer === Layers.Enum.UI_2D);
         node.getComponent(Widget)?.updateAlignment();
         return node;
     }

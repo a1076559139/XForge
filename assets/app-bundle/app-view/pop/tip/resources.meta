@@ -2,7 +2,7 @@
   "ver": "1.1.0",
   "importer": "directory",
   "imported": true,
-  "uuid": "57cb3419-9b45-4939-bd1b-7e6b401d4945",
+  "uuid": "6d96082a-d831-450b-8e1c-cb326741d254",
   "files": [],
   "subMetas": {},
   "userData": {
@@ -25,6 +25,7 @@
       "baidu-mini-game": true,
       "wechatgame": true
     },
+    "priority": 8,
     "isBundle": true,
     "bundleName": "app-view_PopTip_Res"
   }

@@ -1,4 +1,4 @@
-import { Asset, Component, Enum, Event, js, log, Node, UITransform, warn, Widget, _decorator } from 'cc';
+import { Asset, Component, Enum, Event, js, Layers, log, Node, UITransform, warn, Widget, _decorator } from 'cc';
 import { DEBUG, EDITOR } from 'cc/env';
 import { IMiniViewName, IMiniViewNames, IViewName } from '../../../../assets/app-builtin/app-admin/executor';
 import Core from '../Core';
@@ -120,14 +120,22 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         this._singleton = (<typeof BaseView>this.constructor)._singleton = !!value;
     }
 
-    @property({ tooltip: '是否捕获焦点<响应onLostFocus和onFocus>\n注意: 当一个捕获焦点的view处于最上层并展示时\n下层的view永远不会响应focus事件' })
-    protected captureFocus = true;
+    @property
+    private _captureFocus = true;
+    @property({ tooltip: '是否捕获焦点<响应onLostFocus和onFocus>\n⚠️注意:\n1、非UI_2D分组下会失效\n2、当一个捕获焦点的view处于最上层并展示时\n下层的view永远不会响应focus事件' })
+    protected get captureFocus() {
+        return this.node?.layer === Layers.Enum.UI_2D ? this._captureFocus : false;
+    }
+    protected set captureFocus(value) {
+        this._captureFocus = value;
+    }
 
     @property
     private _shade = true;
-    @property({ tooltip: '是否需要底层遮罩' })
+    @property({ tooltip: '是否需要底层遮罩\n⚠️注意:\n1、非UI_2D分组下会失效\n2、为Page页面时会失效' })
     protected get shade() {
-        return this._shade;
+        if (!!this._base_view_name && this._base_view_name.toLocaleLowerCase().indexOf('page') === 0) return false;
+        return this.node?.layer === Layers.Enum.UI_2D ? this._shade : false;
     }
     protected set shade(value) {
         if (!EDITOR && this._shade !== value) {
@@ -140,9 +148,9 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
 
     @property
     private _blockInput = true;
-    @property({ tooltip: '是否阻断输入' })
+    @property({ tooltip: '是否阻断输入\n⚠️注意:\n1、非UI_2D分组下会失效' })
     protected get blockInput() {
-        return this._blockInput;
+        return this.node?.layer === Layers.Enum.UI_2D ? this._blockInput : false;
     }
     protected set blockInput(value) {
         this._blockInput = value;
@@ -241,6 +249,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     // 用来初始化组件或节点的一些属性，当该组件被第一次添加到节点上或用户点击了它的 Reset 菜单时调用。这个回调只会在编辑器下调用。
     resetInEditor(): any {
         if (EDITOR) {
+            if (this.node.layer !== Layers.Enum.UI_2D) return;
             this.node.getComponent(UITransform) || this.node.addComponent(UITransform);
 
             const widget = this.node.getComponent(Widget) || this.node.addComponent(Widget);
@@ -283,6 +292,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     }
 
     private onCreate(): any {
+        if (this.node.layer !== Layers.Enum.UI_2D) return;
         const uiTransform = this.getComponent(UITransform);
         if (uiTransform) uiTransform.hitTest = (...args: any[]): boolean => {
             if (this.blockInput) {
