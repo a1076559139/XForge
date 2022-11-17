@@ -8,17 +8,24 @@ const PageBaseName: { [name: string]: string } = {};
 /**
  * 获取脚本内容
  */
-function getComScript(name = 'NewClass', isPaper = false) {
+function getComScript(name = 'NewClass') {
+    const isPage = name.toLocaleLowerCase().startsWith('page');
+    const isPaper = name.toLocaleLowerCase().startsWith('paper');
+
     const basePath = isPaper ? '../../../../../../../extensions/app/assets/base/BaseView' : '../../../../../../extensions/app/assets/base/BaseView';
+
     return "import { _decorator } from 'cc';\r\n" +
         "import BaseView from '" + basePath + "';\r\n" +
+        `${isPage ? "import { IMiniViewNames } from '../../../../../app-builtin/app-admin/executor';\r\n" : ''}` +
         "const { ccclass, property } = _decorator;\r\n" +
         "@ccclass('" + name + "')\r\n" +
         "export class " + name + " extends BaseView {\r\n" +
+        "    // 子界面列表，数组顺序为子界面排列顺序\r\n" +
+        `    ${isPage ? "protected miniViews: IMiniViewNames = [];\r\n" : ''}` +
         "    // 初始化的相关逻辑写在这\r\n" +
         "    onLoad(){}\r\n\r\n" +
         "    // 界面打开时的相关逻辑写在这(onShow可被多次调用-它与onHide不成对)\r\n" +
-        "    onShow(params: any){}\r\n\r\n" +
+        `    ${isPage ? "onShow(params: any){ this.showMiniViews({ views: this.miniViews }) }\r\n\r\n" : "onShow(params: any){}\r\n\r\n"}` +
         "    // 界面关闭时的相关逻辑写在这(已经关闭的界面不会触发onHide)\r\n" +
         "    onHide(result: undefined){\r\n" +
         "        // app.manager.ui.show<" + name + ">({name: '" + name + "', onHide:(result) => { 接收到return的数据，并且有类型提示 }})\r\n" +
@@ -207,7 +214,7 @@ export default Vue.extend({
             }
 
             // 创建script
-            const createScriptResult = await Editor.Message.request('asset-db', 'create-asset', scriptUrl, getComScript(uiName, isPaper)).catch(_ => null);
+            const createScriptResult = await Editor.Message.request('asset-db', 'create-asset', scriptUrl, getComScript(uiName)).catch(_ => null);
             if (!createScriptResult) {
                 this.showLoading = false;
                 this.display = `[错误] 创建脚本失败\n${scriptUrl}`;
