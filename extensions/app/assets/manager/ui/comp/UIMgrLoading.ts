@@ -1,9 +1,8 @@
-import { Component, Graphics, UIOpacity, UITransform, _decorator } from 'cc';
+import { Component, Graphics, UITransform, _decorator } from 'cc';
 const { ccclass, property, requireComponent } = _decorator;
 
 @ccclass('UIMgrLoading')
 @requireComponent(Graphics)
-@requireComponent(UIOpacity)
 @requireComponent(UITransform)
 export default class UIMgrLoading extends Component {
     @property({ tooltip: '等待几秒后开始动画' })
@@ -21,16 +20,14 @@ export default class UIMgrLoading extends Component {
 
     protected onEnable() {
         if (!this.show) {
-            const uiOpacity = this.node.getComponent(UIOpacity);
-            uiOpacity.opacity = 0;
+            this.progress = 0;
+            this.ringScale = 1;
+            this.node.angle = 0;
+            this.reverse = false;
+            this.onDraw();
+            
             this.scheduleOnce(() => {
                 this.draw = true;
-                this.progress = 0;
-                this.ringScale = 1;
-                this.node.angle = 0;
-                this.reverse = false;
-                uiOpacity.opacity = 255;
-                this.onDraw();
             }, this.delay);
         }
         this.show = true;
