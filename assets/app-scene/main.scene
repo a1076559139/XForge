@@ -1384,7 +1384,7 @@
   },
   {
     "__type__": "cc.ShadowsInfo",
-    "_enabled": true,
+    "_enabled": false,
     "_type": 0,
     "_normal": {
       "__type__": "cc.Vec3",
