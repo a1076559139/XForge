@@ -13,11 +13,11 @@ export function unload() { };
 // };
 // const result = await Editor.Message.request('scene', 'execute-scene-script', options);
 export const methods = {
-    async createPrefab(name: string, file: string, is2D: boolean, isPaper: boolean) {
+    async createPrefab(name: string, file: string, is3D: boolean) {
         const { Node, js, Layers } = require('cc');
 
         const node = new Node(name);
-        node.layer = is2D ? Layers.Enum.UI_2D : Layers.Enum.UI_3D;
+        node.layer = is3D ? Layers.Enum.UI_3D : Layers.Enum.UI_2D;
 
         while (true) {
             const result = js.getClassByName(name);
@@ -33,8 +33,8 @@ export const methods = {
 
         if (name.toLocaleLowerCase().startsWith('page')) {
             com.shade = false;
-            com.blockInput = is2D ? true : false;
-            com.captureFocus = is2D ? true : false;
+            com.blockInput = is3D ? false : true;
+            com.captureFocus = is3D ? false : true;
         } else if (name.toLocaleLowerCase().startsWith('paper')) {
             com.shade = false;
             com.captureFocus = false;

@@ -171,7 +171,7 @@ exports.default = vue_1.default.extend({
                 this.display = `[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/`;
                 return;
             }
-            const is2D = isPage ? this.groupSelectIndex == 0 : true;
+            const is3D = isPage && this.groupSelectIndex == 1;
             const uiName = isPaper ?
                 `${utils_1.stringCase(type)}${utils_1.stringCase(PageBaseName[owner])}${utils_1.stringCase(name)}` :
                 `${utils_1.stringCase(type)}${utils_1.stringCase(name)}`;
@@ -207,7 +207,7 @@ exports.default = vue_1.default.extend({
             const createPrefabResult = await Editor.Message.request('scene', 'execute-scene-script', {
                 name: 'app',
                 method: 'createPrefab',
-                args: [uiName, prefabUrl, is2D]
+                args: [uiName, prefabUrl, is3D]
             }).catch(_ => null);
             if (!createPrefabResult) {
                 this.showLoading = false;

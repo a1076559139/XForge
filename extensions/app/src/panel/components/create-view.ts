@@ -184,7 +184,7 @@ export default Vue.extend({
                 return;
             }
 
-            const is2D = isPage ? this.groupSelectIndex == 0 : true;
+            const is3D = isPage && this.groupSelectIndex == 1;
             const uiName = isPaper ?
                 `${stringCase(type)}${stringCase(PageBaseName[owner])}${stringCase(name)}` :
                 `${stringCase(type)}${stringCase(name)}`;
@@ -225,7 +225,7 @@ export default Vue.extend({
             const createPrefabResult = await Editor.Message.request('scene', 'execute-scene-script', {
                 name: 'app',
                 method: 'createPrefab',
-                args: [uiName, prefabUrl, is2D]
+                args: [uiName, prefabUrl, is3D]
             }).catch(_ => null);
             if (!createPrefabResult) {
                 this.showLoading = false;
