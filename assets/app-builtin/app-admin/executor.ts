@@ -1,5 +1,6 @@
 /* eslint-disable */
 import { Component } from 'cc';
+import { app } from '../../app/app';
 import { DEV,EDITOR } from 'cc/env';
 
 import {GameManager} from '../app-manager/game/GameManager'
@@ -8,25 +9,26 @@ import LoaderManager from '../../../extensions/app/assets/manager/loader/LoaderM
 import SoundManager from '../../../extensions/app/assets/manager/sound/SoundManager'
 import TimerManager from '../../../extensions/app/assets/manager/timer/TimerManager'
 import UIManager from '../../../extensions/app/assets/manager/ui/UIManager'
-export enum viewNamesEnum { 'PageGame','PageHome','PopTip'}
-export const miniViewNames = {"PaperGameIndex":"PaperGame","PaperHomeIndex":"PaperHome"}
-export enum musicNamesEnum { 'music/bgm'}
-export enum effecNamesEnum { 'effect/btn'}
-export type IViewName = keyof typeof viewNamesEnum
+enum viewNames { 'PageGame','PageHome','PopTip'}
+const miniViewNames = {"PaperGameIndex":"PaperGame","PaperHomeIndex":"PaperHome"}
+enum musicNames { 'music/bgm'}
+enum effecNames { 'effect/btn'}
+
+export type IViewName = keyof typeof viewNames
 export type IViewNames = IViewName[]
 export type IMiniViewName = keyof typeof miniViewNames
 export type IMiniViewNames = IMiniViewName[]
-export type IMusicName = keyof typeof musicNamesEnum
+export type IMusicName = keyof typeof musicNames
 export type IMusicNames = IMusicName[]
-export type IEffecName = keyof typeof effecNamesEnum
+export type IEffecName = keyof typeof effecNames
 export type IEffecNames = IEffecName[]
-export const Manager: {Game:Omit<typeof GameManager,keyof Component>,Event:Omit<typeof EventManager,keyof Component>,Loader:Omit<typeof LoaderManager,keyof Component>,Sound:Omit<typeof SoundManager,keyof Component>,Timer:Omit<typeof TimerManager,keyof Component>,UI:Omit<typeof UIManager,keyof Component>} = {} as any
-export const manager: {game:Omit<GameManager,keyof Component>,event:Omit<EventManager,keyof Component>,loader:Omit<LoaderManager,keyof Component>,sound:Omit<SoundManager<IEffecName,IMusicName>,keyof Component>,timer:Omit<TimerManager,keyof Component>,ui:Omit<UIManager<IViewName,IMiniViewName>,keyof Component>} = {} as any
 
-let data: {} = {} as any
-if(!EDITOR||DEV) data = {}
-export {data}
+if(!EDITOR||DEV) Object.assign(app.data, {})
+if(!EDITOR||DEV) Object.assign(app.config, {})
 
-let config: {} = {} as any
-if(!EDITOR||DEV) config = {}
-export {config}
+export type IApp = {
+    Manager: {Game:Omit<typeof GameManager,keyof Component>,Event:Omit<typeof EventManager,keyof Component>,Loader:Omit<typeof LoaderManager,keyof Component>,Sound:Omit<typeof SoundManager,keyof Component>,Timer:Omit<typeof TimerManager,keyof Component>,UI:Omit<typeof UIManager,keyof Component>},
+    manager: {game:Omit<GameManager,keyof Component>,event:Omit<EventManager,keyof Component>,loader:Omit<LoaderManager,keyof Component>,sound:Omit<SoundManager<IEffecName,IMusicName>,keyof Component>,timer:Omit<TimerManager,keyof Component>,ui:Omit<UIManager<IViewName,IMiniViewName>,keyof Component>},
+    data: {},
+    config: {}
+}

@@ -1,9 +1,9 @@
 import { Game, game } from "cc";
 import { DEBUG, DEV, EDITOR } from "cc/env";
 import Core from "../../extensions/app/assets/Core";
-import * as executor from '../app-builtin/app-admin/executor';
+import { IApp } from '../app-builtin/app-admin/executor';
 
-export class App extends Core<typeof executor> {
+export class App extends Core<IApp> {
     protected static _inst: App = null;
     static get inst() {
         if (!this._inst) this._inst = new App();
@@ -11,7 +11,7 @@ export class App extends Core<typeof executor> {
     }
 
     private constructor() {
-        super(executor)
+        super()
     }
 
     appReady: () => any = null;

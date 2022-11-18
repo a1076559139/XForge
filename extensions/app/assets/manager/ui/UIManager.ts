@@ -1,6 +1,6 @@
 import { Asset, AssetManager, Canvas, Component, director, error, Event, find, instantiate, isValid, js, Layers, Node, Prefab, Scene, UITransform, Widget, _decorator } from 'cc';
 import { DEBUG } from 'cc/env';
-import { IViewName, IViewNames, miniViewNames } from '../../../../../assets/app-builtin/app-admin/executor';
+import { IViewName, IViewNames } from '../../../../../assets/app-builtin/app-admin/executor';
 import BaseManager from '../../base/BaseManager';
 import BaseView, { IShowParamAttr, IShowParamOnHide, IShowParamOnShow } from '../../base/BaseView';
 import Core from '../../Core';
@@ -384,7 +384,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 是否是子界面
      */
     private isMiniView(name: string): boolean {
-        return Object.prototype.hasOwnProperty.call(miniViewNames, name);
+        return name.toLowerCase().indexOf('paper') >= 0;
     }
 
     /**

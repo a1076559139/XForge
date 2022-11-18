@@ -51,35 +51,33 @@ interface ICore {
 }
 
 const EventMap = {};
+const Lib = { task, http, queue: Queue, socket: Socket, storage, pipeline };
+const Config = {};
+const Data = {};
+const Manager = {};
+const manager = {};
 export default class Core<T extends ICore> extends EventTarget {
-    /**
-     * 版本号规则：破坏性.新功能.修复BUG
-     */
-    static appVersion = '1.0.0';
-
     static EventType = EventType;
 
     protected static _inst: Core<ICore> = null;
     static get inst() {
+        if (!this._inst) this._inst = new Core();
         return this._inst;
     }
 
-    // 库
-    lib = { task, http, queue: Queue, socket: Socket, storage, pipeline };
-    // 数据
-    config: T['config'] = {};
-    data: T['data'] = {};
-    // manager
-    Manager: T['Manager'] = {} as any;
-    manager: T['manager'] = {} as any;
+    lib = null;
+    config: T['config'] = null;
+    data: T['data'] = null;
+    Manager: T['Manager'] = null;
+    manager: T['manager'] = null;
 
-    constructor(params: T) {
+    constructor() {
         super();
-        Core._inst = this;
-        this.data = params.data;
-        this.config = params.config;
-        this.Manager = params.Manager;
-        this.manager = params.manager;
+        this.lib = Lib;
+        this.config = Config;
+        this.data = Data;
+        this.Manager = Manager as any;
+        this.manager = manager as any;
     }
 
     on(event: keyof typeof EventType, callback: (...any: any[]) => void, target?: any): any {
@@ -99,8 +97,4 @@ export default class Core<T extends ICore> extends EventTarget {
         EventMap[event] = true;
         super.emit(event, ...args);
     }
-}
-
-if (!Core.inst) {
-    new Core({ config: {}, data: {}, Manager: {}, manager: {} } as any);
 }

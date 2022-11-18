@@ -200,6 +200,7 @@ async function updateExecutor(async = false) {
 
     let result = `/* eslint-disable */\n` +
         `import { Component } from 'cc';\n` +
+        `import { app } from '../../app/app';\n` +
         `import { DEV,EDITOR } from 'cc/env';\n\n`;
 
     const handle = function handle(arr: any[], module: boolean) {
@@ -220,12 +221,6 @@ async function updateExecutor(async = false) {
             array[index] = varname;
         });
     };
-
-    // lib
-    // handle(libs, false);
-    // result += `let lib: {${libs.map(varname => `${varname}:typeof ${varname}`).join(',')}} = {} as any\n`;
-    // result += `if(!EDITOR||DEV) lib = {${libs.join(',')}}\n`;
-    // result += 'export {lib}\n\n';
 
     // manager
     handle(mgrs, true);
@@ -250,34 +245,34 @@ async function updateExecutor(async = false) {
     if (Object.keys(musicKeys).length === 0) musicKeys['nerver'] = '';
     if (Object.keys(effecKeys).length === 0) effecKeys['nerver'] = '';
 
-    result += 'export enum viewNamesEnum { \'' + Object.keys(viewKeys).join('\',\'') + '\'}\n';
-    result += 'export const miniViewNames = ' + JSON.stringify(miniViewKeys) + '\n';
-    result += 'export enum musicNamesEnum { \'' + Object.keys(musicKeys).join('\',\'') + '\'}\n';
-    result += 'export enum effecNamesEnum { \'' + Object.keys(effecKeys).join('\',\'') + '\'}\n';
+    result += 'enum viewNames { \'' + Object.keys(viewKeys).join('\',\'') + '\'}\n';
+    result += 'const miniViewNames = ' + JSON.stringify(miniViewKeys) + '\n';
+    result += 'enum musicNames { \'' + Object.keys(musicKeys).join('\',\'') + '\'}\n';
+    result += 'enum effecNames { \'' + Object.keys(effecKeys).join('\',\'') + '\'}\n\n';
 
-    result += 'export type IViewName = keyof typeof viewNamesEnum\n';
+    result += 'export type IViewName = keyof typeof viewNames\n';
     result += 'export type IViewNames = IViewName[]\n';
     result += 'export type IMiniViewName = keyof typeof miniViewNames\n';
     result += 'export type IMiniViewNames = IMiniViewName[]\n';
-    result += 'export type IMusicName = keyof typeof musicNamesEnum\n';
+    result += 'export type IMusicName = keyof typeof musicNames\n';
     result += 'export type IMusicNames = IMusicName[]\n';
-    result += 'export type IEffecName = keyof typeof effecNamesEnum\n';
-    result += 'export type IEffecNames = IEffecName[]\n';
-
-    result += 'export const Manager: {' + MgrStr + '} = {} as any\n';
-    result += 'export const manager: {' + mgrStr + '} = {} as any\n\n';
+    result += 'export type IEffecName = keyof typeof effecNames\n';
+    result += 'export type IEffecNames = IEffecName[]\n\n';
 
     // data
     handle(datas, false);
-    result += `let data: {${datas.map(varname => `${varname.slice(5)}:${varname}`).join(',')}} = {} as any\n`;
-    result += `if(!EDITOR||DEV) data = {${datas.map(varname => `${varname.slice(5)}:new ${varname}()`).join(',')}}\n`;
-    result += 'export {data}\n\n';
+    result += `if(!EDITOR||DEV) Object.assign(app.data, {${datas.map(varname => `${varname.slice(5)}:new ${varname}()`).join(',')}})\n`;
 
     // config
     handle(confs, false);
-    result += `let config: {${confs.map(varname => `${varname.slice(7)}:${varname}`).join(',')}} = {} as any\n`;
-    result += `if(!EDITOR||DEV) config = {${confs.map(varname => `${varname.slice(7)}:new ${varname}()`).join(',')}}\n`;
-    result += 'export {config}';
+    result += `if(!EDITOR||DEV) Object.assign(app.config, {${confs.map(varname => `${varname.slice(7)}:new ${varname}()`).join(',')}})\n\n`;
+
+    result += 'export type IApp = {\n';
+    result += `    Manager: {${MgrStr}},\n`;
+    result += `    manager: {${mgrStr}},\n`;
+    result += `    data: {${datas.map(varname => `${varname.slice(5)}:${varname}`).join(',')}},\n`;
+    result += `    config: {${confs.map(varname => `${varname.slice(7)}:${varname}`).join(',')}}\n`;
+    result += '}\n';
 
     // save
     if (readFileSyncByURL(executorUrl) !== result) {
