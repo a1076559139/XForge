@@ -65,7 +65,7 @@ export default class Core<T extends ICore> extends EventTarget {
         return this._inst;
     }
 
-    lib = null;
+    lib = Lib;
     config: T['config'] = null;
     data: T['data'] = null;
     Manager: T['Manager'] = null;
@@ -73,7 +73,6 @@ export default class Core<T extends ICore> extends EventTarget {
 
     constructor() {
         super();
-        this.lib = Lib;
         this.config = Config;
         this.data = Data;
         this.Manager = Manager as any;
