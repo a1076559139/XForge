@@ -2,6 +2,7 @@ import { Game, game } from "cc";
 import { DEBUG, DEV, EDITOR } from "cc/env";
 import Core from "../../extensions/app/assets/Core";
 import { IApp } from '../app-builtin/app-admin/executor';
+import { appInited, appReady, cccInited, cccReady } from "./handle";
 
 export class App extends Core<IApp> {
     protected static _inst: App = null;
@@ -14,10 +15,10 @@ export class App extends Core<IApp> {
         super()
     }
 
-    appReady: () => any = null;
-    appInited: () => any = null;
-    cccReady: () => any = null;
-    cccInited: () => any = null;
+    appReady = appReady;
+    appInited = appInited;
+    cccReady = cccReady;
+    cccInited = cccInited;
 }
 
 export const app = App.inst;

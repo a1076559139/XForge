@@ -1,17 +1,27 @@
-import { app } from "./app";
+/**
+ * ccc除物理引擎等外的基础功能已经准备好了
+ */
+ export function cccReady() {
+    
+}
 
-app.cccReady = function () {
+/**
+ * ccc全部功能都初始化完毕了
+ */
+export function cccInited() {
 
 }
 
-app.appReady = function () {
+/**
+ * app除了用户自定义Manager未加载外，其它都已准备好了
+ */
+export function appReady() {
 
 }
 
-app.cccInited = function () {
-
-}
-
-app.appInited = function () {
+/**
+ * app全部功能都初始化完毕了
+ */
+export function appInited() {
 
 }
