@@ -56,7 +56,8 @@ const Config = {};
 const Data = {};
 const Manager = {};
 const manager = {};
-export default class Core<T extends ICore> extends EventTarget {
+const eventTarget = new EventTarget();
+export default class Core<T extends ICore> {
     static EventType = EventType;
 
     protected static _inst: Core<ICore> = null;
@@ -72,7 +73,6 @@ export default class Core<T extends ICore> extends EventTarget {
     manager: T['manager'] = null;
 
     constructor() {
-        super();
         this.config = Config;
         this.data = Data;
         this.Manager = Manager as any;
@@ -81,19 +81,19 @@ export default class Core<T extends ICore> extends EventTarget {
 
     on(event: keyof typeof EventType, callback: (...any: any[]) => void, target?: any): any {
         if (EventMap[event]) callback.call(target);
-        super.on(event, callback, target);
+        eventTarget.on(event, callback, target);
     }
 
     once(event: keyof typeof EventType, callback: Function, target?: any): any {
         if (EventMap[event]) {
             callback.call(target);
         } else {
-            super.once(event, callback as any, target);
+            eventTarget.once(event, callback as any, target);
         }
     }
 
     emit(event: keyof typeof EventType, ...args: any[]): any {
         EventMap[event] = true;
-        super.emit(event, ...args);
+        eventTarget.emit(event, ...args);
     }
 }
