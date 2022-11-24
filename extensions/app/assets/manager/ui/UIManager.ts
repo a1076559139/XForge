@@ -746,9 +746,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             }
         });
 
-        show();
-        return;
-
         // 判断ui是否有效
         this.showLoading();
         Core.inst.lib.task.excute((retry) => {
@@ -892,5 +889,33 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      */
     public setTouchEnabled(enabled: boolean) {
         this.touchEnabled = !!enabled;
+    }
+
+    /**
+     * 在2DUI根节点上处理事件
+     */
+    onUIRoot2D(...args: Parameters<Node['on']>) {
+        Node.prototype.on.apply(this.UIRoot2D, args);
+    }
+
+    /**
+     * 在2DUI根节点上处理事件
+     */
+    onceUIRoot2D(...args: Parameters<Node['once']>) {
+        Node.prototype.once.apply(this.UIRoot2D, args);
+    }
+
+    /**
+     * 在2DUI根节点上处理事件
+     */
+    offUIRoot2D(...args: Parameters<Node['off']>) {
+        Node.prototype.off.apply(this.UIRoot2D, args);
+    }
+
+    /**
+     * 在2DUI根节点上处理事件
+     */
+    targetOffUIRoot2D(...args: Parameters<Node['targetOff']>) {
+        Node.prototype.targetOff.apply(this.UIRoot2D, args);
     }
 }

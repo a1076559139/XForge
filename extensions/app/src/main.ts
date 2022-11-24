@@ -274,6 +274,9 @@ async function updateExecutor(async = false) {
     result += `    config: {${confs.map(varname => `${varname.slice(7)}:${varname}`).join(',')}}\n`;
     result += '}\n';
 
+    // 修正windows系统中的\为/
+    result = result.replace(/\\/g, '/');
+
     // save
     if (readFileSyncByURL(executorUrl) !== result) {
         // if(async)

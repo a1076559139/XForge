@@ -296,7 +296,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         const uiTransform = this.getComponent(UITransform);
         if (uiTransform) uiTransform.hitTest = (...args: any[]): boolean => {
             if (this.blockInput) {
-                return UITransform.prototype.hitTest.apply(uiTransform, args)
+                return UITransform.prototype.hitTest.apply(uiTransform, args);
             }
             return false;
         }

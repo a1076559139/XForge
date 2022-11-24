@@ -89,11 +89,6 @@ export default class BaseManager extends Component {
             return finish && finish();
         }
 
-        // 无bundle名
-        if (!bundle) {
-            return this.error('配置preload，必须指定bundle');
-        }
-
         // 预加载
         if (bundle) {
             assetManager.loadBundle(bundle, function (err, bundle) {
