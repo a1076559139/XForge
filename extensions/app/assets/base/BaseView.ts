@@ -388,7 +388,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
                         onHide: onHide ? (result: any) => {
                             onHide(name, result);
                         } : undefined
-                    }) || next();
+                    });
                 });
             });
         } else {
@@ -430,7 +430,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
                             onHide: onHide ? (result: any) => {
                                 onHide(name, result);
                             } : undefined
-                        }) || next();
+                        });
                     });
                 });
                 aSync.start(next);
