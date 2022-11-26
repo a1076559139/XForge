@@ -448,9 +448,8 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     private setNodeAttr(attr: IShowParamAttr) {
         if (!attr) return;
         if (typeof attr.zIndex === 'number') {
-            // TODO
-            // if (DEBUG && this.node.zIndex !== 0 && this.node.zIndex !== attr.zIndex) this.error(`zIndex被重置为${attr.zIndex}`);
-            this.node.getComponent(UITransform).priority = attr.zIndex;
+            // 以z坐标来代替2.x时代的zIndex
+            this.node.position.set(this.node.position.x, this.node.position.y, attr.zIndex);
         }
 
         if (typeof attr.siblingIndex === 'number') {

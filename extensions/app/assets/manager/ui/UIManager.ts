@@ -4,6 +4,7 @@ import { IViewName, IViewNames } from '../../../../../assets/app-builtin/app-adm
 import BaseManager from '../../base/BaseManager';
 import BaseView, { IShowParamAttr, IShowParamOnHide, IShowParamOnShow } from '../../base/BaseView';
 import Core from '../../Core';
+import UIMgrZOrder from '../../manager/ui/comp/UIMgrZOrder';
 
 const { ccclass, property } = _decorator;
 
@@ -27,7 +28,8 @@ interface IShowParams<T, IShow = any, IHide = any> {
 
 const UIRoot3D = 'Root3D/UserInterface';
 const UIRoot2D = 'Root2D/UserInterface';
-const UITypes = ['Page', 'Paper', 'Pop', 'Top'];
+type IUITypes = ('Page' | 'Paper' | 'Pop' | 'Top')[];
+const UITypes: IUITypes = ['Page', 'Paper', 'Pop', 'Top'];
 const MaskTouchEnabledFlg = 1 << 0;
 const LoadingTouchEnabledFlg = 1 << 1;
 
@@ -107,10 +109,12 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         UITypes.forEach((type) => {
             const d3 = new Node(type);
             d3.layer = Layers.Enum.UI_3D;
+            d3.addComponent(UIMgrZOrder);
             d3.parent = this.UIRoot3D;
 
             const d2 = new Node(type);
             d2.layer = Layers.Enum.UI_2D;
+            d2.addComponent(UIMgrZOrder);
             d2.parent = this.UIRoot2D;
             d2.addComponent(UITransform);
             const widget = d2.addComponent(Widget);
@@ -489,7 +493,8 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                             this.shade.parent = uiRoot;
                             this.shade.active = true;
                             this.shade.layer = node.layer;
-                            this.shade.getComponent(UITransform).priority = node.getComponent(UITransform)?.priority || 0;
+                            // 以z坐标来代替2.x时代的zIndex
+                            this.shade.setPosition(this.shade.position.x, this.shade.position.y, node.position.z);
 
                             let shadeIndex = this.shade.getSiblingIndex();
                             let nodeIndex = node.getSiblingIndex();
@@ -894,28 +899,38 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 在2DUI根节点上处理事件
      */
-    onUIRoot2D(...args: Parameters<Node['on']>) {
+    public onUIRoot2D(...args: Parameters<Node['on']>) {
         Node.prototype.on.apply(this.UIRoot2D, args);
     }
 
     /**
      * 在2DUI根节点上处理事件
      */
-    onceUIRoot2D(...args: Parameters<Node['once']>) {
+    public onceUIRoot2D(...args: Parameters<Node['once']>) {
         Node.prototype.once.apply(this.UIRoot2D, args);
     }
 
     /**
      * 在2DUI根节点上处理事件
      */
-    offUIRoot2D(...args: Parameters<Node['off']>) {
+    public offUIRoot2D(...args: Parameters<Node['off']>) {
         Node.prototype.off.apply(this.UIRoot2D, args);
     }
 
     /**
      * 在2DUI根节点上处理事件
      */
-    targetOffUIRoot2D(...args: Parameters<Node['targetOff']>) {
+    public targetOffUIRoot2D(...args: Parameters<Node['targetOff']>) {
         Node.prototype.targetOff.apply(this.UIRoot2D, args);
+    }
+
+    /**
+     * 立即给2DUI的子节点排序
+     */
+    public sortUIRoot2D(name: IUITypes[0]) {
+        this.UIRoot2D
+            ?.getChildByName(name)
+            ?.getComponent(UIMgrZOrder)
+            ?.updateZOrder();
     }
 }

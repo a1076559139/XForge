@@ -143,7 +143,7 @@ exports.default = vue_1.default.extend({
         },
         onChangeTypeSelect(index) {
             this.typeSelectIndex = Number(index);
-            if (index == '0') {
+            if (index == '0' || index == '1') {
                 this.showSelectGroup = true;
             }
             else {
@@ -171,7 +171,7 @@ exports.default = vue_1.default.extend({
                 this.display = `[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/`;
                 return;
             }
-            const is3D = isPage && this.groupSelectIndex == 1;
+            const is3D = (isPage || isPaper) && this.groupSelectIndex == 1;
             const uiName = isPaper ?
                 `${utils_1.stringCase(type)}${utils_1.stringCase(PageBaseName[owner])}${utils_1.stringCase(name)}` :
                 `${utils_1.stringCase(type)}${utils_1.stringCase(name)}`;

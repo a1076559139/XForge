@@ -154,7 +154,7 @@ export default Vue.extend({
         onChangeTypeSelect(index: string) {
             this.typeSelectIndex = Number(index);
 
-            if (index == '0') {
+            if (index == '0' || index == '1') {
                 this.showSelectGroup = true;
             } else {
                 this.showSelectGroup = false;
@@ -184,7 +184,7 @@ export default Vue.extend({
                 return;
             }
 
-            const is3D = isPage && this.groupSelectIndex == 1;
+            const is3D = (isPage || isPaper) && this.groupSelectIndex == 1;
             const uiName = isPaper ?
                 `${stringCase(type)}${stringCase(PageBaseName[owner])}${stringCase(name)}` :
                 `${stringCase(type)}${stringCase(name)}`;
