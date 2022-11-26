@@ -1,6 +1,7 @@
 import { AssetManager, AudioClip, Game, game, sys, _decorator } from 'cc';
 import { IEffecName, IMusicName } from '../../../../../assets/app-builtin/app-admin/executor';
 import BaseManager from '../../base/BaseManager';
+import Core from '../../Core';
 import AudioEngine from './AudioEngine';
 const { ccclass, property } = _decorator;
 
@@ -70,7 +71,16 @@ export default class SoundManager<E extends string, M extends string> extends Ba
             this.warn('effectMuteCacheKey不能为空');
         }
 
-        super.init(finish, { bundle: BundleName, preload: SoundManager.setting.preload });
+        super.init(finish);
+
+        // 预加载
+        setting.preload?.forEach((path: string) => {
+            Core.inst.manager.loader.preload({
+                bundle: BundleName,
+                type: AudioClip,
+                path: path
+            })
+        });
     }
 
     protected onLoad() {
@@ -122,14 +132,20 @@ export default class SoundManager<E extends string, M extends string> extends Ba
             return true;
         }
 
-        super.load({ path: soundPath, type: AudioClip }, progress, (audioClip) => {
-            if (audioClip) {
-                this.audioCache[soundPath as string] = audioClip;
-                complete && complete(audioClip);
-            } else {
-                complete && complete(null);
+        Core.inst.manager.loader.load({
+            bundle: BundleName,
+            path: soundPath,
+            type: AudioClip,
+            onProgress: progress,
+            onComplete: (audioClip) => {
+                if (audioClip) {
+                    this.audioCache[soundPath as string] = audioClip;
+                    complete && complete(audioClip);
+                } else {
+                    complete && complete(null);
+                }
             }
-        });
+        })
 
         return false;
     }
@@ -145,7 +161,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         }
 
         delete this.audioCache[soundPath as string];
-        super.release(soundPath, AudioClip);
+        Core.inst.manager.loader.release({ bundle: BundleName, path: soundPath, type: AudioClip })
     }
 
     /**

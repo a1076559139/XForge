@@ -77,13 +77,10 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         this.defaultUI = setting.defaultUI as UIName;
         this.defaultData = setting.defaultData;
 
-        if (setting && setting.preload) {
-            setting.preload.forEach((v, i) => {
-                setting.preload[i] = this.getUIPath(v) as any;
-            });
-        }
+        super.init(finish);
 
-        super.init(finish, { preload: setting.preload.map(name => this.getUINativeName(name)) });
+        // 预加载
+        setting?.preload?.forEach(name => this.installUI(name));
     }
 
     protected onLoad() {
@@ -139,6 +136,14 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     /**
+     * 获取一个节点上的BaseView组件, 获取不到返回null
+     */
+    private getBaseView(node: Node): BaseView {
+        if (!node) return null;
+        return node.components.find(component => component instanceof BaseView) as BaseView;
+    }
+
+    /**
      * 在所有父节点中找到一个最近的view组件
      * @param target 
      * @returns 
@@ -148,7 +153,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         let com: BaseView = null;
 
         while (node.parent && !(node.parent instanceof Scene)) {
-            com = node.parent.getComponent(BaseView);
+            com = this.getBaseView(node.parent);
             if (!com) {
                 node = node.parent;
             } else {
@@ -205,7 +210,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 加载ui内部资源
      */
     public loadRes<T extends Asset>(target: Component, path: string, type: typeof Asset, callback?: (result: T) => any) {
-        const view = target.node.getComponent(BaseView) || this.getViewInParents(target.node);
+        const view = this.getBaseView(target.node) || this.getViewInParents(target.node);
         if (view) {
             Core.inst.manager.loader.load({
                 bundle: this.getUIResName(view.viewName),
@@ -268,7 +273,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             nodes.forEach(function (node) {
                 if (!node || !isValid(node)) return;
                 if (DEBUG) {
-                    if (node.getComponent(BaseView).isShowing)
+                    if (this.getBaseView(node).isShowing)
                         error(`${uiName}正处于showing状态，此处将直接destroy`);
                 }
                 node.parent = null;
@@ -280,7 +285,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             const node = nameOrNodeOrCom instanceof Node ? nameOrNodeOrCom : nameOrNodeOrCom.node;
             if (node && isValid(node)) {
                 if (DEBUG) {
-                    if (node.getComponent(BaseView).isShowing)
+                    if (this.getBaseView(node).isShowing)
                         error(`${uiName}正处于showing状态，此处将直接destroy`);
                 }
                 node.parent = null;
@@ -478,7 +483,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 for (let i = children.length - 1; i >= 0; i--) {
                     const node = children[i];
                     if (node !== this.shade) {
-                        const com = node.getComponent(BaseView);
+                        const com = this.getBaseView(node);
                         // 触发onFocus
                         if (!onFocus && com.isCaptureFocus && com.isShowing) {
                             onFocus = true;
@@ -563,7 +568,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
         // 判断是否已经存在节点并且是单例模式
         const node = this.getUIInScene(name);
-        if (isValid(node) && node.getComponent(BaseView).isSingleton === true) {
+        if (isValid(node) && this.getBaseView(node).isSingleton === true) {
             const maskUUID = this.addTouchMask();
             return this.scheduleOnce(() => {
                 this.removeTouchMask(maskUUID);
@@ -582,7 +587,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
             // 验证是否是单例(一个单例会有被同时load多次的情况，因为判断一个ui是否是单例，必须要至少实例化一个后才能获取)
             let node = this.getUIInScene(name);
-            if (!isValid(node) || node.getComponent(BaseView).isSingleton === false) {
+            if (!isValid(node) || this.getBaseView(node).isSingleton === false) {
                 node = this.analyPrefab(prefab);
             }
 
@@ -697,7 +702,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 }, 0.1);
             }
 
-            const com: BaseView = node.getComponent(name as any);
+            const com = this.getBaseView(node);
 
             if (name.indexOf('Page') >= 0 && !this.isMiniView(name)) {
                 node.setSiblingIndex(0);
@@ -784,7 +789,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
         for (let index = nodes.length - 1; index >= 0; index--) {
             const node = nodes[index];
-            const com: BaseView = node.getComponent(name as any);
+            const com = this.getBaseView(node);
 
             if (this.currPage === com) {
                 this.currPage = null;
@@ -807,7 +812,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
         if (nodes.length) {
             const node = nodes.pop();
-            const com: BaseView = node.getComponent(name as any);
+            const com = this.getBaseView(node);
 
             if (this.currPage === com) {
                 this.currPage = null;
@@ -828,7 +833,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
         if (nodes.length) {
             const node = nodes[0];
-            const com: BaseView = node.getComponent(name as any);
+            const com = this.getBaseView(node);
 
             if (this.currPage === com) {
                 this.currPage = null;

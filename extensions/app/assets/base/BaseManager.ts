@@ -83,29 +83,7 @@ export default class BaseManager extends Component {
      * [无序] 初始化manager，在初始化完成后，调用finish方法
      * @param {Function} finish 
      */
-    protected init(finish?: Function, { bundle, preload }: { bundle?: string, preload?: string[] } = {}) {
-        // 无预加载
-        if (!preload || !preload.length) {
-            return finish && finish();
-        }
-
-        // 预加载
-        if (bundle) {
-            assetManager.loadBundle(bundle, function (err, bundle) {
-                if (err) return;
-                preload.forEach((path: string) => {
-                    bundle.preload(path);
-                });
-            });
-        } else {
-            preload.forEach(function (name) {
-                assetManager.loadBundle(name, function (err, bundle) {
-                    if (err) return;
-                    bundle.preloadDir('/');
-                });
-            })
-        }
-
+    protected init(finish?: Function) {
         finish && finish();
     }
 
