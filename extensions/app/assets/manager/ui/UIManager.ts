@@ -170,14 +170,23 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         if (this.prefabCache[name]) {
             return complete && this.scheduleOnce(() => complete(true));
         }
-        Core.inst.lib.task.createASync()
+        const task = Core.inst.lib.task.createAny<[[AssetManager.Bundle, AssetManager.Bundle], Prefab]>()
+            .add([
+                (next) => {
+                    Core.inst.manager.loader.loadBundle({
+                        bundle: this.getUINativeName(name),
+                        onComplete: next
+                    })
+                },
+                (next) => {
+                    Core.inst.manager.loader.loadBundle({
+                        bundle: this.getUIResName(name),
+                        onComplete: next
+                    })
+                }
+            ])
             .add((next) => {
-                Core.inst.manager.loader.loadBundle({
-                    bundle: this.getUIResName(name),
-                    onComplete: next,
-                })
-            })
-            .add((next) => {
+                if (!task.results[0] || !task.results[0][1]) return next(null);
                 Core.inst.manager.loader.load({
                     bundle: this.getUINativeName(name),
                     path: this.getUIPath(name),
@@ -186,8 +195,8 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                     onComplete: next
                 })
             })
-            .start((results: [AssetManager.Bundle, Prefab]) => {
-                if (!results[0] || !results[1]) return complete && complete(false);
+            .start((results) => {
+                if (!results[1]) return complete && complete(false);
                 this.prefabCache[name] = results[1];
                 return complete && complete(true);
             })

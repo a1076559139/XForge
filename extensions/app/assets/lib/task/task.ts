@@ -2,14 +2,14 @@ interface IHandle {
     (next: (data?: any) => boolean, retry: (timeout?: number) => boolean | 'ASYNC', end: (data?: any) => boolean): void
 }
 
-interface IFinish {
-    (results?: any[], success?: boolean): any
+interface IFinish<T> {
+    (results?: T, success?: boolean): any
 }
 
-interface ITask {
+interface ITask<T> {
     size(): number;
     add(handle: IHandle): this;
-    start(finish?: IFinish | Function): this;
+    start(finish?: IFinish<T> | Function): this;
     stop(): boolean;
     isStop(): boolean;
 }
@@ -29,14 +29,14 @@ class TaskItem {
 /**
  * 顺序执行
  */
-class Sync implements ITask {
+class Sync<T extends Array<any>> implements ITask<T> {
     private running = false;
     private index: number = -1;
     private list: TaskItem[] = [];
-    private finish: IFinish | Function = null;
+    private finish: IFinish<T> | Function = null;
 
     // 每个item的返回值，通过next或end存储
-    public results: any[] = [];
+    public results: T = [] as T;
 
     public size(): number {
         return this.list.length;
@@ -48,7 +48,7 @@ class Sync implements ITask {
         return this;
     }
 
-    public start(finish?: IFinish | Function) {
+    public start(finish?: IFinish<T> | Function) {
         if (this.running) {
             return this;
         }
@@ -132,14 +132,14 @@ class Sync implements ITask {
 /**
  * 同时执行
  */
-class ASync implements ITask {
+class ASync<T extends Array<any>> implements ITask<T> {
     private running = false;
     private count: number = 0;
     private list: TaskItem[] = [];
-    private finish: IFinish | Function = null;
+    private finish: IFinish<T> | Function = null;
 
     // 每个item的返回值，通过next或end存储
-    public results: any[] = [];
+    public results: T = [] as T;
 
     public size(): number {
         return this.list.length;
@@ -155,7 +155,7 @@ class ASync implements ITask {
         return this;
     }
 
-    public start(finish?: IFinish | Function) {
+    public start(finish?: IFinish<T> | Function) {
         if (this.running) {
             return this;
         }
@@ -238,8 +238,13 @@ class ASync implements ITask {
     }
 }
 
-class Any implements ITask {
+class Any<T extends Array<any>> implements ITask<T> {
     private task = new Sync();
+
+    // 每个item的返回值，通过next或end存储
+    public get results(): T {
+        return this.task.results as T;
+    }
 
     public size() {
         return this.task.size();
@@ -256,7 +261,7 @@ class Any implements ITask {
         return this;
     }
 
-    public start(finish?: IFinish | Function) {
+    public start(finish?: IFinish<T> | Function) {
         this.task.start(finish);
         return this;
     }
@@ -278,15 +283,15 @@ const task = {
     /**
      * 任务顺序执行
      */
-    createSync(): Sync {
-        return new Sync();
+    createSync<T extends Array<any>>(): Sync<T> {
+        return new Sync<T>();
     },
 
     /**
      * 任务同时执行
      */
-    createASync(): ASync {
-        return new ASync();
+    createASync<T extends Array<any>>(): ASync<T> {
+        return new ASync<T>();
     },
 
     /**
@@ -298,8 +303,8 @@ const task = {
      * .add(8)
      * 执行顺序，1，2，3，4依次执行，然后同时执行5，6，7，最后执行8
      */
-    createAny() {
-        return new Any();
+    createAny<T extends Array<any>>() {
+        return new Any<T>();
     },
 
     /**
