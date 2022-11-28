@@ -57,7 +57,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     private defaultUI: UIName = null;
     private defaultData: string = '';
 
-    private prefabCache: any = {};
+    private prefabCache: { [name in string]: Prefab } = {};
     private currPage: BaseView = null;
     private currFocus: BaseView = null;
     private touchEnabled: boolean = true;

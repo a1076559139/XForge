@@ -87,7 +87,10 @@ export default class LoaderManager extends BaseManager {
      * 加载一个bundle
      */
     public loadBundle({ bundle, onComplete }: { bundle: string, onComplete?: (bundle: AssetManager.Bundle) => any }) {
-        if (!bundle) return this.error('loadBundle fail. bundle is empty');
+        if (!bundle) {
+            this.error('loadBundle fail. bundle is empty');
+            return onComplete && onComplete(null);
+        }
 
         assetManager.loadBundle(bundle, (err: string, bundle: AssetManager.Bundle) => {
             onComplete && onComplete(err ? null : bundle);
