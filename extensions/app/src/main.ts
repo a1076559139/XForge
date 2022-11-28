@@ -55,6 +55,29 @@ function isVaild(info: AssetInfo, strict = true) {
     }
 }
 
+function compareStr(str1: string, str2: string) {
+    if (str1 === str2) {
+        return 0;
+    }
+    const len = Math.max(str1.length, str2.length);
+    for (let i = 0, code1 = 0, code2 = 0; i < len; i++) {
+        if (str1.length <= i) {
+            return -1;
+        } else if (str2.length <= i) {
+            return 1;
+        } else {
+            code1 = str1.charCodeAt(i);
+            code2 = str2.charCodeAt(i);
+            if (code1 > code2) {
+                return 1;
+            } else if (code1 < code2) {
+                return -1;
+            }
+        }
+    }
+    return 0;
+}
+
 const viewSelect = ['Page', 'Paper', 'Pop', 'Top'];
 const viewRegExp = RegExp(`^(${viewSelect.join('|')})`);
 
@@ -92,11 +115,19 @@ const keyWords = [
     'miniViewNames', 'viewNamesEnum', 'musicNamesEnum', 'effecNamesEnum'
 ];
 async function updateExecutor(async = false) {
-    // const results = await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/{app-builtin,app-bundle}/**/*.!(png|jpg|json)' }).catch(_ => []);
-    const result1: AssetInfo[] = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-builtin/{app-control,app-manager/*,app-model}/*.{ts,prefab}' }).catch(_ => []);
-    const result2: AssetInfo[] = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-bundle/app-sound/{music,effect}/*.*' }).catch(_ => []);
-    const result3: AssetInfo[] = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-bundle/app-view/{page,pop,top,paper/*}/*/native/*.{ts,prefab}' }).catch(_ => []);
-    const result4: AssetInfo[] = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://app/{lib,manager}/**/*.{ts,prefab}' }).catch(_ => []);
+    // app-control app-manager app-model
+    let result1: AssetInfo[] = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-builtin/{app-control,app-manager/*,app-model}/*.{ts,prefab}' }).catch(_ => []);
+    result1 = result1.sort((a, b) => compareStr(a.name, b.name));
+    // app-sound
+    let result2: AssetInfo[] = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-bundle/app-sound/{music,effect}/*.*' }).catch(_ => []);
+    result2 = result2.sort((a, b) => compareStr(a.name, b.name));
+    // app-view
+    let result3: AssetInfo[] = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-bundle/app-view/{page,pop,top,paper/*}/*/native/*.{ts,prefab}' }).catch(_ => []);
+    result3 = result3.sort((a, b) => compareStr(a.name, b.name));
+    // lia manager
+    let result4: AssetInfo[] = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://app/{lib,manager}/**/*.{ts,prefab}' }).catch(_ => []);
+    result4 = result4.sort((a, b) => compareStr(a.name, b.name));
+    // 集合
     const results: AssetInfo[] = result1.slice().concat(result2).concat(result3).concat(result4);
 
     const libs: any[] = [];

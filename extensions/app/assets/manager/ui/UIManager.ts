@@ -1,6 +1,6 @@
 import { Asset, AssetManager, Canvas, Component, director, error, Event, find, instantiate, isValid, js, Layers, Node, Prefab, Scene, UITransform, Widget, _decorator } from 'cc';
 import { DEBUG } from 'cc/env';
-import { IViewName, IViewNames } from '../../../../../assets/app-builtin/app-admin/executor';
+import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
 import BaseManager from '../../base/BaseManager';
 import BaseView, { IShowParamAttr, IShowParamOnHide, IShowParamOnShow } from '../../base/BaseView';
 import Core from '../../Core';
@@ -36,7 +36,7 @@ const LoadingTouchEnabledFlg = 1 << 1;
 @ccclass('UIManager')
 export default class UIManager<UIName extends string, MiniName extends string> extends BaseManager {
     static setting: {
-        preload?: IViewNames,
+        preload?: (IViewName | IMiniViewName)[],
         defaultUI?: IViewName,
         defaultData?: any
     } = {};
