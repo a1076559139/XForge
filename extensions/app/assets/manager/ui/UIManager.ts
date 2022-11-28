@@ -689,6 +689,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         // 加入队列中
         if (queue) return this.putInUIQueue({ name, data, queue, onShow, onHide, onError, top, attr });
 
+        this.log(`[show] ${name}`);
         const show = () => this.getUI(name, (node) => {
             if (!node) {
                 this.error(`show ${name} 不存在或加载失败`);
