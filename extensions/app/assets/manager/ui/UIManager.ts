@@ -33,10 +33,12 @@ const UITypes: IUITypes = ['Page', 'Paper', 'Pop', 'Top'];
 const MaskTouchEnabledFlg = 1 << 0;
 const LoadingTouchEnabledFlg = 1 << 1;
 
+type IPreload = (IViewName | IMiniViewName | Array<IViewName | IMiniViewName>)[];
+
 @ccclass('UIManager')
 export default class UIManager<UIName extends string, MiniName extends string> extends BaseManager {
     static setting: {
-        preload?: (IViewName | IMiniViewName)[],
+        preload?: IPreload,
         defaultUI?: IViewName,
         defaultData?: any
     } = {};
@@ -79,8 +81,20 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
         super.init(finish);
 
-        // 预加载
-        setting?.preload?.forEach(name => this.installUI(name));
+        // 预加载,符合AnyTask规则
+        if (setting.preload?.length) {
+            const task = Core.inst.lib.task.createAny();
+            setting.preload.forEach((preload) => {
+                if (preload instanceof Array) {
+                    task.add(preload.map(name => {
+                        return next => this.installUI(name, next);
+                    }))
+                } else {
+                    task.add(next => this.installUI(preload, next));
+                }
+            })
+            task.start();
+        }
     }
 
     protected onLoad() {
