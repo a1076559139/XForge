@@ -35,20 +35,26 @@ class CallbackList {
     public emit(args: any[]) {
         for (let index = 0; index < this.callbacks.length; index++) {
             const info = this.callbacks[index];
-            info.callback.apply(info.target, args);
-            if (!info.once) continue;
-            this.callbacks.splice(index, 1);
-            --index;
+            // 先移除
+            if (info.once) {
+                this.callbacks.splice(index, 1);
+                --index;
+            }
+            if (info.callback) {
+                info.callback.apply(info.target, args);
+            }
         }
     }
 
     public call(args: any[]) {
-        for (let index = 0; index < this.callbacks.length; index++) {
-            const info = this.callbacks[index];
-            const result = info.callback.apply(info.target, args);
-            if (info.once) this.callbacks.splice(index, 1);
-            return result;
-        }
+        if (this.callbacks.length === 0) return;
+        const info = this.callbacks[0];
+
+        // 先移除
+        if (info.once) this.callbacks.splice(0, 1);
+        if (!info.callback) return;
+
+        return info.callback.apply(info.target, args);
     }
 
     public remove(callback: Function, target: unknown = null) {
@@ -118,7 +124,7 @@ class EventEmitter {
     public call(event: string | number, args: any[]) {
         if (!event.toString()) return;
         if (!this.listeners[event]) return;
-        this.listeners[event].call(args);
+        return this.listeners[event].call(args);
     }
 }
 
@@ -139,7 +145,7 @@ class SuperBaseControl<E> {
 
     private event = new EventEmitter();
 
-    protected call(key: E[keyof E], ...args: any[]): void {
+    protected call(key: E[keyof E], ...args: any[]): any {
         return this.event.call.call(this.event, key, args);
     }
 
