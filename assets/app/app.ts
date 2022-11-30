@@ -4,6 +4,8 @@ import Core from "../../extensions/app/assets/Core";
 import { IApp } from '../app-builtin/app-admin/executor';
 import { appInited, appReady, cccInited, cccReady } from "./handle";
 
+type IHandle = (app?: App) => any;
+
 export class App extends Core<IApp> {
     protected static _inst: App = null;
     static get inst() {
@@ -15,10 +17,10 @@ export class App extends Core<IApp> {
         super()
     }
 
-    appReady = appReady;
-    appInited = appInited;
-    cccReady = cccReady;
-    cccInited = cccInited;
+    appReady: IHandle = appReady;
+    appInited: IHandle = appInited;
+    cccReady: IHandle = cccReady;
+    cccInited: IHandle = cccInited;
 }
 
 export const app = App.inst;
@@ -29,8 +31,8 @@ if (DEBUG) {
 }
 
 if (!EDITOR || DEV) {
-    app.cccReady && app.cccReady();
-    app.appReady && app.appReady();
-    app.cccInited && game.once(Game.EVENT_ENGINE_INITED, function () { app.cccInited(); });
-    app.appInited && app.once(App.EventType.EVENT_APPINIT_FINISHED, function () { app.appInited(); });
+    app.cccReady && app.cccReady(app);
+    app.appReady && app.appReady(app);
+    app.cccInited && game.once(Game.EVENT_ENGINE_INITED, function () { app.cccInited(app); });
+    app.appInited && app.once(App.EventType.EVENT_APPINIT_FINISHED, function () { app.appInited(app); });
 }

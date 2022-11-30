@@ -903,6 +903,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         this.touchEnabledFlag |= MaskTouchEnabledFlg;
         const uuid = this.createUUID();
         this.touchMaskMap.set(uuid, true);
+        this.log('addTouchMask', uuid);
         return uuid;
     }
 
@@ -911,6 +912,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * @param uuid addTouchMask的返回值
      */
     public removeTouchMask(uuid: string) {
+        this.log('removeTouchMask', uuid);
         this.touchMaskMap.delete(uuid);
         if (this.touchMaskMap.size === 0) {
             this.touchEnabledFlag ^= MaskTouchEnabledFlg;
@@ -922,6 +924,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * @param {*} enabled 
      */
     public setTouchEnabled(enabled: boolean) {
+        this.log('setTouchEnabled', enabled);
         this.touchEnabled = !!enabled;
     }
 
