@@ -37,13 +37,13 @@ const LoadingTouchEnabledFlg = 1 << 1;
 type IPreload = (IViewName | IMiniViewName | Array<IViewName | IMiniViewName>)[];
 type IShade = {
     /**等待 默认0秒 */
-    delay: number,
+    delay?: number,
     /**开始透明度 默认60 */
-    begin: number,
+    begin?: number,
     /**结束透明度 默认180 */
-    end: number,
+    end?: number,
     /**透明变化速度 默认100 */
-    speed: number
+    speed?: number
 }
 
 @ccclass('UIManager')
@@ -530,7 +530,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                         }
                         // 添加遮罩
                         if (com.isNeedShade && com.isShowing) {
-                            const shadeSetting = com.onShade() || {};
+                            const shadeSetting = Object.assign({}, UIManager.setting.shade, com.onShade());
                             this.shade.getComponent(UIMgrShade).init(
                                 typeof shadeSetting.delay !== 'number' ? 0 : shadeSetting.delay,
                                 typeof shadeSetting.begin !== 'number' ? 60 : shadeSetting.begin,
