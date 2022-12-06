@@ -56,6 +56,16 @@ interface IMiniOnHide {
 interface IMiniOnFinish {
     (): any
 }
+interface IOnShadeReturn {
+    /**等待 默认0秒 */
+    delay?: number,
+    /**开始透明度 默认60 */
+    begin?: number,
+    /**结束透明度 默认180 */
+    end?: number,
+    /**透明变化速度 默认10 */
+    speed?: number
+}
 
 enum ViewState {
     BeforeShow,
@@ -215,6 +225,13 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
      */
     public get isShowing(): boolean {
         return this._base_showing;
+    }
+
+    /**
+     * 背景遮照的运行参数
+     */
+    public onShade(): IOnShadeReturn {
+        return {};
     }
 
     /**

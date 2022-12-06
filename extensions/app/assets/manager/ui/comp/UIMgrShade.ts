@@ -5,6 +5,12 @@ const { ccclass, property, requireComponent } = _decorator;
 @requireComponent(UIOpacity)
 export default class UIMgrShade extends Component {
     @property
+    private _delay = 0;
+    @property
+    get delay() { return this._delay; }
+    set delay(v) { this._delay = Math.max(v, 0); }
+
+    @property
     private _begin = 0;
     @property
     get begin() { return this._begin; }
@@ -32,12 +38,26 @@ export default class UIMgrShade extends Component {
 
     private stopAnimation = true;
 
-    onEnable() {
-        this.node.getComponent(UIOpacity).opacity = this.begin;
-        this.stopAnimation = false;
+    init(delay: number, begin: number, end: number, speed: number) {
+        this.delay = delay;
+        this.begin = begin;
+        this.end = end;
+        this.speed = speed;
     }
 
-    update(dt: number) {
+    protected onEnable() {
+        this.node.getComponent(UIOpacity).opacity = 0;
+        this.scheduleOnce(() => {
+            this.node.getComponent(UIOpacity).opacity = this.begin;
+            this.stopAnimation = false;
+        }, this.delay);
+    }
+
+    protected onDisable() {
+        this.unscheduleAllCallbacks();
+    }
+
+    protected update(dt: number) {
         if (this.stopAnimation) return;
         const uiOpacity = this.node.getComponent(UIOpacity);
         if (this.speed > 0) {

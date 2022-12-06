@@ -4,6 +4,7 @@ import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-
 import BaseManager from '../../base/BaseManager';
 import BaseView, { IShowParamAttr, IShowParamOnHide, IShowParamOnShow } from '../../base/BaseView';
 import Core from '../../Core';
+import UIMgrShade from '../../manager/ui/comp/UIMgrShade';
 import UIMgrZOrder from '../../manager/ui/comp/UIMgrZOrder';
 
 const { ccclass, property } = _decorator;
@@ -34,13 +35,24 @@ const MaskTouchEnabledFlg = 1 << 0;
 const LoadingTouchEnabledFlg = 1 << 1;
 
 type IPreload = (IViewName | IMiniViewName | Array<IViewName | IMiniViewName>)[];
+type IShade = {
+    /**等待 默认0秒 */
+    delay: number,
+    /**开始透明度 默认60 */
+    begin: number,
+    /**结束透明度 默认180 */
+    end: number,
+    /**透明变化速度 默认100 */
+    speed: number
+}
 
 @ccclass('UIManager')
 export default class UIManager<UIName extends string, MiniName extends string> extends BaseManager {
     static setting: {
         preload?: IPreload,
         defaultUI?: IViewName,
-        defaultData?: any
+        defaultData?: any,
+        shade?: IShade
     } = {};
 
     @property(Prefab)
@@ -518,6 +530,13 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                         }
                         // 添加遮罩
                         if (com.isNeedShade && com.isShowing) {
+                            const shadeSetting = com.onShade() || {};
+                            this.shade.getComponent(UIMgrShade).init(
+                                typeof shadeSetting.delay !== 'number' ? 0 : shadeSetting.delay,
+                                typeof shadeSetting.begin !== 'number' ? 60 : shadeSetting.begin,
+                                typeof shadeSetting.end !== 'number' ? 180 : shadeSetting.end,
+                                typeof shadeSetting.speed !== 'number' ? 100 : shadeSetting.speed
+                            );
                             this.shade.parent = uiRoot;
                             this.shade.active = true;
                             this.shade.layer = node.layer;
