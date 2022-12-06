@@ -46,6 +46,7 @@ export default class UIMgrShade extends Component {
     }
 
     protected onEnable() {
+        this.stopAnimation = true;
         this.node.getComponent(UIOpacity).opacity = 0;
         this.scheduleOnce(() => {
             this.node.getComponent(UIOpacity).opacity = this.begin;
