@@ -143,10 +143,10 @@ export class EcsSystem extends EcsBase {
             const oldEntities = this.watchEntities;
             this.watchEntities = this.ecs.query(this.filter);
             const enter = this.watchEntities.filter(entity => {
-                return oldEntities.indexOf(entity) === 1;
+                return oldEntities.indexOf(entity) === -1;
             });
             const leave = oldEntities.filter(entity => {
-                return this.watchEntities.indexOf(entity) === 1;
+                return this.watchEntities.indexOf(entity) === -1;
             });
             this.onEntityEnter(enter);
             this.onEntityLeave(leave);
