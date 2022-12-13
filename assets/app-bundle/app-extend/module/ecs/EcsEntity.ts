@@ -44,7 +44,7 @@ export default class EcsEntity extends Component {
     /**
     * 指定ecs名字
     */
-    private ecsName: string = 'default';
+    public ecsName: string = 'default';
     public get ecs() {
         return ecs.getECS(this.ecsName);
     }
