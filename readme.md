@@ -6,9 +6,10 @@
 
 ## 1、UI
 * 通过菜单栏，App/创建/View来创建UI，会自动创建于assets/app-bundle/app-view下。
-* UI分为4类：Page、Paper、Pop和Top，他们都继承自BaseView。
+* UI分为4类：Page、Paper、Pop和Top，他们都继承自BaseView，它们的层级按顺序依次增大(同camera下)，即: Top > Pop > Paper > Page。
 * UI的HideEvent如果选择destroy，会自动清理静态引用的资源(动态的业务自己维护)。
-* 落地页由Page和Paper共同组成，通过这种模型可以轻松实现多人协同开发。而且Page和Paper在创建时还区分3D与2D，它们在实例化时会分别设置为scene/UIRoot3D、scene/UIRoot2D的子节点。
+* 落地页由Page和Paper共同组成，通过这种模型可以轻松实现多人协同开发。
+* Page和Paper在创建时区分3D与2D，它们在实例化时会分别设置为scene/Root3D/UserInterface、scene/Root2D/UserInterface的子节点。
 ```
 // 打开一个UI(如果没能出现自动提示，请在vscode中打开一下executor.ts文件即可)
 app.manager.ui.show<UI类>({
