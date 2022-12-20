@@ -104,5 +104,14 @@ app.data.xxx
 app.config.xxx
 ```
 
+## 10、其它
+* assets/app-appinit为游戏首屏页面，可以渲染loading内容，也可以去初始化一些业务需要的东西
+* assets/app/handle.ts是框架内置的生命周期函数，App.EventType下有一些生命周期事件，可以通过app.on或app.once监听
+* assets/app/setting.ts是对框架的一些初始化配置, 例如:
+```
+// 可以全局设置弹窗的背景颜色、透明度等信息(也可以在某个UI中重写onShade方法，自定义某个UI的背景颜色等信息)
+UIManager.setting.shade = {...}
+```
+
 ⚠️: app-builtin和app-bundle下都属于框架bundle目录，不可以删除，不然框架会加载失败。<br/>
 ⚠️: 大部分的框架目录点击后，都会在属性检查器页面生成它的一些说明文字，可以进行查看。<br/>
