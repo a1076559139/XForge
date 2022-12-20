@@ -2,7 +2,7 @@ import { Asset, AssetManager, Canvas, Component, director, error, Event, find, i
 import { DEBUG } from 'cc/env';
 import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
 import BaseManager from '../../base/BaseManager';
-import BaseView, { IShowParamAttr, IShowParamOnHide, IShowParamOnShow } from '../../base/BaseView';
+import BaseView, { IHideParamOnHide, IShowParamAttr, IShowParamOnHide, IShowParamOnShow } from '../../base/BaseView';
 import Core from '../../Core';
 import UIMgrShade from '../../manager/ui/comp/UIMgrShade';
 import UIMgrZOrder from '../../manager/ui/comp/UIMgrZOrder';
@@ -15,16 +15,22 @@ const BlockEvents = [
     Node.EventType.MOUSE_ENTER, Node.EventType.MOUSE_LEAVE, Node.EventType.MOUSE_WHEEL
 ];
 
-interface IShowParams<T, IShow = any, IHide = any> {
+interface IShowParams<T, IShow = any, IShowReturn = any, IHideReturn = any> {
     name: T,
     data?: IShow,
     top?: boolean,
     queue?: 'join' | 'jump',
-    onShow?: IShowParamOnShow<IShow>,
-    onHide?: IShowParamOnHide<IHide>,
+    onShow?: IShowParamOnShow<IShowReturn>,
+    onHide?: IShowParamOnHide<IHideReturn>,
     onError?: (result: string, code: 0 | 1) => any,
     onInvalid?: () => any,
     attr?: IShowParamAttr
+}
+
+interface IHideParams<T, IHide = any, IHideReturn = any> {
+    name: T,
+    data?: IHide,
+    onHide?: IHideParamOnHide<IHideReturn>
 }
 
 const UIRoot3D = 'Root3D/UserInterface';
@@ -726,7 +732,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      */
     public show<UI extends BaseView>({ name, data, queue, onShow, onHide, onError, onInvalid, top = true, attr = null }
         // @ts-ignore
-        : IShowParams<UIName, Parameters<UI['onShow']>[0], ReturnType<UI['onHide']>>): boolean {
+        : IShowParams<UIName, Parameters<UI['onShow']>[0], ReturnType<UI['onShow']>, ReturnType<UI['onHide']>>): boolean {
 
         // 加入队列中
         if (queue) return this.putInUIQueue({ name, data, queue, onShow, onHide, onError, top, attr });
@@ -751,7 +757,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 node.setSiblingIndex(0);
                 com.constructor.prototype.show.call(com, data, attr,
                     // @ts-ignore
-                    (result: Parameters<UI['onShow']>) => {
+                    (result: ReturnType<UI['onShow']>) => {
                         this.uiShowingMap.set(com, name);
                         onShow && onShow(result);
                     },
@@ -819,7 +825,9 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 关闭View
      */
-    public hide({ name, data, onHide }: { name: UIName, data?: any, onHide?: (result: any, node: Node) => any }): BaseView | void {
+    public hide<UI extends BaseView>({ name, data, onHide }
+        // @ts-ignore
+        : IHideParams<UIName, Parameters<UI['onHide']>[0], ReturnType<UI['onHide']>>) {
         const nodes = this.getUIInShowing(name, true);
 
         if (nodes.length === 0) {
@@ -845,7 +853,9 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 从顶部关闭一个View(不会重复关闭节点)
      */
-    public pop({ name, data, onHide }: { name: UIName, data?: any, onHide?: (result?: any) => any }): BaseView | void {
+    public pop<UI extends BaseView>({ name, data, onHide }
+        // @ts-ignore
+        : IHideParams<UIName, Parameters<UI['onHide']>[0], ReturnType<UI['onHide']>>) {
         const nodes = this.getUIInShowing(name, true);
 
         if (this.uiLoadingMap.has(name) && this.uiLoadingMap.get(name).length) {
@@ -871,7 +881,9 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 从底部关闭一个View(不会重复关闭节点)
      */
-    public shift({ name, data, onHide }: { name: UIName, data?: any, onHide?: (result?: any) => any }): BaseView | void {
+    public shift<UI extends BaseView>({ name, data, onHide }
+        // @ts-ignore
+        : IHideParams<UIName, Parameters<UI['onHide']>[0], ReturnType<UI['onHide']>>) {
         const nodes = this.getUIInShowing(name, true);
 
         if (nodes.length) {

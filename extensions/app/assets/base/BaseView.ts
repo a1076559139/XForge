@@ -43,9 +43,19 @@ export interface IShowParamOnHide<T = any> {
 export interface IShowParamBeforeShow {
     (error: string): any
 }
+
 export interface IShowParamInnerLoad {
     (name: string, path: string, type: { prototype: Asset }, callback: (result: Asset) => any): void
 }
+
+export interface IHideParamOnHide<T = any> {
+    (result: T): any
+}
+
+export interface IHideParamBeforeHide {
+    (error: string): any
+}
+
 
 interface IMiniOnShow {
     (name: string, data?: any): any
@@ -554,7 +564,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     protected hide(
         //@ts-ignore
         data?: Parameters<this['onHide']>[0],
-        onHide?: Function, beforeHide?: Function): boolean {
+        onHide?: IHideParamOnHide, beforeHide?: IHideParamBeforeHide): boolean {
         // 禁止重复hide
         if (this._base_showing === false) return false;
 
