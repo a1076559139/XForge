@@ -27,6 +27,7 @@ const BundleName = 'app-sound';
 
 @ccclass('SoundManager')
 export default class SoundManager<E extends string, M extends string> extends BaseManager {
+    /**静态设置 */
     static setting: {
         /**预加载 */
         preload?: (IMusicName | IEffecName)[],

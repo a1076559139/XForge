@@ -1,4 +1,4 @@
-import { Asset, AssetManager, Canvas, Component, director, error, Event, find, instantiate, isValid, js, Layers, Node, Prefab, Scene, UITransform, Widget, _decorator } from 'cc';
+import { Asset, AssetManager, Component, error, Event, find, instantiate, isValid, js, Layers, Node, Prefab, Scene, UITransform, Widget, _decorator } from 'cc';
 import { DEBUG } from 'cc/env';
 import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
 import BaseManager from '../../base/BaseManager';
@@ -15,6 +15,15 @@ const BlockEvents = [
     Node.EventType.MOUSE_ENTER, Node.EventType.MOUSE_LEAVE, Node.EventType.MOUSE_WHEEL
 ];
 
+enum ErrorCode {
+    /**加载失败 */
+    LoadError,
+    /**beforeShow返回错误 */
+    LogicError,
+    /**UI无效(UI的isViewValid返回false) */
+    InvalidError,
+}
+
 interface IShowParams<T, IShow = any, IShowReturn = any, IHideReturn = any> {
     name: T,
     data?: IShow,
@@ -22,8 +31,7 @@ interface IShowParams<T, IShow = any, IShowReturn = any, IHideReturn = any> {
     queue?: 'join' | 'jump',
     onShow?: IShowParamOnShow<IShowReturn>,
     onHide?: IShowParamOnHide<IHideReturn>,
-    onError?: (result: string, code: 0 | 1) => any,
-    onInvalid?: () => any,
+    onError?: (result: string, code: ErrorCode) => true | void,
     attr?: IShowParamAttr
 }
 
@@ -54,12 +62,16 @@ type IShade = {
 
 @ccclass('UIManager')
 export default class UIManager<UIName extends string, MiniName extends string> extends BaseManager {
+    /**静态设置 */
     static setting: {
         preload?: IPreload,
         defaultUI?: IViewName,
         defaultData?: any,
         shade?: IShade
     } = {};
+
+    /**错误码 */
+    static ErrorCode = ErrorCode
 
     @property(Prefab)
     private loadingPre: Prefab = null;
@@ -85,7 +97,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     private touchMaskMap = new Map<string, boolean>();
 
     // 记录正在加载中的有效的ui
-    private uiLoadingMap: Map<UIName, string[]> = new Map();//{ [uiName: string]: string[] } = {};
+    private uiLoadingMap: Map<UIName, string[]> = new Map();
     // 记录正在展示中的有效的ui
     private uiShowingMap: Map<BaseView, UIName> = new Map();
 
@@ -116,14 +128,10 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     protected onLoad() {
-        const scene = director.getScene();
-        const canvas = scene.getComponentInChildren(Canvas).node;
-        for (let i = 0; i < BlockEvents.length; i++) {
-            canvas.on(BlockEvents[i], this.stopPropagation, this, true);
-        }
-
-        this.UIRoot3D = find(UIRoot3D);
         this.UIRoot2D = find(UIRoot2D);
+        this.UIRoot3D = find(UIRoot3D);
+
+        this.initUITouchs();
         this.initUITypes();
 
         this.shade = instantiate(this.shadePre);
@@ -132,6 +140,12 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         this.loading.parent = this.UIRoot2D;
         this.shade.active = false;
         this.loading.active = false;
+    }
+
+    private initUITouchs() {
+        for (let i = 0; i < BlockEvents.length; i++) {
+            this.UIRoot2D.on(BlockEvents[i], this.stopPropagation, this, true);
+        }
     }
 
     private initUITypes() {
@@ -163,7 +177,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         if (this.touchEnabledFlag !== 0 || !this.touchEnabled) {
             this.log('触摸屏蔽');
             event.propagationStopped = true;
-            // event.stopPropagation();
         }
     }
 
@@ -536,7 +549,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                         }
                         // 添加遮罩
                         if (com.isNeedShade && com.isShowing) {
-                            const shadeSetting = Object.assign({}, UIManager.setting.shade, com.onShade());
+                            const shadeSetting = Object.assign({}, UIManager.setting.shade, com.constructor.prototype.onShade.call(com));
                             this.shade.getComponent(UIMgrShade).init(
                                 typeof shadeSetting.delay !== 'number' ? 0 : shadeSetting.delay,
                                 typeof shadeSetting.begin !== 'number' ? 60 : shadeSetting.begin,
@@ -730,7 +743,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * @param param0 
      * @returns 
      */
-    public show<UI extends BaseView>({ name, data, queue, onShow, onHide, onError, onInvalid, top = true, attr = null }
+    public show<UI extends BaseView>({ name, data, queue, onShow, onHide, onError, top = true, attr = null }
         // @ts-ignore
         : IShowParams<UIName, Parameters<UI['onShow']>[0], ReturnType<UI['onShow']>, ReturnType<UI['onHide']>>): boolean {
 
@@ -740,9 +753,11 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         this.log(`[show] ${name}`);
         const show = () => this.getUI(name, (node) => {
             if (!node) {
-                this.error(`show ${name} 不存在或加载失败`);
-                // 没有指定onError会自动发起重试
-                if (onError) return onError(`${name} 不存在或加载失败`, 0);
+                this.error(`[show] ${name} 不存在或加载失败`);
+                // 「没有指定onError」或「onError返回true」会自动发起重试
+                if (onError && onError(`${name} 不存在或加载失败`, UIManager.ErrorCode.LoadError) !== true) {
+                    return;
+                };
 
                 this.showLoading();
                 return this.scheduleOnce(() => {
@@ -751,72 +766,57 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 }, 0.1);
             }
 
-            const com = this.getBaseView(node);
+            top && node.setSiblingIndex(-1);
 
-            if (name.indexOf('Page') >= 0 && !this.isMiniView(name)) {
-                node.setSiblingIndex(0);
-                com.constructor.prototype.show.call(com, data, attr,
-                    // @ts-ignore
-                    (result: ReturnType<UI['onShow']>) => {
-                        this.uiShowingMap.set(com, name);
-                        onShow && onShow(result);
-                    },
-                    // @ts-ignore
-                    (result: ReturnType<UI['onHide']>) => {
-                        this.uiShowingMap.delete(com);
-                        onHide && onHide(result);
-                    },
-                    (error: string) => {
-                        if (!error) {
-                            if (isValid(this.currPage) && this.currPage !== com && this.currPage.isShowing) {
-                                this.currPage.constructor.prototype.hide.call(this.currPage, { name, com });
-                            }
-                            this.currPage = com;
-                        } else {
-                            onError && onError(error, 1);
+            const com = this.getBaseView(node);
+            com.constructor.prototype.show.call(com, data, attr,
+                // onShow
+                (result: any) => {
+                    this.uiShowingMap.set(com, name);
+                    onShow && onShow(result);
+                },
+                // onHide
+                (result: any) => {
+                    this.uiShowingMap.delete(com);
+                    onHide && onHide(result);
+                },
+                // beforeShow
+                (error: string) => {
+                    if (error) {
+                        onError && onError(error, UIManager.ErrorCode.LogicError);
+                    } else if (name.indexOf('Page') >= 0) {
+                        if (isValid(this.currPage) && this.currPage !== com && this.currPage.isShowing) {
+                            this.currPage.constructor.prototype.hide.call(this.currPage, { name, com });
                         }
+                        this.currPage = com;
                     }
-                );
-            } else {
-                top && node.setSiblingIndex(-1);
-                com.constructor.prototype.show.call(com, data, attr,
-                    (result: any) => {
-                        this.uiShowingMap.set(com, name);
-                        onShow && onShow(result);
-                    },
-                    (result: any) => {
-                        this.uiShowingMap.delete(com);
-                        onHide && onHide(result);
-                    },
-                    (error: string) => {
-                        if (error) {
-                            onError && onError(error, 1);
-                        }
-                    },
-                    (name: string, path: string, type: typeof Asset, callback: (result: Asset) => any) => {
-                        Core.inst.manager.loader.load({
-                            bundle: this.getUIResName(name),
-                            path: path,
-                            type: type,
-                            onComplete: callback
-                        })
-                    }
-                );
-            }
+                }
+            );
         });
 
         // 判断ui是否有效
         this.showLoading();
         Core.inst.lib.task.excute((retry) => {
             this.getUIValid(name, (valid) => {
-                if (valid === -1) return retry(0.1);
-
-                if (valid === 0) {
-                    onInvalid && onInvalid();
-                    onError && onError(`${name} 无效`, 0);
-                } else {
-                    show();
+                // 加载失败
+                if (valid === -1) {
+                    this.error(`[show] ${name} 不存在或加载失败`);
+                    // 「没有指定onError」或「onError返回true」会自动发起重试
+                    if (onError && onError(`${name} 不存在或加载失败`, UIManager.ErrorCode.LoadError) !== true) {
+                        return this.hideLoading();
+                    };
+                    return retry(0.1);
                 }
+
+                // ui无效
+                if (valid === 0) {
+                    this.uninstallUI(name);
+                    onError && onError(`${name} 无效`, UIManager.ErrorCode.InvalidError);
+                    this.hideLoading();
+                    return;
+                }
+
+                show();
                 this.hideLoading();
             })
         })
