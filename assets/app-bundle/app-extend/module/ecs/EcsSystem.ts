@@ -13,7 +13,6 @@ class Timer {
     interval = 1;
     // 执行次数 <=0 为无限次
     times = 0;
-
     // 已执行帧数
     count = 0;
 
@@ -101,7 +100,7 @@ export class EcsSystem extends EcsBase {
         return this._ecs;
     }
 
-    protected readonly excuteTimer = new TimerManager();
+    protected readonly executeTimer = new TimerManager();
     protected readonly updateTimer = new TimerManager();
 
     /**
@@ -137,8 +136,8 @@ export class EcsSystem extends EcsBase {
     /**实体进入系统，会在excute流程最开始调用*/
     protected onEntityLeave(entities: EcsEntity[]) { };
 
-    // 由ecs.excute驱动
-    private ecsExcuteTimer(args: any[]) {
+    // 由ecs.execute驱动
+    private timerExecute(args: any[]) {
         if (this.filter && this.openWatchEntities) {
             const oldEntities = this.watchEntities;
             this.watchEntities = this.ecs.query(this.filter);
@@ -152,17 +151,17 @@ export class EcsSystem extends EcsBase {
             this.onEntityLeave(leave);
         }
 
-        this.excuteTimer.update(args);
+        this.executeTimer.update(args);
     }
-    protected ecsExcute(...args: any[]) { }
-    protected ecsBeforeExcute(...args: any[]) { }
-    protected ecsAfterExcute(...args: any[]) { }
+    protected execute(...args: any[]) { }
+    protected beforeExecute(...args: any[]) { }
+    protected afterExecute(...args: any[]) { }
 
     // 由ecs.update驱动
-    private ecsUpdateTimer(args: any[]) { this.updateTimer.update(args); }
-    protected ecsUpdate(...args: any[]) { }
-    protected ecsBeforeUpdate(...args: any[]) { }
-    protected ecsAfterUpdate(...args: any[]) { }
+    private timerUpdate(args: any[]) { this.updateTimer.update(args); }
+    protected update(...args: any[]) { }
+    protected beforeUpdate(...args: any[]) { }
+    protected afterUpdate(...args: any[]) { }
 
     protected log(str: any, ...args: any[]) {
         console.log(`[${this.ecsClassName}] [log] ${str}`, ...args);

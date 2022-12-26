@@ -17,7 +17,7 @@ export class EcsComponent extends EcsBase {
     /**
      * 唯一ID
      */
-    private _uuid = '';
+    private _uuid = createUUID();
     public get uuid() {
         return this._uuid;
     }
@@ -56,19 +56,11 @@ export class EcsComponent extends EcsBase {
     protected handleMixComponent(com: EcsComponent, index: number) { }
 
     /**
-     * 内部初始化函数
-     * @param entity 
-     */
-    private innerInit(entity: EcsEntity) {
-        this._isValid = true;
-        this._entity = entity;
-        this._uuid = createUUID();
-    }
-
-    /**
      * 内部生效函数
      */
-    private innerEnable() {
+    private innerEnable(entity: EcsEntity) {
+        this._isValid = true;
+        this._entity = entity;
         this.beforeEnable();
         this.onEnable();
     }
@@ -79,6 +71,8 @@ export class EcsComponent extends EcsBase {
     private innerDisable() {
         this.onDisable();
         this.afterDisable();
+        this._isValid = false;
+        this._entity = null;
     }
 
     /**
@@ -115,7 +109,7 @@ export class EcsComponent extends EcsBase {
      * @param target 权柄
      */
     public destroy(target?: any) {
-        this.entity.removeComponent(this, target);
+        return this.entity.removeComponent(this, target);
     }
 
     public getComponent(className: string): any;

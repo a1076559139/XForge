@@ -1,14 +1,19 @@
 /**
  * Map、Set、Array都是有序的
  */
- class CusTomMap<K, V> {
+class CusTomMap<K, V> {
     private map: Map<K, V> = new Map();
 
     get size() {
         return this.map.size;
     }
-    keys() {
-        return this.map.keys();
+    keys(out: K[]) {
+        this.map.forEach((v, key) => out.push(key));
+        return out;
+    }
+    values(out: V[]) {
+        this.map.forEach((value) => out.push(value));
+        return out;
     }
     forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any) {
         return this.map.forEach(callbackfn, thisArg);

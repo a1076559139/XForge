@@ -1,5 +1,5 @@
 import { Component, Node, warn, _decorator } from "cc";
-import { classManager, ecs, FlagBits, flagManager } from "./ecs";
+import { classManager, ecs, flagManager } from "./ecs";
 import { EcsComponent } from "./EcsComponent";
 import { NumberMap, UArrayMap } from "./EcsUtils";
 
@@ -25,7 +25,7 @@ export default class EcsEntity extends Component {
         }
     }
 
-    private flag: number[] = new Array(FlagBits).fill(0);
+    private flag: number[] = new Array(flagManager.bits).fill(0);
     private components: Map<IComponentUUID, EcsComponent> = new Map();
     private componentsCount: NumberMap<IComponentName> = new NumberMap();
     /**
@@ -55,7 +55,7 @@ export default class EcsEntity extends Component {
     private updateFlag() {
         const names: IComponentName[] = [];
         this.componentsCount.forEach((count, name) => names.push(name));
-        this.flag = flagManager.getAllByNames(names);
+        this.flag = flagManager.getAllByNames(names, this.flag);
     }
 
     /**
@@ -94,7 +94,7 @@ export default class EcsEntity extends Component {
         flagManager.addFlag(this.flag, flagManager.getAllByName(componentName));
 
         //@ts-ignore
-        com.innerEnable();
+        com.innerEnable(this);
 
         return true;
     }
@@ -181,11 +181,12 @@ export default class EcsEntity extends Component {
 
     private destoryAllComponents() {
         this.nameToUuids.forEach((uuids) => {
-            uuids.forEach((uuid) => {
+            for (let index = 0; index < uuids.length; index++) {
+                const uuid = uuids[index];
                 const com = this.components.get(uuid);
-                const target = this.uuidBindTarget.get(uuid)
-                this.removeComponent(com, target);
-            })
+                const target = this.uuidBindTarget.get(uuid);
+                if (this.removeComponent(com, target)) index--;
+            }
         })
     }
 
@@ -234,20 +235,20 @@ export default class EcsEntity extends Component {
      * 检查是否仅包含全部
      */
     checkFlagOnly(flag: number[]) {
-        const nameIterator = this.componentsCount.keys();
-        while (nameIterator) {
-            const iteratorResult = nameIterator.next();
-            if (!iteratorResult) break;
-            const componentName = iteratorResult.value;
-            if (!componentName) break;
+        const componentNames = this.componentsCount.keys(this.checkFlagOnlyCache);
+        for (let index = 0; index < componentNames.length; index++) {
+            const componentName = componentNames[index];
             const comFalg = flagManager.getAllByName(componentName);
-            const result = flagManager.checkFlagAny(comFalg, flag);
-            if (!result) break;
-            if (iteratorResult.done) return true;
+            const success = flagManager.checkFlagAny(comFalg, flag);
+            if (!success) {
+                componentNames.length = 0;
+                return false;
+            }
         }
-
-        return false;
+        componentNames.length = 0;
+        return true;
     }
+    private checkFlagOnlyCache: string[] = [];
 
     /**
      * 添加相应类型的组件
@@ -258,9 +259,7 @@ export default class EcsEntity extends Component {
     addComponent<T extends typeof EcsComponent>(Com: T | IComponentName | InstanceType<T>, target?: any): InstanceType<T> {
         if (Com instanceof EcsComponent) {
             //@ts-ignore
-            Com.innerInit(this);
-            //@ts-ignore
-            this.ecs.addComponent(Com, target);
+            this.ecs.addComponent(this, Com, target);
 
             return Com as InstanceType<T>;
         }
@@ -332,13 +331,10 @@ export default class EcsEntity extends Component {
 
         this.nameToUuids.forEach((uuids, name) => {
             if (componentNames.indexOf(name) >= 0) return;
-            uuids.forEach((uuid) => {
-                if (target) {
-                    if (this.uuidBindTarget.get(uuid) === target) this.components.get(uuid).destroy(target);
-                } else {
-                    this.components.get(uuid).destroy(target);
-                }
-            })
+            for (let index = 0; index < uuids.length; index++) {
+                const uuid = uuids[index];
+                if (this.components.get(uuid).destroy(target)) index--;
+            }
         })
     }
 
