@@ -448,8 +448,8 @@ class Filter implements IFilter {
         return result;
     }
 
-    static exist(entityManager: EntityManager, componentManager: ComponentManager, filter: Filter) {
-        if (!filter) return false;
+    static find(entityManager: EntityManager, componentManager: ComponentManager, filter: Filter) {
+        if (!filter) return null;
 
         let result: EcsEntity[] = [];
 
@@ -460,16 +460,16 @@ class Filter implements IFilter {
             if (!entities) continue;
             if (entities.size === 0) continue;
             entities.keys(result);
-            // 只要有任何一个any符合筛选条件，就返回true
+            // 只要有任何一个any符合筛选条件，就返回
             filter.pipeline.forEach(handle => result = handle(result));
-            if (result.length) return true;
+            if (result.length) return result[0];
         }
 
         // 其次验证include
         if (filter.include) {
             const entities = componentManager.hasEntities(filter.include);
             if (entities && entities.size) entities.keys(result);
-            if (result.length === 0) return false;
+            if (result.length === 0) return null;
         }
 
         // 获取所有
@@ -477,11 +477,11 @@ class Filter implements IFilter {
             entityManager.getAll(result);
         }
 
-        if (result.length === 0) return false;
+        if (result.length === 0) return null;
 
         filter.pipeline.forEach(handle => result = handle(result));
 
-        return result.length > 0;
+        return result.length > 0 ? result[0] : null;
     }
 
     private anys: IComponentName[] = [];
@@ -577,10 +577,21 @@ export class ECS {
     }
 
     /**
+     * 查询实体
+     */
+    public find<T extends EcsEntity>(filter: IFilter): T
+    public find<T extends EcsComponent>(filter: IFilter, Comment: { new(): T }): T
+    public find<T>(filter: IFilter, Comment?: typeof EcsComponent): T {
+        const entity = Filter.find(this.entityManager, this.componentManager, filter as any);
+        if (!Comment) return entity as T;
+        return entity.getComponent(Comment) as T;
+    }
+
+    /**
      * 查询是否存在
      */
     public exist(filter: IFilter) {
-        return Filter.exist(this.entityManager, this.componentManager, filter as any);
+        return !!Filter.find(this.entityManager, this.componentManager, filter as any);
     }
 
     /**
