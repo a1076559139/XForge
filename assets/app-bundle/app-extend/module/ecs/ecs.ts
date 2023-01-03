@@ -583,6 +583,7 @@ export class ECS {
     public find<T extends EcsComponent>(filter: IFilter, Comment: { new(): T }): T
     public find<T>(filter: IFilter, Comment?: typeof EcsComponent): T {
         const entity = Filter.find(this.entityManager, this.componentManager, filter as any);
+        if (!entity) return null;
         if (!Comment) return entity as T;
         return entity.getComponent(Comment) as T;
     }
