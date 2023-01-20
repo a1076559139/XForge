@@ -67,7 +67,9 @@ class Sync<T extends Array<any>> implements ITask<T> {
         }
 
         this.running = false;
-        this.finish && this.finish(this.results, false);
+        if (this.finish) setTimeout(() => {
+            this.finish(this.results, false);
+        }, 0);
 
         return true;
     }
@@ -86,7 +88,9 @@ class Sync<T extends Array<any>> implements ITask<T> {
         }
 
         this.running = false;
-        this.finish && this.finish(this.results, true);
+        if (this.finish) setTimeout(() => {
+            this.finish(this.results, true);
+        }, 0);
 
         return true;
     }
@@ -180,7 +184,9 @@ class ASync<T extends Array<any>> implements ITask<T> {
             return false;
         }
         this.running = false;
-        this.finish && this.finish(this.results, false);
+        if (this.finish) setTimeout(() => {
+            this.finish(this.results, false);
+        }, 0);
 
         return true;
     }
@@ -200,7 +206,9 @@ class ASync<T extends Array<any>> implements ITask<T> {
         }
 
         this.running = false;
-        this.finish && this.finish(this.results, true);
+        if (this.finish) setTimeout(() => {
+            this.finish(this.results, true);
+        }, 0);
 
         return true;
     }

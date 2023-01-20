@@ -45,8 +45,6 @@ const UIRoot3D = 'Root3D/UserInterface';
 const UIRoot2D = 'Root2D/UserInterface';
 type IUITypes = ('Page' | 'Paper' | 'Pop' | 'Top')[];
 const UITypes: IUITypes = ['Page', 'Paper', 'Pop', 'Top'];
-const MaskTouchEnabledFlg = 1 << 0;
-const LoadingTouchEnabledFlg = 1 << 1;
 
 type IPreload = (IViewName | IMiniViewName | Array<IViewName | IMiniViewName>)[];
 type IShade = {
@@ -79,22 +77,30 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     @property(Prefab)
     private shadePre: Prefab = null;
 
-    private loading: Node = null;
-    private shade: Node = null;
+    // 根结点
     private UIRoot2D: Node = null;
     private UIRoot3D: Node = null;
 
-    private loadingCount: number = 0;
+    // 加载和遮罩节点
+    private loading: Node = null;
+    private shade: Node = null;
 
     private defaultUI: UIName = null;
     private defaultData: string = '';
 
-    private prefabCache: { [name in string]: Prefab } = {};
     private currPage: BaseView = null;
     private currFocus: BaseView = null;
+
+    // 预制体缓存
+    private prefabCache: { [name in string]: Prefab } = {};
+
+    // 全局触摸有效
     private touchEnabled: boolean = true;
-    private touchEnabledFlag: number = 0;
+
+    // 记录触摸屏蔽
     private touchMaskMap = new Map<string, boolean>();
+    // 记录展示加载
+    private showLoadingMap = new Map<string, boolean>();
 
     // 记录正在加载中的有效的ui
     private uiLoadingMap: Map<UIName, string[]> = new Map();
@@ -174,7 +180,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     private stopPropagation(event: Event) {
-        if (this.touchEnabledFlag !== 0 || !this.touchEnabled) {
+        if (!this.touchEnabled || this.touchMaskMap.size > 0) {
             this.log('触摸屏蔽');
             event.propagationStopped = true;
         }
@@ -325,7 +331,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         if (typeof nameOrNodeOrCom === 'string') {
             const nodes = this.getUIInScene(uiName, true);
             nodes.forEach(function (node) {
-                if (!node || !isValid(node)) return;
+                if (!node || !isValid(node, true)) return;
                 if (DEBUG) {
                     if (this.getBaseView(node).isShowing)
                         error(`${uiName}正处于showing状态，此处将直接destroy`);
@@ -337,9 +343,9 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         // 传入节点或组件是释放单个
         else {
             const node = nameOrNodeOrCom instanceof Node ? nameOrNodeOrCom : nameOrNodeOrCom.node;
-            if (node && isValid(node)) {
+            if (node && isValid(node, true)) {
                 if (DEBUG) {
-                    if (this.getBaseView(node).isShowing)
+                    if (this.getBaseView(node).isShow)
                         error(`${uiName}正处于showing状态，此处将直接destroy`);
                 }
                 node.parent = null;
@@ -349,19 +355,8 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
         // 当全部释放时才清除缓存
         const nodes = this.getUIInScene(uiName, true);
-        if (nodes.length === 0 || nodes.every(node => !isValid(node))) {
+        if (nodes.length === 0 || nodes.every(node => !isValid(node, true))) {
             this.uninstallUI(uiName);
-        }
-    }
-
-    public showLoading() {
-        ++this.loadingCount;
-        this.loading.active = true;
-    }
-
-    public hideLoading() {
-        if (this.loadingCount > 0 && --this.loadingCount === 0) {
-            this.loading.active = false;
         }
     }
 
@@ -464,10 +459,10 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
             if (multiple) {
                 const result = parent.children.filter(node => node.name === name);
-                if (result.length) return result.filter(node => isValid(node));
+                if (result.length) return result.filter(node => isValid(node, true));
             } else {
                 const result = parent.children.find(node => node.name === name);
-                if (result) return isValid(result) ? result : null;
+                if (result) return isValid(result, true) ? result : null;
             }
         }
 
@@ -509,15 +504,15 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 0 UI无效
      * 1 UI有效
      */
-    private getUIValid(name: string, callback: (valid: -1 | 0 | 1) => any) {
+    private checkUIValid(name: string, data: any, callback: (valid: -1 | 0 | 1) => any) {
         this.installUI(name, (result) => {
             if (!result) return callback(-1);
             const View = this.getUIClass(name);
-            if (View && View.isViewValid) {
-                callback(1);
-            } else {
-                callback(0);
-            }
+            if (!View) return callback(0);
+            if (!View.isViewValid) return callback(1);
+            View.isViewValid((valid: boolean) => {
+                callback(valid ? 1 : 0);
+            }, data);
         })
     }
 
@@ -539,16 +534,16 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                     if (node !== this.shade) {
                         const com = this.getBaseView(node);
                         // 触发onFocus
-                        if (!onFocus && com.isCaptureFocus && com.isShowing) {
+                        if (!onFocus && com.isCaptureFocus && com.isShow) {
                             onFocus = true;
                             if (this.currFocus !== com) {
-                                isValid(this.currFocus) && this.currFocus.constructor.prototype.focus.call(this.currFocus, false);
+                                isValid(this.currFocus, true) && this.currFocus.constructor.prototype.focus.call(this.currFocus, false);
                                 this.currFocus = com;
                                 this.currFocus.constructor.prototype.focus.call(this.currFocus, true);
                             }
                         }
                         // 添加遮罩
-                        if (com.isNeedShade && com.isShowing) {
+                        if (com.isNeedShade && com.isShow) {
                             const shadeSetting = Object.assign({}, UIManager.setting.shade, com.constructor.prototype.onShade.call(com));
                             this.shade.getComponent(UIMgrShade).init(
                                 typeof shadeSetting.delay !== 'number' ? 0 : shadeSetting.delay,
@@ -578,7 +573,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
         this.shade.active = false;
         if (!onFocus) {
-            isValid(this.currFocus) && this.currFocus.constructor.prototype.focus.call(this.currFocus, false);
+            isValid(this.currFocus, true) && this.currFocus.constructor.prototype.focus.call(this.currFocus, false);
             this.currFocus = null;
         }
     }
@@ -598,19 +593,14 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     private createUILoadingUUID(name: UIName) {
-        this.touchEnabledFlag += LoadingTouchEnabledFlg;
-        const uuid = this.createUUID();
+        const uuid = this.addTouchMask();
         if (!this.uiLoadingMap.has(name)) this.uiLoadingMap.set(name, []);
         this.uiLoadingMap.get(name).push(uuid);
         return uuid;
     }
 
     private checkUILoadingUUID(name: UIName, uuid: string) {
-        if (this.touchEnabledFlag >= LoadingTouchEnabledFlg) {
-            this.touchEnabledFlag -= LoadingTouchEnabledFlg;
-        } else {
-            this.error('checkUILoadingUUID', '错误的调用');
-        }
+        this.removeTouchMask(uuid);
         if (!this.uiLoadingMap.has(name)) return false;
         const index = this.uiLoadingMap.get(name).indexOf(uuid);
         if (index === -1) return false;
@@ -625,35 +615,35 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         }
 
         // 生成一个UI加载的UUID
-        const uuid = this.createUILoadingUUID(name);
+        const uiLoadingUuid = this.createUILoadingUUID(name);
 
         // 判断是否已经存在节点并且是单例模式
         const node = this.getUIInScene(name);
-        if (isValid(node) && this.getBaseView(node).isSingleton === true) {
+        if (isValid(node, true) && this.getBaseView(node).isSingleton === true) {
             const maskUUID = this.addTouchMask();
             return this.scheduleOnce(() => {
                 this.removeTouchMask(maskUUID);
                 // 验证本次加载是否有效
-                if (this.checkUILoadingUUID(name, uuid) === false) return;
-                if (isValid(node)) { callback(node); }
+                if (this.checkUILoadingUUID(name, uiLoadingUuid) === false) return;
+                if (isValid(node, true)) { callback(node); }
                 else { this.getUI(name, callback); }
             });
         }
 
         // 加载prefab
-        this.showLoading();
+        const showLoadingUuid = this.showLoading();
         this.load(name, (prefab: Prefab) => {
             // 验证本次加载是否有效
-            if (this.checkUILoadingUUID(name, uuid) === false) return this.hideLoading();
+            if (this.checkUILoadingUUID(name, uiLoadingUuid) === false) return this.hideLoading(showLoadingUuid);
 
             // 验证是否是单例(一个单例会有被同时load多次的情况，因为判断一个ui是否是单例，必须要至少实例化一个后才能获取)
             let node = this.getUIInScene(name);
-            if (!isValid(node) || this.getBaseView(node).isSingleton === false) {
+            if (!isValid(node, true) || this.getBaseView(node).isSingleton === false) {
                 node = this.analyPrefab(prefab);
             }
 
             callback(node);
-            this.hideLoading();
+            this.hideLoading(showLoadingUuid);
         });
     }
 
@@ -675,38 +665,41 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     /**
-     * 是否展示中
+     * 是否展示了(包括加载中和队列中)
      * @param name 
      * @returns 
      */
-    public isShowing(name: UIName) {
-        return !!this.getUIInShowing(name);
+    public isShow(name: UIName) {
+        return !!this.getUIInShowing(name) ||
+            this.isInQueue(name) ||
+            this.isLoading(name);
     }
 
     /**
-     * 是否加载中
-     * @param name 
-     * @returns 
+     * 是否在队列中
+     */
+    public isInQueue(name: UIName) {
+        return !!this.showQueue.find((v) => { return v.name == name; })
+    }
+
+    /**
+     * 是否在加载中
      */
     public isLoading(name: UIName) {
-        return this.uiLoadingMap.has(name) && this.uiLoadingMap.get(name).length > 0;
+        return this.uiLoadingMap.has(name) && this.uiLoadingMap.get(name).length > 0
     }
 
     /**
      * 放入队列
      */
-    private putInUIQueue(data: IShowParams<UIName>) {
+    private putInShowQueue(data: IShowParams<UIName>) {
         if (data.queue === 'join' || this.showQueue.length === 0) {
-            if (this.showQueue.find((v) => { return v.name == data.name; }) != undefined) {
-                this.warn(`队列中已经存在${data.name}`);
-            } else {
-                this.showQueue.push(data);
-            }
+            this.showQueue.push(data);
         } else {
             this.showQueue.splice(1, 0, data);
         }
         if (this.showQueue.length === 1) {
-            this.consumeUIQueue();
+            this.consumeShowQueue();
         }
         return true;
     }
@@ -715,7 +708,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 消耗队列
      * @returns 
      */
-    private consumeUIQueue() {
+    private consumeShowQueue() {
         if (this.showQueue.length === 0) return;
         const data = this.showQueue[0];
         this.show({
@@ -725,12 +718,12 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             onHide: (result: any) => {
                 data.onHide && data.onHide(result);
                 this.showQueue.shift();
-                this.consumeUIQueue();
+                this.consumeShowQueue();
             },
             onError: data.onError ? (error: string, code: 0 | 1) => {
                 const ret = data.onError(error, code);
                 this.showQueue.shift();
-                this.consumeUIQueue();
+                this.consumeShowQueue();
                 return ret;
             } : undefined,
             top: data.top,
@@ -740,15 +733,14 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     /**
      * 展示一个UI
-     * @param param0 
-     * @returns 
+     * 此流程一定是异步的
      */
     public show<UI extends BaseView>({ name, data, queue, onShow, onHide, onError, top = true, attr = null }
         // @ts-ignore
         : IShowParams<UIName, Parameters<UI['onShow']>[0], ReturnType<UI['onShow']>, ReturnType<UI['onHide']>>): boolean {
 
         // 加入队列中
-        if (queue) return this.putInUIQueue({ name, data, queue, onShow, onHide, onError, top, attr });
+        if (queue) return this.putInShowQueue({ name, data, queue, onShow, onHide, onError, top, attr });
 
         this.log(`[show] ${name}`);
         const show = () => this.getUI(name, (node) => {
@@ -758,21 +750,18 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 if (onError && onError(`${name} 不存在或加载失败`, UIManager.ErrorCode.LoadError) !== true) {
                     return;
                 };
-
-                this.showLoading();
-                return this.scheduleOnce(() => {
-                    show();
-                    this.hideLoading();
-                }, 0.1);
+                this.scheduleOnce(show, 0.1);
+                this.showLoading(0.1);
+                return
             }
 
             top && node.setSiblingIndex(-1);
 
             const com = this.getBaseView(node);
+            this.uiShowingMap.set(com, name);
             com.constructor.prototype.show.call(com, data, attr,
                 // onShow
                 (result: any) => {
-                    this.uiShowingMap.set(com, name);
                     onShow && onShow(result);
                 },
                 // onHide
@@ -783,9 +772,10 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 // beforeShow
                 (error: string) => {
                     if (error) {
+                        this.uiShowingMap.delete(com);
                         onError && onError(error, UIManager.ErrorCode.LogicError);
                     } else if (name.indexOf('Page') >= 0) {
-                        if (isValid(this.currPage) && this.currPage !== com && this.currPage.isShowing) {
+                        if (isValid(this.currPage, true) && this.currPage !== com && this.currPage.isShow) {
                             this.currPage.constructor.prototype.hide.call(this.currPage, { name, com });
                         }
                         this.currPage = com;
@@ -795,15 +785,15 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         });
 
         // 判断ui是否有效
-        this.showLoading();
+        const showLoadingUuid = this.showLoading();
         Core.inst.lib.task.excute((retry) => {
-            this.getUIValid(name, (valid) => {
+            this.checkUIValid(name, data, (valid) => {
                 // 加载失败
                 if (valid === -1) {
                     this.error(`[show] ${name} 不存在或加载失败`);
                     // 「没有指定onError」或「onError返回true」会自动发起重试
                     if (onError && onError(`${name} 不存在或加载失败`, UIManager.ErrorCode.LoadError) !== true) {
-                        return this.hideLoading();
+                        return this.hideLoading(showLoadingUuid);
                     };
                     return retry(0.1);
                 }
@@ -812,18 +802,19 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 if (valid === 0) {
                     this.uninstallUI(name);
                     onError && onError(`${name} 无效`, UIManager.ErrorCode.InvalidError);
-                    this.hideLoading();
+                    this.hideLoading(showLoadingUuid);
                     return;
                 }
 
                 show();
-                this.hideLoading();
+                this.hideLoading(showLoadingUuid);
             })
         })
     }
 
     /**
      * 关闭View
+     * 此流程一定是同步的
      */
     public hide<UI extends BaseView>({ name, data, onHide }
         // @ts-ignore
@@ -852,6 +843,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     /**
      * 从顶部关闭一个View(不会重复关闭节点)
+     * 此流程一定是同步的
      */
     public pop<UI extends BaseView>({ name, data, onHide }
         // @ts-ignore
@@ -880,6 +872,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     /**
      * 从底部关闭一个View(不会重复关闭节点)
+     * 此流程一定是同步的
      */
     public shift<UI extends BaseView>({ name, data, onHide }
         // @ts-ignore
@@ -910,6 +903,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 关闭全部View
      * 1、不关闭展示中的Page(加载中的会停止)
      * 2、不关闭paper
+     * 此流程一定是同步的
      */
     public hideAll({ data, exclude }: { data?: any, exclude?: UIName[] } = {}): void {
         // 展示中的
@@ -927,14 +921,32 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         });
     }
 
+    public showLoading(timeout = 0) {
+        this.loading.active = true;
+        const uuid = this.createUUID();
+        this.showLoadingMap.set(uuid, true);
+        if (timeout > 0) this.scheduleOnce(() => {
+            this.hideLoading(uuid);
+        }, timeout);
+        return uuid;
+    }
+
+    public hideLoading(uuid: string) {
+        this.showLoadingMap.delete(uuid);
+        if (this.showLoadingMap.size === 0) {
+            this.loading.active = false;
+        }
+    }
+
     /**
      * 添加触摸屏蔽
      */
-    public addTouchMask() {
-        this.touchEnabledFlag |= MaskTouchEnabledFlg;
+    public addTouchMask(timeout = 0) {
         const uuid = this.createUUID();
         this.touchMaskMap.set(uuid, true);
-        this.log('addTouchMask', uuid);
+        if (timeout > 0) this.scheduleOnce(() => {
+            this.removeTouchMask(uuid);
+        }, timeout);
         return uuid;
     }
 
@@ -943,11 +955,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * @param uuid addTouchMask的返回值
      */
     public removeTouchMask(uuid: string) {
-        this.log('removeTouchMask', uuid);
         this.touchMaskMap.delete(uuid);
-        if (this.touchMaskMap.size === 0) {
-            this.touchEnabledFlag ^= MaskTouchEnabledFlg;
-        }
     }
 
     /**

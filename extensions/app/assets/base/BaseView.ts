@@ -1,5 +1,5 @@
 import { Asset, Component, Enum, Event, js, Layers, Node, UITransform, warn, Widget, _decorator } from 'cc';
-import { DEBUG, EDITOR } from 'cc/env';
+import { EDITOR } from 'cc/env';
 import { IMiniViewName, IMiniViewNames, IViewName } from '../../../../assets/app-builtin/app-admin/executor';
 import Core from '../Core';
 import UIManager from '../manager/ui/UIManager';
@@ -7,8 +7,7 @@ import { IBaseControl } from './BaseControl';
 
 const { ccclass, property } = _decorator;
 
-const dotReWriteFuns = ['resetInEditor', 'blockPropagation', 'show', 'hide', 'focus', 'load', 'showMiniViews', 'hideMiniViews', 'hideAllMiniViews'];
-const dotCallFuns = ['show', 'focus'];
+const dotReWriteFuns = ['resetInEditor'];
 
 const BlockEvents = [
     Node.EventType.TOUCH_START, Node.EventType.TOUCH_MOVE, Node.EventType.TOUCH_END, Node.EventType.TOUCH_CANCEL,
@@ -53,10 +52,6 @@ export interface IHideParamOnHide<T = any> {
     (result: T): any
 }
 
-export interface IHideParamBeforeHide {
-    (error: string): any
-}
-
 interface IMiniOnShow {
     (name: string, data?: any): any
 }
@@ -98,8 +93,8 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     }
 
     /**是否有效/是否可以被展示 */
-    public static get isViewValid() {
-        return true;
+    public static isViewValid(next: (valid: boolean) => void, data: any) {
+        next && next(true);
     }
 
     // 是否被调用过
@@ -112,10 +107,6 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     private _base_touch_enable = true;
     // show/hide等待列表
     private _base_showhide_delays: Function[] = [];
-    // onshow的返回值
-    private _base_onshow_result = null;
-    // onhide的返回值
-    private _base_onhide_result = null;
     // 子界面融合相关
     private _base_mini_show: Set<IMiniViewName> = new Set();
     private _base_mini_showing: Set<IMiniViewName> = new Set();
@@ -239,16 +230,16 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     }
 
     /**
-     * 是否展示中
+     * 是否展示了
      */
-    public get isShowing(): boolean {
-        return this._base_view_state >= ViewState.Showing && this._base_view_state <= ViewState.Hiding;
+    public get isShow(): boolean {
+        return this._base_view_state != ViewState.Hid;
     }
 
     /**
      * 是否show了某个子界面
      */
-    protected isMiniViewShowed(name: IMiniViewName) {
+    protected isMiniViewShow(name: IMiniViewName) {
         return this._base_mini_show.has(name);
     }
 
@@ -260,16 +251,6 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
                 if (BaseView.prototype[funName] !== this[funName]) {
                     warn(`[${this._base_view_name}] [warn] 不应该重写父类方法{${funName}}`);
                 }
-            });
-        }
-
-        if (!EDITOR && DEBUG) {
-            dotCallFuns.forEach((funName) => {
-                this[funName] = (function (className, funName) {
-                    return function () {
-                        throw new Error(`[${className}] [error] 请不要手动调用{${funName}}方法, 这是由框架调用的`);
-                    };
-                })(this._base_view_name, funName);
             });
         }
     }
@@ -477,27 +458,23 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         }
     }
 
-    private show(data?: SHOWDATA, attr?: IShowParamAttr, onShow?: IShowParamOnShow, onHide?: IShowParamOnHide, beforeShow?: IShowParamBeforeShow): boolean {
-        // 已经打开了
-        if (this._base_view_state === ViewState.Showed) {
-            beforeShow && beforeShow('');
-            onShow && onShow(this._base_onshow_result);
-            return;
-        }
-
-        // 当前hide操作需要等待其它流程
-        if (this._base_view_state !== ViewState.Hid) {
+    private show(data?: SHOWDATA, attr?: IShowParamAttr, onShow?: IShowParamOnShow, onHide?: IShowParamOnHide, beforeShow?: IShowParamBeforeShow) {
+        // 当前show操作需要等待其它流程
+        if (this._base_view_state !== ViewState.Showed &&
+            this._base_view_state !== ViewState.Hid) {
             this._base_showhide_delays.push(
                 this.show.bind(this, data, attr, onShow, onHide, beforeShow)
             );
             return;
         }
 
-        this._base_view_state = ViewState.BeforeShow;
+        // show流程
+        const changeState = this._base_view_state === ViewState.Hid;
+        if (changeState) this._base_view_state = ViewState.BeforeShow;
         const next = (error: string) => {
             if (!error) {
                 // 设置展示中
-                this._base_view_state = ViewState.Showing;
+                if (changeState) this._base_view_state = ViewState.Showing;
                 onHide && this.node.once('onHide', onHide);
 
                 // 触发onCreate
@@ -527,8 +504,6 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
                     console.error(err);
                 }
 
-                this._base_onshow_result = result;
-
                 try {
                     onShow && onShow(result);
                     this.node.emit('onShow', result);
@@ -538,25 +513,21 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
                     console.error(err);
                 }
 
-                if (this._base_view_state === ViewState.Showing) {
-                    this._base_view_state = ViewState.Showed;
-                }
+                if (changeState) this._base_view_state = ViewState.Showed;
             } else {
-                if (this._base_view_state === ViewState.BeforeShow) {
-                    this._base_view_state = ViewState.Hid;
-                }
+                if (changeState) this._base_view_state = ViewState.Hid;
             }
+
             if (this._base_showhide_delays.length > 0) {
                 this._base_showhide_delays.shift()();
             }
         };
 
         let isNextCalled = false;
-        this.beforeShow((error, newData) => {
+        this.beforeShow((error) => {
             if (isNextCalled) return this.error('[beforeShow] next被重复调用');
             isNextCalled = true;
 
-            if (typeof newData !== 'undefined') data = newData;
             next(error || null);
         }, data);
     }
@@ -564,74 +535,53 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     protected hide(
         //@ts-ignore
         data?: Parameters<this['onHide']>[0],
-        onHide?: IHideParamOnHide, beforeHide?: IHideParamBeforeHide): boolean {
-
-        // 已经关闭了
-        if (this._base_view_state === ViewState.Hid) {
-            beforeHide && beforeHide('');
-            onHide && onHide(this._base_onhide_result);
-            return;
-        }
+        onHide?: IHideParamOnHide) {
 
         // 当前hide操作需要等待其它流程
-        if (this._base_view_state !== ViewState.Showed) {
+        if (this._base_view_state !== ViewState.Hid &&
+            this._base_view_state !== ViewState.Showed) {
             this._base_showhide_delays.push(
-                this.hide.bind(this, data, onHide, beforeHide)
+                this.hide.bind(this, data, onHide)
             );
             return;
         }
 
-        this._base_view_state = ViewState.BeforeHide;
-        const next = (error: string) => {
-            beforeHide && beforeHide(error);
-            if (!error) {
-                this._base_view_state = ViewState.Hiding;
+        // hide流程
+        const changeState = this._base_view_state === ViewState.Showed;
+        if (changeState) this._base_view_state = ViewState.BeforeHide;
+        const error = this.beforeHide(data);
+        if (!error) {
+            if (changeState) this._base_view_state = ViewState.Hiding;
+            this.hideAllMiniViews(data);
 
-                let result = null;
-                try {
-                    result = this.onHide(data);
-                } catch (error) {
-                    console.error(error);
-                }
-
-                if (typeof result === 'undefined') result = data;
-                this._base_onhide_result = result;
-
-                try {
-                    onHide && onHide(result);
-                    this.node.emit('onHide', result);
-                    Core.inst.manager.ui.emit(`${this._base_view_name}`, { event: 'onHide', result: result });
-                    Core.inst.manager.ui.emit('onHide', { name: `${this._base_view_name}`, result: result });
-                } catch (error) {
-                    console.error(error);
-                }
-
-                if (this._base_view_state === ViewState.Hiding) {
-                    this._base_view_state = ViewState.Hid;
-
-                    if (this.hideEvent === HideEvent.active) { this.node.active = false; }
-                    else if (this.hideEvent === HideEvent.destroy) { Core.inst.manager.ui.release(this); }
-                    Core.inst.manager.ui.refreshShade();
-                }
-            } else {
-                if (this._base_view_state === ViewState.BeforeHide) {
-                    this._base_view_state = ViewState.Showed;
-                }
+            let result = null;
+            try {
+                result = this.onHide(data) || null;
+            } catch (error) {
+                console.error(error);
             }
 
-            if (this._base_showhide_delays.length > 0) {
-                this._base_showhide_delays.shift()();
+            try {
+                onHide && onHide(result);
+                this.node.emit('onHide', result);
+                Core.inst.manager.ui.emit(`${this._base_view_name}`, { event: 'onHide', result: result });
+                Core.inst.manager.ui.emit('onHide', { name: `${this._base_view_name}`, result: result });
+            } catch (error) {
+                console.error(error);
             }
-        };
 
-        let isNextCalled = false;
-        this.beforeHide((error, newData) => {
-            if (isNextCalled) return;
-            isNextCalled = true;
-            if (typeof newData !== 'undefined') data = newData;
-            if (!error && this._base_mini_show.size) this.hideAllMiniViews(data);
-            next(error);
-        }, data);
+            if (changeState) this._base_view_state = ViewState.Hid;
+
+            if (this.hideEvent === HideEvent.active) { this.node.active = false; }
+            else if (this.hideEvent === HideEvent.destroy) { Core.inst.manager.ui.release(this); }
+            Core.inst.manager.ui.refreshShade();
+        } else {
+            if (changeState) this._base_view_state = ViewState.Showed;
+        }
+
+        if (this._base_showhide_delays.length > 0) {
+            this._base_showhide_delays.shift()();
+        }
     }
 
     private focus(boo: boolean): any {
@@ -687,12 +637,12 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         return true;
     }
 
-    protected beforeShow(next: (error?: string, newData?: SHOWDATA) => void, data?: SHOWDATA): any {
-        next(null, data);
+    protected beforeShow(next: (error?: string) => void, data?: SHOWDATA): any {
+        next(null);
     }
 
-    protected beforeHide(next: (error?: string, newData?: HIDEDATA) => void, data?: HIDEDATA): any {
-        next(null, data);
+    protected beforeHide(data?: HIDEDATA): string {
+        return null;
     }
 
     /**
