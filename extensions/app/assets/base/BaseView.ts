@@ -1,4 +1,4 @@
-import { Asset, Component, Enum, Event, js, Layers, Node, UITransform, warn, Widget, _decorator } from 'cc';
+import { Asset, Component, Enum, EventTouch, js, Layers, Node, UITransform, Widget, _decorator } from 'cc';
 import { EDITOR } from 'cc/env';
 import { IMiniViewName, IMiniViewNames, IViewName } from '../../../../assets/app-builtin/app-admin/executor';
 import Core from '../Core';
@@ -6,8 +6,6 @@ import UIManager from '../manager/ui/UIManager';
 import { IBaseControl } from './BaseControl';
 
 const { ccclass, property } = _decorator;
-
-const dotReWriteFuns = ['resetInEditor'];
 
 const BlockEvents = [
     Node.EventType.TOUCH_START, Node.EventType.TOUCH_MOVE, Node.EventType.TOUCH_END, Node.EventType.TOUCH_CANCEL,
@@ -243,18 +241,6 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         return this._base_mini_show.has(name);
     }
 
-    constructor() {
-        super();
-
-        if (EDITOR) {
-            dotReWriteFuns.forEach((funName) => {
-                if (BaseView.prototype[funName] !== this[funName]) {
-                    warn(`[${this._base_view_name}] [warn] 不应该重写父类方法{${funName}}`);
-                }
-            });
-        }
-    }
-
     // 用来初始化组件或节点的一些属性，当该组件被第一次添加到节点上或用户点击了它的 Reset 菜单时调用。这个回调只会在编辑器下调用。
     resetInEditor(): any {
         if (EDITOR) {
@@ -281,18 +267,22 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         this._base_touch_enable = !!enabled;
     }
 
-    private blockPropagation(event: Event) {
+    private blockPropagation(event: EventTouch) {
         if (this.blockInput) {
-            // this.log('阻断触摸');
             event.propagationStopped = true;
+            if (event.type !== Node.EventType.MOUSE_MOVE) {
+                this.log('阻断触摸');
+            }
         }
     }
 
-    private stopPropagation(event: Event) {
+    private stopPropagation(event: EventTouch) {
         if (!this._base_touch_enable) {
-            this.log('屏蔽触摸');
             event.propagationStopped = true;
             event.propagationImmediateStopped = true;
+            if (event.type !== Node.EventType.MOUSE_MOVE) {
+                this.log('屏蔽触摸');
+            }
         }
     }
 

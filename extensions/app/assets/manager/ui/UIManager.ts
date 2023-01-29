@@ -181,8 +181,10 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     private stopPropagation(event: Event) {
         if (!this.touchEnabled || this.touchMaskMap.size > 0) {
-            this.log('触摸屏蔽');
             event.propagationStopped = true;
+            if (event.type !== Node.EventType.MOUSE_MOVE) {
+                this.log('屏蔽触摸');
+            }
         }
     }
 
