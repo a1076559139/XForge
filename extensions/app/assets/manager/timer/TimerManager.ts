@@ -52,14 +52,39 @@ class Time {
     }
 }
 
-// @ccclass
-class Timer extends Component {
-    private times: Time[] = [];
+interface ITimer {
+    /**
+     * 重复定时器
+     */
+    schedule(callback: any, interval?: number, repeat?: number, delay?: number): void
+    /**
+     * 单次定时器
+     */
+    scheduleOnce(callback: any, delay?: number): void
+    /**
+     * 取消指定定时器
+     */
+    unschedule(callback_fn: any): void
+    /**
+     * 取消所有普通定时器
+     */
+    unscheduleAllCallbacks(): void
     /**
      * 注册每日触发器
      * @param time '8:00:01-9:00' 24小时制
      * @param time '8-9' 24小时制
      */
+    registerDailyTrigger(time: string, callback: Function, target?: any): void
+    /**
+     * 取消每日触发器
+     */
+    unregisterDailyTrigger(callback: Function): void
+}
+
+// @ccclass
+class Timer extends Component implements ITimer {
+    private times: Time[] = [];
+
     registerDailyTrigger(time: string, callback: Function, target?: any) {
         this.times.push(new Time(time, callback, target));
     }
@@ -107,7 +132,7 @@ export default class TimerManager extends BaseManager {
         }
     }
 
-    get(rootName: string): Timer {
+    get(rootName: string): ITimer {
         if (typeof rootName === 'undefined') {
             return null;
         }
