@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, statSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import Vue from 'vue/dist/vue';
-import { convertPathToDir, createPath, delayFileExists, getTemplate, stringCase } from '../utils';
+import { convertPathToDir, createFolderByPath, delayFileExists, getReadme, getTemplate, stringCase } from '../../utils';
 
 const PageBaseName: { [name: string]: string } = {};
 
@@ -184,11 +184,13 @@ export default Vue.extend({
                 return;
             }
 
+            const bundlePath = 'db://assets/app-bundle';
+            const viewPath = `${bundlePath}/app-view`;
             const is3D = (isPage || isPaper) && this.groupSelectIndex == 1;
             const uiName = isPaper ?
                 `${stringCase(type)}${stringCase(PageBaseName[owner])}${stringCase(name)}` :
                 `${stringCase(type)}${stringCase(name)}`;
-            const typePath = `db://assets/app-bundle/app-view/${type}`;
+            const typePath = `${viewPath}/${type}`;
             const uiPath = isPaper ?
                 `${typePath}/${PageBaseName[owner]}/${name}` :
                 `${typePath}/${name}`;
@@ -207,7 +209,8 @@ export default Vue.extend({
                 return;
             }
 
-            if (!await createPath(uiPath, ['native', 'resources', 'native/expansion'])) {
+            // 创建UI目录
+            if (!await createFolderByPath(uiPath, { subPaths: ['native', 'resources', 'native/expansion'] })) {
                 this.showLoading = false;
                 this.display = `[错误] 创建目录失败\n${uiPath}`;
                 return;
@@ -255,13 +258,18 @@ export default Vue.extend({
             queryResMeta.userData = getResMetaUserData(uiName);
             await Editor.Message.request('asset-db', 'save-asset-meta', resourcesPath, JSON.stringify(queryResMeta)).catch(_ => null);
 
+            writeFileSync(join(convertPathToDir(bundlePath), '.app-bundle.md'), getReadme('app-bundle'));
+            writeFileSync(join(convertPathToDir(viewPath), '.app-view.md'), getReadme('app-view'));
+            writeFileSync(join(convertPathToDir(typePath), `.${type}.md`), `所有${type}类型UI的根目录`);
+            if (isPaper) writeFileSync(join(convertPathToDir(`${typePath}/${PageBaseName[owner]}`), `.${PageBaseName[owner]}.md`), `归属于Page${stringCase(PageBaseName[owner])}`);
+
             writeFileSync(join(convertPathToDir(uiPath), `.${name}.md`), `${uiName}所在文件夹, 通过${isPaper ? '在page中配置miniViews属性并调用showMiniViews方法' : 'app.manager.ui.show'}的方式加载`);
-            writeFileSync(join(convertPathToDir(nativePath), '.native.md'), '存放脚本与预制体的文件夹, UI脚本与预制体一定在根目录下，其它脚本与预制体放到expansion目录下');
-            writeFileSync(join(convertPathToDir(resourcesPath), '.resources.md'), 'UI资源目录，静态动态使用都可以，动态使用可在UI脚本内通过this.load加载(⚠️:脚本资源一定不要放在此文件夹内)');
-            writeFileSync(join(convertPathToDir(expansionPath), '.expansion.md'), '只能存放脚本与预制体, 里面的资源只能以静态的方式引用(⚠️:动态使用的预制体请放到resources文件夹中, 但脚本一定在此文件夹中)');
+            writeFileSync(join(convertPathToDir(nativePath), '.native.md'), getReadme('native'));
+            writeFileSync(join(convertPathToDir(resourcesPath), '.resources.md'), getReadme('resources'));
+            writeFileSync(join(convertPathToDir(expansionPath), '.expansion.md'), getReadme('expansion'));
 
             this.showLoading = false;
-            this.display = `[成功] 创建成功`;
+            this.display = `[成功] 创建成功\n${uiPath}`;
         }
     }
 });

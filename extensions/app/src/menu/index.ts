@@ -19,15 +19,15 @@ function getMenu() {
 }
 
 export function onCreateMenu(assetInfo: AssetInfo) {
-    return getMenu();
+    // return getMenu();
 };
 
 export function onDBMenu(assetInfo: AssetInfo) {
-    return getMenu();
+    // return getMenu();
 };
 
 export function onPanelMenu(assetInfo: AssetInfo) {
-    return getMenu();
+    // return getMenu();
 };
 
 export function onAssetMenu(assetInfo: AssetInfo) {

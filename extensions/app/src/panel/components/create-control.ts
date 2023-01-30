@@ -1,5 +1,6 @@
+import { existsSync } from 'fs';
 import Vue from 'vue/dist/vue';
-import { createPath, getTemplate, stringCase } from '../utils';
+import { convertPathToDir, createFolderByPath, getMeta, getReadme, getTemplate, stringCase } from '../../utils';
 
 /**
  * 根据语言获取脚本内容
@@ -38,16 +39,23 @@ export default Vue.extend({
                 return;
             }
 
+            const rootPath = `db://assets/app-builtin/app-control`;
             const controlName = `${stringCase(name)}Control`;
-            const controlPath = `db://assets/app-builtin/app-control`;
-            const scriptUrl = `${controlPath}/${controlName}.ts`;
+            const scriptUrl = `${rootPath}/${controlName}.ts`;
 
             this.display = '创建中';
             this.showLoading = true;
 
-            if (!await createPath(controlPath)) {
+            if (existsSync(convertPathToDir(scriptUrl))) {
                 this.showLoading = false;
-                this.display = `[错误] 创建目录失败\n${controlPath}`;
+                this.display = `[错误] 文件已存在, 请删除\n${scriptUrl}`;
+                return;
+            }
+
+            // 目录如果不存在则创建
+            if (!await createFolderByPath(rootPath, { meta: getMeta('app-control'), readme: getReadme('app-control') })) {
+                this.showLoading = false;
+                this.display = `[错误] 创建目录失败\n${rootPath}`;
                 return;
             }
 
@@ -60,7 +68,7 @@ export default Vue.extend({
             }
 
             this.showLoading = false;
-            this.display = `[成功] 创建成功`;
+            this.display = `[成功] 创建成功\n${rootPath}`;
         }
     },
 });

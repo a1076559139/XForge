@@ -19,17 +19,17 @@ function getMenu() {
     ];
 }
 function onCreateMenu(assetInfo) {
-    return getMenu();
+    // return getMenu();
 }
 exports.onCreateMenu = onCreateMenu;
 ;
 function onDBMenu(assetInfo) {
-    return getMenu();
+    // return getMenu();
 }
 exports.onDBMenu = onDBMenu;
 ;
 function onPanelMenu(assetInfo) {
-    return getMenu();
+    // return getMenu();
 }
 exports.onPanelMenu = onPanelMenu;
 ;

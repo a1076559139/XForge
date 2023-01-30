@@ -1,4 +1,4 @@
-import { AssetManager, assetManager, Component, error, EventTarget, find, instantiate, js, log, Node, Prefab, warn, Widget, _decorator } from 'cc';
+import { AssetManager, assetManager, Component, error, EventTarget, find, instantiate, js, log, Node, Prefab, settings, warn, Widget, _decorator } from 'cc';
 import { DEBUG, EDITOR } from 'cc/env';
 import Core from '../Core';
 
@@ -139,6 +139,9 @@ export default class BaseManager extends Component {
      */
     public static init(onFinish?: Function) {
         if (this.bundle) return onFinish && onFinish();
+        const projectBundles = settings.querySettings('assets', 'projectBundles') as string[];
+        if (projectBundles.indexOf(BundleName) === -1) return onFinish && onFinish();
+
         // 一定会加载成功
         Core.inst.lib.task.excute((retry) => {
             assetManager.loadBundle(BundleName, (err, bundle) => {
@@ -150,14 +153,14 @@ export default class BaseManager extends Component {
     }
 
     /**
-     * 获得初始化资源的数量
+     * 获得初始化资源的数量(包括sysMgrCount)
      */
-    public static getInitAssetNum() {
-        if (!this.bundle) throw Error('请先初始化');
+    public static getTotalAssetNum() {
+        let count = this.sysMgrCount;
+
+        if (!this.bundle) return count;
 
         const array = this.bundle.getDirWithPath('/', Prefab) as { uuid: string, path: string, ctor: Function }[];
-
-        let count = 0;
 
         array.forEach(function (item) {
             if (item.path.endsWith('Manager')) {
@@ -165,18 +168,18 @@ export default class BaseManager extends Component {
             }
         });
 
-        return count + this.sysMgrCount;
+        return count;
     }
 
     /**
      * 获得初始化资源的数量
      */
-    public static getInitAssetUrls() {
-        if (!this.bundle) throw Error('请先初始化');
+    public static getUserAssetUrls() {
+        const pathArr: string[] = [];
+
+        if (!this.bundle) return pathArr;
 
         const array = this.bundle.getDirWithPath('/', Prefab) as { uuid: string, path: string, ctor: Function }[];
-
-        const pathArr: string[] = [];
 
         array.forEach(function (item) {
             if (item.path.endsWith('Manager')) {
@@ -191,13 +194,12 @@ export default class BaseManager extends Component {
     /**
      * 静态方法，初始化manager，该方法必须在场景初始化完毕之后调用
      */
-    public static initManagers(progress: (completeAsset: Number, totalAsset: Number) => {}, complete: (totalAsset: Number) => {}) {
-        if (!this.bundle) throw Error('请先初始化');
+    public static initManagers(progress: (completeAsset: Number, totalAsset: Number) => any, complete: (totalAsset: Number) => any) {
         if (this.inited) return warn('不允许重复初始化');
         this.inited = true;
 
         const bundle = this.bundle;
-        const urls = this.getInitAssetUrls();
+        const urls = this.getUserAssetUrls();
 
         const totalAsset = urls.length + this.sysMgrCount;
         let completeAsset = 0;

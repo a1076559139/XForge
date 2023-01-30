@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = require("fs");
 const vue_1 = __importDefault(require("vue/dist/vue"));
-const utils_1 = require("../utils");
+const utils_1 = require("../../utils");
 /**
  * 根据语言获取脚本内容
  */
@@ -44,20 +44,29 @@ exports.default = vue_1.default.extend({
                 this.display = `[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/`;
                 return;
             }
+            const rootPath = 'db://assets/app-builtin/app-manager';
             const managerName = `${utils_1.stringCase(name)}Manager`;
-            const managerPath = `db://assets/app-builtin/app-manager/${utils_1.stringCase(name, true)}`;
-            const scriptUrl = `${managerPath}/${managerName}.ts`;
-            const prefabUrl = `${managerPath}/${managerName}.prefab`;
+            const folderName = utils_1.stringCase(name, true);
+            const folderPath = `${rootPath}/${folderName}`;
+            const scriptUrl = `${folderPath}/${managerName}.ts`;
+            const prefabUrl = `${folderPath}/${managerName}.prefab`;
             this.display = '创建中';
             this.showLoading = true;
-            if (fs_1.existsSync(utils_1.convertPathToDir(managerPath))) {
+            if (fs_1.existsSync(utils_1.convertPathToDir(folderPath))) {
                 this.showLoading = false;
-                this.display = `[错误] 目录已存在, 请删除\n${managerPath}`;
+                this.display = `[错误] 目录已存在, 请删除\n${folderPath}`;
                 return;
             }
-            if (!await utils_1.createPath(managerPath)) {
+            // 目录如果不存在则创建
+            if (!await utils_1.createFolderByPath(rootPath, {
+                meta: utils_1.getMeta('app-manager'),
+                readme: utils_1.getReadme('app-manager'),
+                subFolders: [
+                    { folder: folderName, readme: `${managerName}所在文件夹, 通过app.manager.${folderName}的方式调用` }
+                ]
+            })) {
                 this.showLoading = false;
-                this.display = `[错误] 创建目录失败\n${managerPath}`;
+                this.display = `[错误] 创建目录失败\n${folderPath}`;
                 return;
             }
             // 创建script
@@ -79,7 +88,7 @@ exports.default = vue_1.default.extend({
                 return;
             }
             this.showLoading = false;
-            this.display = `[成功] 创建成功`;
+            this.display = `[成功] 创建成功\n${rootPath}`;
         }
     },
 });

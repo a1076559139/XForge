@@ -26,7 +26,36 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.unload = exports.load = exports.methods = void 0;
 const fs_1 = require("fs");
 const path_1 = __importDefault(require("path"));
-const utils_1 = require("./panel/utils");
+const utils_1 = require("./utils");
+const adminFolderName = 'app-admin';
+const controlFolderName = 'app-control';
+const managerFolderName = 'app-manager';
+const modelFolderName = 'app-model';
+const soundFolderName = 'app-sound';
+const viewFolderName = 'app-view';
+const extendFolderName = 'app-extend';
+const builtinFolderName = 'app-builtin';
+const bundleFolderName = 'app-bundle';
+const builtinPath = 'db://assets/' + builtinFolderName;
+const builtinDir = utils_1.convertPathToDir(builtinPath);
+const bundlePath = 'db://assets/' + bundleFolderName;
+const bundleDir = utils_1.convertPathToDir(bundlePath);
+const adminPath = builtinPath + '/' + adminFolderName;
+const adminDir = builtinDir + '/' + adminFolderName;
+const controlPath = builtinPath + '/' + controlFolderName;
+const controlDir = builtinDir + '/' + controlFolderName;
+const managerPath = builtinPath + '/' + managerFolderName;
+const managerDir = builtinDir + '/' + managerFolderName;
+const modelPath = builtinPath + '/' + modelFolderName;
+const modelDir = builtinDir + '/' + modelFolderName;
+const soundPath = bundlePath + '/' + soundFolderName;
+const soundDir = bundleDir + '/' + soundFolderName;
+const viewPath = bundlePath + '/' + viewFolderName;
+const viewDir = bundleDir + '/' + viewFolderName;
+const extendPath = bundlePath + '/' + extendFolderName;
+const extendDir = bundleDir + '/' + extendFolderName;
+const executorFilePath = adminPath + '/executor.ts';
+const executorFileDir = adminDir + '/executor.ts';
 function isVaild(info, strict = true) {
     if (!strict) {
         if (info.path.endsWith('Control') && info.type === 'cc.Script')
@@ -42,20 +71,34 @@ function isVaild(info, strict = true) {
             return true;
         return false;
     }
-    if (info.path.startsWith('db://assets/app-builtin/app-control')) {
+    if (info.path === builtinPath)
+        return true;
+    if (info.path === bundlePath)
+        return true;
+    if (info.path === managerPath)
+        return true;
+    if (info.path === controlPath)
+        return true;
+    if (info.path === modelPath)
+        return true;
+    if (info.path === soundPath)
+        return true;
+    if (info.path === viewPath)
+        return true;
+    if (info.path.startsWith(controlPath)) {
         return info.path.endsWith('Control') && info.type === 'cc.Script';
     }
-    if (info.path.startsWith('db://assets/app-builtin/app-manager')) {
+    if (info.path.startsWith(managerPath)) {
         return info.path.endsWith('Manager') && (info.type === 'cc.Script' || info.type === 'cc.Prefab');
     }
-    if (info.path.startsWith('db://assets/app-builtin/app-model')) {
+    if (info.path.startsWith(modelPath)) {
         return (info.name.startsWith('data.') || info.name.startsWith('config.')) && info.type === 'cc.Script';
     }
-    if (info.path.startsWith('db://assets/app-bundle/app-view')) {
+    if (info.path.startsWith(viewPath)) {
         return (info.name.startsWith('Page') || info.name.startsWith('Paper') || info.name.startsWith('Pop') || info.name.startsWith('Top'))
             && (info.type === 'cc.Script' || info.type === 'cc.Prefab');
     }
-    if (info.path.startsWith('db://assets/app-bundle/app-sound')) {
+    if (info.path.startsWith(soundPath)) {
         return info.type === 'cc.AudioClip';
     }
 }
@@ -86,7 +129,7 @@ function compareStr(str1, str2) {
 }
 const viewSelect = ['Page', 'Paper', 'Pop', 'Top'];
 const viewRegExp = RegExp(`^(${viewSelect.join('|')})`);
-function readFileSyncByURL(url) {
+function readFileSyncByPath(url) {
     const filepath = utils_1.convertPathToDir(url);
     return fs_1.existsSync(filepath) ? fs_1.readFileSync(filepath, 'utf8') : '';
 }
@@ -107,30 +150,113 @@ function isTSDefault(value) {
     const js = fs_1.readFileSync(filepath, 'utf8');
     return js.search(/export\s+default/) >= 0;
 }
-const executorFile = 'executor.ts';
-const executorPath = 'db://assets/app-builtin/app-admin';
-const executorUrl = executorPath + '/' + executorFile;
-const executorDir = utils_1.convertPathToDir(executorPath);
 const keyWords = [
     'lib', 'manager', 'Manager', 'data', 'config',
     'IViewName', 'IViewNames', 'IMiniViewName', 'IMiniViewNames', 'IMusicName', 'IMusicNames', 'IEffecName', 'IEffecNames',
     'miniViewNames', 'viewNamesEnum', 'musicNamesEnum', 'effecNamesEnum'
 ];
-async function updateExecutor(async = false) {
-    // app-control app-manager app-model
-    let result1 = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-builtin/{app-control,app-manager/*,app-model}/*.{ts,prefab}' }).catch(_ => []);
-    result1 = result1.sort((a, b) => compareStr(a.name, b.name));
-    // app-sound
-    let result2 = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-bundle/app-sound/{music,effect}/*.*' }).catch(_ => []);
-    result2 = result2.sort((a, b) => compareStr(a.name, b.name));
-    // app-view
-    let result3 = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/app-bundle/app-view/{page,pop,top,paper/*}/*/native/*.{ts,prefab}' }).catch(_ => []);
-    result3 = result3.sort((a, b) => compareStr(a.name, b.name));
-    // lia manager
-    let result4 = async ? [] : await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://app/{lib,manager}/**/*.{ts,prefab}' }).catch(_ => []);
-    result4 = result4.sort((a, b) => compareStr(a.name, b.name));
-    // 集合
-    const results = result1.slice().concat(result2).concat(result3).concat(result4);
+async function clearExecutor() {
+    if (!fs_1.existsSync(executorFileDir))
+        return;
+    const viewKeys = { nerver: '' };
+    const miniViewKeys = { nerver: '' };
+    const musicKeys = { nerver: '' };
+    const effecKeys = { nerver: '' };
+    // const vaildBundles = {
+    //     [adminFolderName]: false,
+    //     [controlFolderName]: false,
+    //     [managerFolderName]: false,
+    //     [modelFolderName]: false,
+    //     [soundFolderName]: false,
+    //     [extendFolderName]: false
+    // }
+    let result = `/* eslint-disable */\n` +
+        `import { Component } from 'cc';\n` +
+        `import { app } from '../../app/app';\n` +
+        `import { DEV,EDITOR } from 'cc/env';\n\n`;
+    result += 'enum viewNames { \'' + Object.keys(viewKeys).join('\',\'') + '\'}\n';
+    result += 'const miniViewNames = ' + JSON.stringify(miniViewKeys) + '\n';
+    result += 'enum musicNames { \'' + Object.keys(musicKeys).join('\',\'') + '\'}\n';
+    result += 'enum effecNames { \'' + Object.keys(effecKeys).join('\',\'') + '\'}\n\n';
+    result += 'export type IViewName = keyof typeof viewNames\n';
+    result += 'export type IViewNames = IViewName[]\n';
+    result += 'export type IMiniViewName = keyof typeof miniViewNames\n';
+    result += 'export type IMiniViewNames = IMiniViewName[]\n';
+    result += 'export type IMusicName = keyof typeof musicNames\n';
+    result += 'export type IMusicNames = IMusicName[]\n';
+    result += 'export type IEffecName = keyof typeof effecNames\n';
+    result += 'export type IEffecNames = IEffecName[]\n\n';
+    // bundle
+    // result += 'export const vaildBundles = ' + JSON.stringify(vaildBundles) + '\n\n';
+    // data
+    result += `if(!EDITOR||DEV) Object.assign(app.data, {})\n`;
+    // config
+    result += `if(!EDITOR||DEV) Object.assign(app.config, {})\n\n`;
+    result += 'export type IApp = {\n';
+    result += `    Manager: {},\n`;
+    result += `    manager: {},\n`;
+    result += `    data: {},\n`;
+    result += `    config: {}\n`;
+    result += '}\n';
+    // 修正windows系统中的\为/
+    result = result.replace(/\\/g, '/');
+    // save
+    if (readFileSyncByPath(executorFilePath) !== result) {
+        await Editor.Message.request('asset-db', 'create-asset', executorFilePath, result, {
+            overwrite: true
+        });
+    }
+}
+async function updateExecutor() {
+    // app-builtin文件夹不存在, 创建
+    if (!fs_1.existsSync(builtinDir))
+        await utils_1.createFolderByPath(builtinPath, { readme: utils_1.getReadme(builtinFolderName) });
+    // app-admin文件夹不存在, 创建
+    if (!fs_1.existsSync(adminDir))
+        await utils_1.createFolderByPath(adminPath, { meta: utils_1.getMeta(adminFolderName), readme: utils_1.getReadme(adminFolderName) });
+    // const vaildBundles = {
+    //     [adminFolderName]: true,
+    //     [controlFolderName]: false,
+    //     [managerFolderName]: false,
+    //     [modelFolderName]: false,
+    //     [soundFolderName]: false,
+    //     [extendFolderName]: false
+    // }
+    // // 检查app-control
+    // const appControlMeta = !existsSync(controlDir) ? null : await Editor.Message.request('asset-db', 'query-asset-meta', controlPath).catch(_ => null);
+    // if (appControlMeta && !appControlMeta.userData?.isBundle) {
+    //     appControlMeta.userData = getMeta(controlFolderName).userData;
+    //     await Editor.Message.request('asset-db', 'save-asset-meta', controlPath, JSON.stringify(appControlMeta)).catch(_ => null);
+    // }
+    // vaildBundles[controlFolderName] = !!appControlMeta;
+    // // 检查app-manager
+    // const appManagerMeta = !existsSync(managerDir) ? null : await Editor.Message.request('asset-db', 'query-asset-meta', managerPath).catch(_ => null);
+    // if (appManagerMeta && !appManagerMeta.userData?.isBundle) {
+    //     appManagerMeta.userData = getMeta(managerFolderName).userData;
+    //     await Editor.Message.request('asset-db', 'save-asset-meta', managerPath, JSON.stringify(appManagerMeta)).catch(_ => null);
+    // }
+    // vaildBundles[managerFolderName] = !!appManagerMeta;
+    // // 检查app-model
+    // const appModelMeta = !existsSync(modelDir) ? null : await Editor.Message.request('asset-db', 'query-asset-meta', modelPath).catch(_ => null);
+    // if (appModelMeta && !appModelMeta.userData?.isBundle) {
+    //     appModelMeta.userData = getMeta(modelFolderName).userData;
+    //     await Editor.Message.request('asset-db', 'save-asset-meta', modelPath, JSON.stringify(appModelMeta)).catch(_ => null);
+    // }
+    // vaildBundles[modelFolderName] = !!appModelMeta;
+    // // 检查app-sound
+    // const appSoundMeta = !existsSync(soundDir) ? null : await Editor.Message.request('asset-db', 'query-asset-meta', soundPath).catch(_ => null);
+    // if (appSoundMeta && !appSoundMeta.userData?.isBundle) {
+    //     appSoundMeta.userData = getMeta(soundFolderName).userData;
+    //     await Editor.Message.request('asset-db', 'save-asset-meta', soundPath, JSON.stringify(appSoundMeta)).catch(_ => null);
+    // }
+    // vaildBundles[soundFolderName] = !!appSoundMeta;
+    // // 检查app-extend
+    // const appExtendMeta = !existsSync(extendDir) ? null : await Editor.Message.request('asset-db', 'query-asset-meta', extendPath).catch(_ => null);
+    // if (appExtendMeta && !appExtendMeta.userData?.isBundle) {
+    //     appExtendMeta.userData = getMeta(extendFolderName).userData;
+    //     await Editor.Message.request('asset-db', 'save-asset-meta', extendPath, JSON.stringify(appExtendMeta)).catch(_ => null);
+    // }
+    // vaildBundles[extendFolderName] = !!appExtendMeta;
     const libs = [];
     const mgrs = [];
     const datas = [];
@@ -139,6 +265,20 @@ async function updateExecutor(async = false) {
     const miniViewKeys = {};
     const musicKeys = {};
     const effecKeys = {};
+    // app-control app-manager app-model
+    let result1 = await Editor.Message.request('asset-db', 'query-assets', { pattern: builtinPath + '/{app-control,app-manager/*,app-model}/*.{ts,prefab}' }).catch(_ => []);
+    result1 = result1.sort((a, b) => compareStr(a.name, b.name));
+    // app-sound
+    let result2 = await Editor.Message.request('asset-db', 'query-assets', { pattern: soundPath + '/{music,effect}/*.*' }).catch(_ => []);
+    result2 = result2.sort((a, b) => compareStr(a.name, b.name));
+    // app-view
+    let result3 = await Editor.Message.request('asset-db', 'query-assets', { pattern: viewPath + '/{page,pop,top,paper/*}/*/native/*.{ts,prefab}' }).catch(_ => []);
+    result3 = result3.sort((a, b) => compareStr(a.name, b.name));
+    // lia manager
+    let result4 = await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://app/{lib,manager}/**/*.{ts,prefab}' }).catch(_ => []);
+    result4 = result4.sort((a, b) => compareStr(a.name, b.name));
+    // 集合
+    const results = result1.slice().concat(result2).concat(result3).concat(result4);
     for (let index = 0; index < results.length; index++) {
         const result = results[index];
         // 文件名.扩展名
@@ -163,10 +303,10 @@ async function updateExecutor(async = false) {
             if (keyWords.indexOf(varname) >= 0) {
                 console.log(`[跳过此文件] [${filename}] 原因: ${varname}与关键字中(${JSON.stringify(keyWords)})的一个重复`);
             }
-            else if (dirname.includes('app-manager')) {
+            else if (dirname.includes(managerFolderName)) {
                 // 用户manager
                 if (filename.endsWith('Manager') && filename !== 'BaseManager') {
-                    if (dirname.toLowerCase().includes(`app-manager/${filename.slice(0, -7).toLowerCase()}`)) {
+                    if (dirname.toLowerCase().includes(`${managerFolderName}/${filename.slice(0, -7).toLowerCase()}`)) {
                         mgrs.push([filename, dirname, varname, extname]);
                     }
                 }
@@ -194,9 +334,9 @@ async function updateExecutor(async = false) {
             }
         }
         else if (extname === '.prefab') {
-            if (dirname.indexOf('app-view/') >= 0 && viewRegExp.test(filename)) {
+            if (dirname.indexOf(viewFolderName + '/') >= 0 && viewRegExp.test(filename)) {
                 const dirArray = dirname.split('/');
-                const index = dirArray.indexOf('app-view');
+                const index = dirArray.indexOf(viewFolderName);
                 const viewDirArray = dirArray.slice(index + 1);
                 // viewKeys
                 if (['page', 'paper', 'pop', 'top'].indexOf(viewDirArray[0].toLowerCase()) >= 0) {
@@ -220,8 +360,8 @@ async function updateExecutor(async = false) {
                 }
             }
         }
-        else if (dirname.indexOf('app-sound/') >= 0) {
-            const dir = path_1.default.join(dirname.split('app-sound/').pop(), filename);
+        else if (dirname.indexOf(soundFolderName + '/') >= 0) {
+            const dir = path_1.default.join(dirname.split(soundFolderName + '/').pop(), filename);
             if (dir.startsWith('music')) {
                 // musicKeys
                 musicKeys[dir] = dir;
@@ -245,13 +385,13 @@ async function updateExecutor(async = false) {
             // storage
             const varname = value[2];
             if (isTSDefault(value)) {
-                result += `import ${varname} from '${path_1.default.join(path_1.default.relative(executorDir, utils_1.convertPathToDir(dirname)), filename)}'\n`;
+                result += `import ${varname} from '${path_1.default.join(path_1.default.relative(adminDir, utils_1.convertPathToDir(dirname)), filename)}'\n`;
             }
             else if (module) {
-                result += `import {${varname}} from '${path_1.default.join(path_1.default.relative(executorDir, utils_1.convertPathToDir(dirname)), filename)}'\n`;
+                result += `import {${varname}} from '${path_1.default.join(path_1.default.relative(adminDir, utils_1.convertPathToDir(dirname)), filename)}'\n`;
             }
             else {
-                result += `import * as ${varname} from '${path_1.default.join(path_1.default.relative(executorDir, utils_1.convertPathToDir(dirname)), filename)}'\n`;
+                result += `import * as ${varname} from '${path_1.default.join(path_1.default.relative(adminDir, utils_1.convertPathToDir(dirname)), filename)}'\n`;
             }
             array[index] = varname;
         });
@@ -296,6 +436,8 @@ async function updateExecutor(async = false) {
     result += 'export type IMusicNames = IMusicName[]\n';
     result += 'export type IEffecName = keyof typeof effecNames\n';
     result += 'export type IEffecNames = IEffecName[]\n\n';
+    // bundle
+    // result += 'export const vaildBundles = ' + JSON.stringify(vaildBundles) + '\n\n';
     // data
     handle(datas, false);
     result += `if(!EDITOR||DEV) Object.assign(app.data, {${datas.map(varname => `${varname.slice(5)}:new ${varname}()`).join(',')}})\n`;
@@ -311,25 +453,23 @@ async function updateExecutor(async = false) {
     // 修正windows系统中的\为/
     result = result.replace(/\\/g, '/');
     // save
-    if (readFileSyncByURL(executorUrl) !== result) {
-        // if(async)
-        // writeFileSync(path.join(executorDir, executorFile), result, 'utf-8');
-        await Editor.Message.request('asset-db', 'create-asset', executorUrl, result, {
+    if (readFileSyncByPath(executorFilePath) !== result) {
+        await Editor.Message.request('asset-db', 'create-asset', executorFilePath, result, {
             overwrite: true
         });
     }
 }
 let timer = null;
-function callUpdateExecutor(sync = false) {
+function callUpdateExecutor(clear = false) {
     if (timer)
         return;
-    if (sync) {
-        updateExecutor(true);
+    if (clear) {
+        clearExecutor();
         callUpdateExecutor(false);
     }
     else {
         timer = setTimeout(() => {
-            updateExecutor(false).finally(() => {
+            updateExecutor().finally(() => {
                 timer = null;
             });
         }, 500);

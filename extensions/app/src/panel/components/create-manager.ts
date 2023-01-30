@@ -1,6 +1,6 @@
 import { existsSync } from 'fs';
 import Vue from 'vue/dist/vue';
-import { convertPathToDir, createPath, getTemplate, stringCase } from '../utils';
+import { convertPathToDir, createFolderByPath, getMeta, getReadme, getTemplate, stringCase } from '../../utils';
 
 /**
  * 根据语言获取脚本内容
@@ -44,23 +44,32 @@ export default Vue.extend({
                 return;
             }
 
+            const rootPath = 'db://assets/app-builtin/app-manager';
             const managerName = `${stringCase(name)}Manager`;
-            const managerPath = `db://assets/app-builtin/app-manager/${stringCase(name, true)}`;
-            const scriptUrl = `${managerPath}/${managerName}.ts`;
-            const prefabUrl = `${managerPath}/${managerName}.prefab`;
+            const folderName = stringCase(name, true);
+            const folderPath = `${rootPath}/${folderName}`;
+            const scriptUrl = `${folderPath}/${managerName}.ts`;
+            const prefabUrl = `${folderPath}/${managerName}.prefab`;
 
             this.display = '创建中';
             this.showLoading = true;
 
-            if (existsSync(convertPathToDir(managerPath))) {
+            if (existsSync(convertPathToDir(folderPath))) {
                 this.showLoading = false;
-                this.display = `[错误] 目录已存在, 请删除\n${managerPath}`;
+                this.display = `[错误] 目录已存在, 请删除\n${folderPath}`;
                 return;
             }
 
-            if (!await createPath(managerPath)) {
+            // 目录如果不存在则创建
+            if (!await createFolderByPath(rootPath, {
+                meta: getMeta('app-manager'),
+                readme: getReadme('app-manager'),
+                subFolders: [
+                    { folder: folderName, readme: `${managerName}所在文件夹, 通过app.manager.${folderName}的方式调用` }
+                ]
+            })) {
                 this.showLoading = false;
-                this.display = `[错误] 创建目录失败\n${managerPath}`;
+                this.display = `[错误] 创建目录失败\n${folderPath}`;
                 return;
             }
 
@@ -85,7 +94,7 @@ export default Vue.extend({
             }
 
             this.showLoading = false;
-            this.display = `[成功] 创建成功`;
+            this.display = `[成功] 创建成功\n${rootPath}`;
         }
     },
 });
