@@ -248,7 +248,7 @@ export default class BaseManager extends Component {
                 next => aSync2.start(next),
             ])
             .add(function (next) {
-                Core.inst.emit(Core.EventType.EVENT_SYS_MANAGER_INITED);
+                Core.emit(Core.EventType.EVENT_SYS_MANAGER_INITED);
                 // 初始化用户manager
                 const aSync3 = Core.inst.lib.task.createASync();
                 userManagerRoot.children.forEach(node => {
@@ -260,8 +260,8 @@ export default class BaseManager extends Component {
                 aSync3.start(next);
             })
             .start(function () {
-                Core.inst.emit(Core.EventType.EVENT_USER_MANAGER_INITED);
-                Core.inst.emit(Core.EventType.EVENT_MANAGER_INITED);
+                Core.emit(Core.EventType.EVENT_USER_MANAGER_INITED);
+                Core.emit(Core.EventType.EVENT_MANAGER_INITED);
                 sysMgr.forEach(function (manager: BaseManager) {
                     manager.onFinished();
                 });
@@ -270,7 +270,7 @@ export default class BaseManager extends Component {
                     const manager = node.getComponent(BaseManager);
                     manager.onFinished();
                 });
-                Core.inst.emit(Core.EventType.EVENT_MANAGER_FINISHED);
+                Core.emit(Core.EventType.EVENT_MANAGER_FINISHED);
                 complete && complete(totalAsset);
             });
     }

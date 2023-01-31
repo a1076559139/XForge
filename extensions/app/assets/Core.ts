@@ -92,7 +92,18 @@ export default class Core<T extends ICore> {
         }
     }
 
-    emit(event: keyof typeof EventType, ...args: any[]): any {
+    off(event: keyof typeof EventType, callback: (...any: any[]) => void, target?: any): any {
+        eventTarget.off(event, callback, target);
+    }
+
+    targetOff(target: any) {
+        eventTarget.targetOff(target);
+    }
+
+    /**
+     * 请不要手动调用
+     */
+    static emit(event: keyof typeof EventType, ...args: any[]): any {
         EventMap[event] = true;
         eventTarget.emit(event, ...args);
     }

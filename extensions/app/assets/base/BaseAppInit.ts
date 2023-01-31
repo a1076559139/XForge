@@ -103,7 +103,7 @@ export default abstract class BaseAppInit extends Component {
         this.onProgress(++this._base_completed, this._base_total);
         // 全部加载完成
         if (this._base_completed === this._base_total) {
-            Core.inst.emit(Core.EventType.EVENT_APPINIT_FINISHED);
+            Core.emit(Core.EventType.EVENT_APPINIT_FINISHED);
             return Core.inst.manager.ui.showDefault(() => {
                 // 销毁当前节点
                 this.node.active = false;
