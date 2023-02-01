@@ -77,7 +77,7 @@ export async function createFolderByPath(path: string, opts?: { subPaths?: strin
         await delayFileExists(`${convertPathToDir(path)}.meta`);
         const queryMeta = await Editor.Message.request('asset-db', 'query-asset-meta', path).catch(_ => null);
         if (!queryMeta) return false;
-        queryMeta.userData = opts.meta.userData;
+        Object.assign(queryMeta.userData, opts.meta.userData);
 
         const result = await Editor.Message.request('asset-db', 'save-asset-meta', path, JSON.stringify(queryMeta)).catch(_ => null);
         if (!result) return false;
@@ -115,7 +115,7 @@ export async function createFolderByPath(path: string, opts?: { subPaths?: strin
                 await delayFileExists(`${convertPathToDir(subPath)}.meta`);
                 const queryMeta = await Editor.Message.request('asset-db', 'query-asset-meta', subPath).catch(_ => null);
                 if (!queryMeta) return false;
-                queryMeta.userData = subOpts.meta.userData;
+                Object.assign(queryMeta.userData, subOpts.meta.userData);
 
                 const result = await Editor.Message.request('asset-db', 'save-asset-meta', subPath, JSON.stringify(queryMeta)).catch(_ => null);
                 if (!result) return false;
