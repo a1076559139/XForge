@@ -19,6 +19,7 @@
  *  });
  *
  */
+// path.join不能正确处理'db://'结构，会把'//'变成'/'
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -56,7 +57,43 @@ const extendPath = bundlePath + '/' + extendFolderName;
 const extendDir = bundleDir + '/' + extendFolderName;
 const executorFilePath = adminPath + '/executor.ts';
 const executorFileDir = adminDir + '/executor.ts';
-function isVaild(info, strict = true) {
+function isFolderVaild(info) {
+    if (!info.path)
+        return true;
+    if (path_1.default.dirname(info.path) !== 'db://assets')
+        return true;
+    const basename = path_1.default.basename(info.path);
+    if (basename === 'app')
+        return true;
+    if (basename === 'app-appinit')
+        return true;
+    if (basename === 'app-builtin')
+        return true;
+    if (basename === 'app-bundle')
+        return true;
+    if (basename === 'app-scene')
+        return true;
+    if (basename === 'res-bundle')
+        return true;
+    if (basename === 'res-native')
+        return true;
+    if (basename === 'resources')
+        return true;
+    return false;
+}
+async function deleteInvalidFolders() {
+    await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/*' })
+        .then(infos => {
+        const deletePaths = infos.filter(info => !isFolderVaild(info)).map(info => info.path);
+        if (deletePaths.length) {
+            Editor.Dialog.error(`${deletePaths.join('\r\n')}\r\n只允许使用插件App创建的文件夹`, { title: '非法文件夹', buttons: ['确认'] });
+            deletePaths.forEach(deletePath => {
+                Editor.Message.request('asset-db', 'delete-asset', deletePath);
+            });
+        }
+    });
+}
+function isExecutor(info, strict = true) {
     if (!strict) {
         if (info.path.endsWith('Control') && info.type === 'cc.Script')
             return true;
@@ -162,14 +199,6 @@ async function clearExecutor() {
     const miniViewKeys = { nerver: '' };
     const musicKeys = { nerver: '' };
     const effecKeys = { nerver: '' };
-    // const vaildBundles = {
-    //     [adminFolderName]: false,
-    //     [controlFolderName]: false,
-    //     [managerFolderName]: false,
-    //     [modelFolderName]: false,
-    //     [soundFolderName]: false,
-    //     [extendFolderName]: false
-    // }
     let result = `/* eslint-disable */\n` +
         `import { Component } from 'cc';\n` +
         `import { app } from '../../app/app';\n` +
@@ -186,8 +215,6 @@ async function clearExecutor() {
     result += 'export type IMusicNames = IMusicName[]\n';
     result += 'export type IEffecName = keyof typeof effecNames\n';
     result += 'export type IEffecNames = IEffecName[]\n\n';
-    // bundle
-    // result += 'export const vaildBundles = ' + JSON.stringify(vaildBundles) + '\n\n';
     // data
     result += `if(!EDITOR||DEV) Object.assign(app.data, {})\n`;
     // config
@@ -214,49 +241,36 @@ async function updateExecutor() {
     // app-admin文件夹不存在, 创建
     if (!fs_1.existsSync(adminDir))
         await utils_1.createFolderByPath(adminPath, { meta: utils_1.getMeta(adminFolderName), readme: utils_1.getReadme(adminFolderName) });
-    // const vaildBundles = {
-    //     [adminFolderName]: true,
-    //     [controlFolderName]: false,
-    //     [managerFolderName]: false,
-    //     [modelFolderName]: false,
-    //     [soundFolderName]: false,
-    //     [extendFolderName]: false
-    // }
     // // 检查app-control
     // const appControlMeta = !existsSync(controlDir) ? null : await Editor.Message.request('asset-db', 'query-asset-meta', controlPath).catch(_ => null);
     // if (appControlMeta && !appControlMeta.userData?.isBundle) {
     //     appControlMeta.userData = getMeta(controlFolderName).userData;
     //     await Editor.Message.request('asset-db', 'save-asset-meta', controlPath, JSON.stringify(appControlMeta)).catch(_ => null);
     // }
-    // vaildBundles[controlFolderName] = !!appControlMeta;
     // // 检查app-manager
     // const appManagerMeta = !existsSync(managerDir) ? null : await Editor.Message.request('asset-db', 'query-asset-meta', managerPath).catch(_ => null);
     // if (appManagerMeta && !appManagerMeta.userData?.isBundle) {
     //     appManagerMeta.userData = getMeta(managerFolderName).userData;
     //     await Editor.Message.request('asset-db', 'save-asset-meta', managerPath, JSON.stringify(appManagerMeta)).catch(_ => null);
     // }
-    // vaildBundles[managerFolderName] = !!appManagerMeta;
     // // 检查app-model
     // const appModelMeta = !existsSync(modelDir) ? null : await Editor.Message.request('asset-db', 'query-asset-meta', modelPath).catch(_ => null);
     // if (appModelMeta && !appModelMeta.userData?.isBundle) {
     //     appModelMeta.userData = getMeta(modelFolderName).userData;
     //     await Editor.Message.request('asset-db', 'save-asset-meta', modelPath, JSON.stringify(appModelMeta)).catch(_ => null);
     // }
-    // vaildBundles[modelFolderName] = !!appModelMeta;
     // // 检查app-sound
     // const appSoundMeta = !existsSync(soundDir) ? null : await Editor.Message.request('asset-db', 'query-asset-meta', soundPath).catch(_ => null);
     // if (appSoundMeta && !appSoundMeta.userData?.isBundle) {
     //     appSoundMeta.userData = getMeta(soundFolderName).userData;
     //     await Editor.Message.request('asset-db', 'save-asset-meta', soundPath, JSON.stringify(appSoundMeta)).catch(_ => null);
     // }
-    // vaildBundles[soundFolderName] = !!appSoundMeta;
     // // 检查app-extend
     // const appExtendMeta = !existsSync(extendDir) ? null : await Editor.Message.request('asset-db', 'query-asset-meta', extendPath).catch(_ => null);
     // if (appExtendMeta && !appExtendMeta.userData?.isBundle) {
     //     appExtendMeta.userData = getMeta(extendFolderName).userData;
     //     await Editor.Message.request('asset-db', 'save-asset-meta', extendPath, JSON.stringify(appExtendMeta)).catch(_ => null);
     // }
-    // vaildBundles[extendFolderName] = !!appExtendMeta;
     const libs = [];
     const mgrs = [];
     const datas = [];
@@ -436,8 +450,6 @@ async function updateExecutor() {
     result += 'export type IMusicNames = IMusicName[]\n';
     result += 'export type IEffecName = keyof typeof effecNames\n';
     result += 'export type IEffecNames = IEffecName[]\n\n';
-    // bundle
-    // result += 'export const vaildBundles = ' + JSON.stringify(vaildBundles) + '\n\n';
     // data
     handle(datas, false);
     result += `if(!EDITOR||DEV) Object.assign(app.data, {${datas.map(varname => `${varname.slice(5)}:new ${varname}()`).join(',')}})\n`;
@@ -483,20 +495,32 @@ exports.methods = {
         callUpdateExecutor();
     },
     ['asset-db:ready']() {
-        callUpdateExecutor();
+        updateExecutor().finally(() => {
+            deleteInvalidFolders();
+        });
     },
     ['asset-db:asset-add'](uuid, info) {
-        if (!isVaild(info))
+        if (!isFolderVaild(info)) {
+            Editor.Dialog.error(`${info.path}\r\n只允许使用插件App创建的文件夹`, { title: '非法文件夹', buttons: ['确认'] });
+            Editor.Message.request('asset-db', 'delete-asset', info.path);
+            return;
+        }
+        if (!isExecutor(info))
             return;
         callUpdateExecutor();
     },
     ['asset-db:asset-change'](uuid, info) {
-        if (!isVaild(info, false))
+        if (!isFolderVaild(info)) {
+            Editor.Dialog.error(`${info.path}\r\n只允许使用插件App创建的文件夹`, { title: '非法文件夹', buttons: ['确认'] });
+            Editor.Message.request('asset-db', 'delete-asset', info.path);
+            return;
+        }
+        if (!isExecutor(info, false))
             return;
         callUpdateExecutor();
     },
     ['asset-db:asset-delete'](uuid, info) {
-        if (!isVaild(info))
+        if (!isExecutor(info))
             return;
         callUpdateExecutor(true);
     }
@@ -508,8 +532,11 @@ exports.methods = {
 function load() {
     Editor.Message.request('asset-db', 'query-ready')
         .then(ready => {
-        if (ready)
-            callUpdateExecutor();
+        if (!ready)
+            return;
+        updateExecutor().finally(() => {
+            deleteInvalidFolders();
+        });
     });
 }
 exports.load = load;
