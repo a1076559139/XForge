@@ -34,7 +34,6 @@ const managerFolderName = 'app-manager';
 const modelFolderName = 'app-model';
 const soundFolderName = 'app-sound';
 const viewFolderName = 'app-view';
-const extendFolderName = 'app-extend';
 const builtinFolderName = 'app-builtin';
 const bundleFolderName = 'app-bundle';
 const builtinPath = 'db://assets/' + builtinFolderName;
@@ -53,8 +52,6 @@ const soundPath = bundlePath + '/' + soundFolderName;
 const soundDir = bundleDir + '/' + soundFolderName;
 const viewPath = bundlePath + '/' + viewFolderName;
 const viewDir = bundleDir + '/' + viewFolderName;
-const extendPath = bundlePath + '/' + extendFolderName;
-const extendDir = bundleDir + '/' + extendFolderName;
 const executorFilePath = adminPath + '/executor.ts';
 const executorFileDir = adminDir + '/executor.ts';
 function isFolderVaild(info) {
@@ -264,12 +261,6 @@ async function updateExecutor() {
     // if (appSoundMeta && !appSoundMeta.userData?.isBundle) {
     //     appSoundMeta.userData = getMeta(soundFolderName).userData;
     //     await Editor.Message.request('asset-db', 'save-asset-meta', soundPath, JSON.stringify(appSoundMeta)).catch(_ => null);
-    // }
-    // // 检查app-extend
-    // const appExtendMeta = !existsSync(extendDir) ? null : await Editor.Message.request('asset-db', 'query-asset-meta', extendPath).catch(_ => null);
-    // if (appExtendMeta && !appExtendMeta.userData?.isBundle) {
-    //     appExtendMeta.userData = getMeta(extendFolderName).userData;
-    //     await Editor.Message.request('asset-db', 'save-asset-meta', extendPath, JSON.stringify(appExtendMeta)).catch(_ => null);
     // }
     const libs = [];
     const mgrs = [];

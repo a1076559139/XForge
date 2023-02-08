@@ -10,9 +10,9 @@
             </ui-select>
         </ui-prop>
 
-        <ui-prop class="content-item"  v-show="showInput">
+        <ui-prop class="content-item">
             <ui-label slot="label">名字</ui-label>
-            <ui-input id="name" slot="content" placeholder="输入界面名字如: index" :value="inputName"
+            <ui-input id="name" slot="content" placeholder="输入文件夹名字如: index" :value="inputName"
                 @change="inputName=$event.target.value" show-clear>
             </ui-input>
         </ui-prop>

@@ -7,7 +7,6 @@ const { ccclass, property } = _decorator;
 const AdminBundleName = 'app-admin';
 const ModelBundleName = 'app-model';
 const ControlBundlename = 'app-control';
-const ExtendBundlename = 'app-extend';
 const DotReWriteFuns = ['startInit', 'nextInit', 'getAppAssetNum'];
 
 @ccclass('BaseAppInit')
@@ -48,14 +47,6 @@ export default abstract class BaseAppInit extends Component {
                     // 加载control
                     if (projectBundles.indexOf(ControlBundlename) === -1) return next();
                     assetManager.loadBundle(ControlBundlename, (err) => {
-                        if (err) return retry(0.1);
-                        next();
-                    })
-                },
-                (next, retry) => {
-                    // 加载extend
-                    if (projectBundles.indexOf(ExtendBundlename) === -1) return next();
-                    assetManager.loadBundle(ExtendBundlename, (err) => {
                         if (err) return retry(0.1);
                         next();
                     })

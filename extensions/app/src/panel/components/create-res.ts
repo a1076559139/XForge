@@ -12,14 +12,12 @@ export default Vue.extend({
             typeSelects: ['公共动态目录', '公共静态目录', 'resources'],
             typeSelectIndex: 0,
 
-            showInput: true,
             showLoading: false
         };
     },
     methods: {
         onChangeTypeSelect(index: string) {
             this.typeSelectIndex = Number(index);
-            this.showInput = (this.typeSelectIndex === 0);
         },
         async onClickCreate() {
             const folderName = typeNames[this.typeSelectIndex];
@@ -36,16 +34,16 @@ export default Vue.extend({
 
             if (!await createFolderByPath(folderPath, {
                 readme: getReadme(folderName),
-                subFolders: this.typeSelectIndex === 0 ? [
+                subFolders: [
                     {
                         folder: name,
-                        meta: {
+                        meta: this.typeSelectIndex === 0 ? {
                             userData: {
                                 isBundle: true
                             }
-                        }
+                        } : undefined
                     }
-                ] : undefined
+                ]
             })) {
                 this.showLoading = false;
                 this.display = `[错误] 创建失败`;
