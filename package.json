@@ -4,5 +4,9 @@
   },
   "name": "creator3d",
   "uuid": "ab72af5f-29c4-446f-8911-e4a0a6e3b139",
-  "version": "3.6.3"
+  "version": "3.6.3",
+  "scripts": {
+    "pkg:add": "node ./extensions/pkg/index.js add",
+    "pkg:remove": "node ./extensions/pkg/index.js remove"
+  }
 }

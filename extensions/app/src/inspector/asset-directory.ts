@@ -39,12 +39,13 @@ interface Meta {
 type Selector<$> = { $: Record<keyof $, HTMLElement> } & { dispatch(str: string): void, assetList: Asset[], metaList: Meta[] };
 
 export const $ = {
-    'display': '#display',
+    'code': '#code',
+    'section': '#section',
 };
 
 export const template = `
-<ui-section header="文件夹说明" expand>
-    <ui-label id="display"></ui-label>
+<ui-section id="section" header="文件夹说明" expand>
+    <ui-code id="code"></ui-code>
 </ui-section>
 `;
 
@@ -54,19 +55,27 @@ export function update(this: PanelThis, assetList: Asset[], metaList: Meta[]) {
     this.assetList = assetList;
     this.metaList = metaList;
 
-    if (assetList.length === 0) return this.$.display.innerText = '';
+    if (assetList.length === 0) {
+        this.$.code.innerHTML = '';
+    } else {
+        this.$.code.innerHTML = assetList
+            .filter((asset) => {
+                const mdFile = join(asset.file, `.${asset.name}.md`);
+                return existsSync(mdFile);
+            })
+            .map((asset) => {
+                const mdFile = join(asset.file, `.${asset.name}.md`);
+                const mdStr = readFileSync(mdFile, 'utf-8');
+                return assetList.length > 1 ? `${asset.url}:\n ${mdStr}` : mdStr;
+            })
+            .join('\n') || '';
+    }
 
-    this.$.display.innerText = assetList
-        .filter((asset) => {
-            const mdFile = join(asset.file, `.${asset.name}.md`);
-            return existsSync(mdFile);
-        })
-        .map((asset) => {
-            const mdFile = join(asset.file, `.${asset.name}.md`);
-            const mdStr = readFileSync(mdFile, 'utf-8');
-            return assetList.length > 1 ? `${asset.url}:\n ${mdStr}` : mdStr;
-        })
-        .join('\n') || '一个平平无奇的文件夹';
+    if (this.$.code.innerHTML === '') {
+        this.$.section.hidden = true;
+    } else {
+        this.$.section.hidden = false;
+    }
 };
 
 export function ready(this: PanelThis) {

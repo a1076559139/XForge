@@ -2,7 +2,7 @@
     "package_version": 2,
     "name": "app",
     "version": "1.0.0",
-    "author": "didizhang",
+    "author": "张鹏",
     "editor": ">=3.6.0",
     "description": "i18n:app.description",
     "main": "./dist/main.js",

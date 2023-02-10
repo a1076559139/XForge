@@ -1,0 +1,16 @@
+{
+    "package_version": 2,
+    "name": "pkg",
+    "version": "1.0.0",
+    "author": "张鹏",
+    "editor": ">=3.6.0",
+    "description": "用于存放扩展包",
+    "contributions": {
+        "asset-db": {
+            "mount": {
+                "path": "./package/node_modules/@didi",
+                "readonly": true
+            }
+        }
+    }
+}
