@@ -4,10 +4,12 @@
 > 3、更小的首屏/首包体积。<br/>
 > 4、更小的增量更新体积。<br/>
 
+⚠️: 大部分的框架目录点击后，都会在属性检查器页面生成它的一些说明文字，可以进行查看。<br/>
+⚠️: 框架暂时不允许自定义assets下的文件夹，所有文件夹可以通过菜单栏App来创建。<br/>
 ## 1、UI
-* 通过菜单栏，App/创建/View来创建UI，会自动创建于assets/app-bundle/app-view下。
+* 通过菜单栏App/创建/View来创建UI，会自动创建于assets/app-bundle/app-view下。
 * UI分为4类：Page、Paper、Pop和Top，他们都继承自BaseView，它们的层级按顺序依次增大(同camera下)，即: Top > Pop > Paper > Page。
-* UI的HideEvent如果选择destroy，会自动清理静态引用的资源(动态的业务自己维护)。
+* UI的HideEvent如果选择destroy，会自动清理静态引用的资源。
 * 落地页由Page和Paper共同组成，通过这种模型可以轻松实现多人协同开发。
 * Page和Paper在创建时区分3D与2D，它们在实例化时会分别设置为scene/Root3D/UserInterface、scene/Root2D/UserInterface的子节点。
 ```
@@ -35,7 +37,7 @@ app.manager.ui.removeTouchMask(uuid: string);
 ...//等等
 ```
 ## 2、音频
-位置处于assets/app-bundle/app-sound目录下，分为effect和music两种类型，分别对应两个目录
+通过菜单栏App/创建/Sound来生成目录，位置处于assets/app-bundle/app-sound目录下，分为effect和music两种类型
 ```
 app.manager.sound.playMusic({
     name: '自动提示'
@@ -112,6 +114,3 @@ app.config.xxx
 // 可以全局设置弹窗的背景颜色、透明度等信息(也可以在某个UI中重写onShade方法，自定义某个UI的背景颜色等信息)
 UIManager.setting.shade = {...}
 ```
-
-⚠️: app-builtin和app-bundle下都属于框架bundle目录，不可以删除，不然框架会加载失败。<br/>
-⚠️: 大部分的框架目录点击后，都会在属性检查器页面生成它的一些说明文字，可以进行查看。<br/>
