@@ -1,6 +1,6 @@
 # Project Title
 
-An blank extension.
+The core of the framework
 
 ## Development Environment
 

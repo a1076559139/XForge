@@ -1,6 +1,6 @@
 "use strict";
 module.exports = {
-    description: "A blank extension",
+    description: "The core of the framework",
     create: 'Create',
     update: 'Update',
     menuMain: "App",

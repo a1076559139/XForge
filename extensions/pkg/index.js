@@ -93,7 +93,7 @@ async function main() {
             console.error(`[失败]: ${code}`);
         } else if (fs.existsSync(path.join(moduleDir, process.argv[3].trim()))) {
             // 如果文件夹未删除成功 则 强制删除
-            await spawnCmd(`rm -rf ${path.join(moduleDir, process.argv[3].trim())}`);
+            await spawnCmd('rm', [`-rf`, path.join(moduleDir, process.argv[3].trim())]);
         }
     } else {
         return console.error(`[未知指令]`);
