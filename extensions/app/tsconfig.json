@@ -1,15 +1,12 @@
 {
+    "extends": "../../temp/tsconfig.cocos.json",
     "compilerOptions": {
-        "target": "ES2017",
-        "module": "CommonJS",
-        "outDir": "./dist",
-        "rootDir": "./src",
-        "strict": true,
-        "moduleResolution": "node",
-        "esModuleInterop": true,
-        "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true,
-        "resolveJsonModule": true,
-    },
-    "exclude": ["assets"]
+        "strict": false,
+        "types": [
+            "../../temp/declarations/cc.custom-macro",
+            "../../temp/declarations/jsb",
+            "../../temp/declarations/cc",
+            "../../temp/declarations/cc.env"
+        ]
+    }
 }

@@ -5,10 +5,10 @@
     "author": "张鹏",
     "editor": ">=3.6.0",
     "description": "i18n:app.description",
-    "main": "./dist/main.js",
+    "main": "./engine/dist/main.js",
     "contributions": {
         "scene": {
-            "script": "./dist/scene.js"
+            "script": "./engine/dist/scene.js"
         },
         "asset-db": {
             "mount": {
@@ -19,7 +19,7 @@
         "inspector": {
             "section": {
                 "asset": {
-                    "directory": "./dist/inspector/asset-directory.js"
+                    "directory": "./engine/dist/inspector/asset-directory.js"
                 }
             }
         },
@@ -69,7 +69,7 @@
         ],
         "assets": {
             "menu": {
-                "methods": "./dist/menu/index.js",
+                "methods": "./engine/dist/menu/index.js",
                 "createMenu": "onCreateMenu",
                 "assetMenu": "onAssetMenu",
                 "dbMenu": "onDBMenu",
@@ -81,7 +81,7 @@
         "open-panel": {
             "title": "创建",
             "type": "dockable",
-            "main": "dist/panel",
+            "main": "./engine/dist/panel",
             "size": {
                 "min-width": 400,
                 "min-height": 300,
@@ -98,7 +98,7 @@
         "typescript": "4.3.4"
     },
     "scripts": {
-        "build": "tsc -b",
-        "watch": "tsc -w"
+        "build": "tsc -b engine",
+        "watch": "tsc -w engine"
     }
 }

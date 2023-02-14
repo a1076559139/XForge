@@ -12,5 +12,9 @@
                 "readonly": true
             }
         }
+    },
+    "scripts": {
+      "add": "node ./index.js add",
+      "remove": "node ./index.js remove"
     }
 }

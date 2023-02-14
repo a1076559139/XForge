@@ -86,9 +86,15 @@ async function main() {
         if (code !== 0) console.error(`[失败]: ${code}`);
     } else if (process.argv[2] === 'remove') {
         const cmd = ['uninstall', '--prefix', packageDir];
-        if (process.argv[3]) cmd.push(process.argv[3]);
+        if (!process.argv[3]) return console.error(`[失败]: 输入要卸载的名字`);
+        cmd.push(process.argv[3]);
         const code = await spawnCmd(npm, cmd);
-        if (code !== 0) console.error(`[失败]: ${code}`);
+        if (code !== 0) {
+            console.error(`[失败]: ${code}`);
+        } else if (fs.existsSync(path.join(moduleDir, process.argv[3].trim()))) {
+            // 如果文件夹未删除成功 则 强制删除
+            await spawnCmd(`rm -rf ${path.join(moduleDir, process.argv[3].trim())}`);
+        }
     } else {
         return console.error(`[未知指令]`);
     }
