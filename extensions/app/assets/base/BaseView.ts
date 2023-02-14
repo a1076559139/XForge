@@ -109,13 +109,20 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     private _base_mini_show: Set<IMiniViewName> = new Set();
     private _base_mini_showing: Set<IMiniViewName> = new Set();
 
-    @property({ type: HideEvent, tooltip: '何种方式隐藏节点' })
+    @property({
+        type: HideEvent,
+        tooltip: '何种方式隐藏节点',
+        group: { id: 'BaseView', name: 'settings' }
+    })
     protected hideEvent = HideEvent.active;
 
     @property
     private _singleton = true;
     private static _singleton = true;
-    @property({ tooltip: '是否是单例模式(非单例模式下view会被重复创建)' })
+    @property({
+        tooltip: '是否是单例模式(非单例模式下view会被重复创建)',
+        group: { id: 'BaseView', name: 'settings' }
+    })
     protected get singleton(): boolean {
         if (this._base_view_name?.indexOf('Page') === 0) return true;
         if (this._base_view_name?.indexOf('Paper') === 0) return true;
@@ -137,7 +144,13 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
 
     @property
     private _captureFocus = true;
-    @property({ tooltip: '是否捕获焦点<响应onLostFocus和onFocus>\n⚠️注意:\n1、非UI_2D分组下会失效\n2、当一个捕获焦点的view处于最上层并展示时\n下层的view永远不会响应focus事件' })
+    @property({
+        tooltip: '是否捕获焦点<响应onLostFocus和onFocus>\n⚠️注意:\n1、非UI_2D分组下会失效\n2、当一个捕获焦点的view处于最上层并展示时\n下层的view永远不会响应focus事件',
+        group: { id: 'BaseView', name: 'settings' },
+        visible() {
+            return this.node?.layer === Layers.Enum.UI_2D
+        }
+    })
     protected get captureFocus() {
         return this.node?.layer === Layers.Enum.UI_2D ? this._captureFocus : false;
     }
@@ -151,7 +164,13 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
 
     @property
     private _shade = true;
-    @property({ tooltip: '是否需要底层遮罩\n⚠️注意:\n1、非UI_2D分组下会失效\n2、为Page页面时会失效' })
+    @property({
+        tooltip: '是否需要底层遮罩\n⚠️注意:\n1、非UI_2D分组下会失效\n2、为Page页面时会失效',
+        group: { id: 'BaseView', name: 'settings' },
+        visible() {
+            return this.node?.layer === Layers.Enum.UI_2D
+        }
+    })
     protected get shade() {
         if (this.node?.layer !== Layers.Enum.UI_2D) return false;
         if (this._base_view_name?.indexOf('Page') === 0) return false;
@@ -179,7 +198,13 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
 
     @property
     private _blockInput = true;
-    @property({ tooltip: '是否阻断输入\n⚠️注意:\n1、非UI_2D分组下会失效' })
+    @property({
+        tooltip: '是否阻断输入\n⚠️注意:\n1、非UI_2D分组下会失效',
+        group: { id: 'BaseView', name: 'settings' },
+        visible() {
+            return this.node?.layer === Layers.Enum.UI_2D
+        }
+    })
     protected get blockInput() {
         if (this.node?.layer !== Layers.Enum.UI_2D) return false;
         return this._blockInput;

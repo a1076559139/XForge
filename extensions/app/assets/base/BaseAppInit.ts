@@ -2,12 +2,12 @@ import { assetManager, Component, settings, warn, _decorator } from 'cc';
 import { EDITOR } from 'cc/env';
 import Core from '../Core';
 import BaseManager from './BaseManager';
-const { ccclass, property } = _decorator;
+const { ccclass } = _decorator;
 
 const AdminBundleName = 'app-admin';
 const ModelBundleName = 'app-model';
 const ControlBundlename = 'app-control';
-const DotReWriteFuns = ['startInit', 'nextInit', 'getAppAssetNum'];
+const DotReWriteFuns = ['startInit', 'nextInit'];
 
 @ccclass('BaseAppInit')
 export default abstract class BaseAppInit extends Component {
