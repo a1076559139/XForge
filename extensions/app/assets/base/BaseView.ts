@@ -79,6 +79,8 @@ enum ViewState {
     Hid,
 }
 
+const Group = { id: 'BaseView', name: 'settings', displayOrder: -Infinity };
+
 @ccclass('BaseView')
 export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component {
     static BindControl<SHOWDATA = any, HIDEDATA = any, T = any, E = any>(control: IBaseControl<T, E>) {
@@ -110,9 +112,9 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     private _base_mini_showing: Set<IMiniViewName> = new Set();
 
     @property({
+        group: Group,
         type: HideEvent,
         tooltip: '何种方式隐藏节点',
-        group: { id: 'BaseView', name: 'settings' }
     })
     protected hideEvent = HideEvent.active;
 
@@ -120,8 +122,8 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     private _singleton = true;
     private static _singleton = true;
     @property({
+        group: Group,
         tooltip: '是否是单例模式(非单例模式下view会被重复创建)',
-        group: { id: 'BaseView', name: 'settings' }
     })
     protected get singleton(): boolean {
         if (this._base_view_name?.indexOf('Page') === 0) return true;
@@ -145,8 +147,8 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     @property
     private _captureFocus = true;
     @property({
+        group: Group,
         tooltip: '是否捕获焦点<响应onLostFocus和onFocus>\n⚠️注意:\n1、非UI_2D分组下会失效\n2、当一个捕获焦点的view处于最上层并展示时\n下层的view永远不会响应focus事件',
-        group: { id: 'BaseView', name: 'settings' },
         visible() {
             return this.node?.layer === Layers.Enum.UI_2D
         }
@@ -165,8 +167,8 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     @property
     private _shade = true;
     @property({
+        group: Group,
         tooltip: '是否需要底层遮罩\n⚠️注意:\n1、非UI_2D分组下会失效\n2、为Page页面时会失效',
-        group: { id: 'BaseView', name: 'settings' },
         visible() {
             return this.node?.layer === Layers.Enum.UI_2D
         }
@@ -199,8 +201,8 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     @property
     private _blockInput = true;
     @property({
+        group: Group,
         tooltip: '是否阻断输入\n⚠️注意:\n1、非UI_2D分组下会失效',
-        group: { id: 'BaseView', name: 'settings' },
         visible() {
             return this.node?.layer === Layers.Enum.UI_2D
         }
