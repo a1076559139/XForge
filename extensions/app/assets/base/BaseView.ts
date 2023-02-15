@@ -349,7 +349,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
 
         views.forEach(name => {
             if (this.miniViews.indexOf(name) === -1) {
-                this.warn(`[hideMiniViews] ${name}不在miniViews中, 已跳过`);
+                this.warn('[hideMiniViews]', `${name}不在miniViews中, 已跳过`);
                 return;
             }
 
@@ -396,11 +396,11 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
 
         views = views.filter(name => {
             if (this._base_mini_show.has(name)) {
-                this.warn(`[showMiniViews] 重复融合${name}, 已跳过`);
+                this.warn('[showMiniViews]', `重复融合${name}, 已跳过`);
                 return false;
             }
             if (this.miniViews.indexOf(name) === -1) {
-                this.warn(`[showMiniViews] ${name}不在miniViews中, 已跳过`);
+                this.warn('[showMiniViews]', `${name}不在miniViews中, 已跳过`);
                 return false;
             }
             this._base_mini_show.add(name);
@@ -414,7 +414,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
             const aSync = Core.inst.lib.task.createASync();
             views.forEach(name => {
                 aSync.add((next, retry) => {
-                    this.log('mixin-load', name);
+                    this.log('[mixin-load]', name);
                     Core.inst.manager.ui.load(name as any, result => {
                         result ? next() : this.scheduleOnce(retry, 0.1);
                     });
@@ -428,7 +428,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
             const aSync = Core.inst.lib.task.createASync();
             views.forEach(name => {
                 aSync.add((next) => {
-                    this.log('mixin-show', name);
+                    this.log('[mixin-show]', name);
                     if (!this._base_mini_show.has(name)) return next();
 
                     Core.inst.manager.ui.show({
@@ -447,7 +447,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
                         onError: (result, code) => {
                             if (code === UIManager.ErrorCode.LoadError) return true;
                             this._base_mini_show.delete(name);
-                            this.warn('mixin-show', name, result, '已跳过');
+                            this.warn('[mixin-show]', name, result, '已跳过');
                             next();
                         },
                     });
@@ -517,16 +517,16 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
                     result = this.onShow(data);
                 } catch (err) {
                     this.onError();
-                    console.error(err);
+                    this.error('[onShow]', err);
                 }
 
                 try {
                     onShow && onShow(result);
                     this.node.emit('onShow', result);
-                    Core.inst.manager.ui.emit(`${this._base_view_name}`, { event: 'onShow', result: result });
-                    Core.inst.manager.ui.emit('onShow', { name: `${this._base_view_name}`, result: result });
+                    Core.inst.manager.ui.emit(this._base_view_name, { event: 'onShow', result: result });
+                    Core.inst.manager.ui.emit('onShow', { name: this._base_view_name, result: result });
                 } catch (err) {
-                    console.error(err);
+                    this.error('[show]', err);
                 }
 
                 if (changeState) this._base_view_state = ViewState.Showed;
@@ -541,7 +541,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
 
         let isNextCalled = false;
         this.beforeShow((error) => {
-            if (isNextCalled) return this.error('[beforeShow] next被重复调用');
+            if (isNextCalled) return this.warn('[beforeShow] next被重复调用');
             isNextCalled = true;
 
             next(error || null);
@@ -574,16 +574,16 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
             try {
                 result = this.onHide(data) || null;
             } catch (error) {
-                console.error(error);
+                this.error('[onHide]', error);
             }
 
             try {
                 onHide && onHide(result);
                 this.node.emit('onHide', result);
-                Core.inst.manager.ui.emit(`${this._base_view_name}`, { event: 'onHide', result: result });
-                Core.inst.manager.ui.emit('onHide', { name: `${this._base_view_name}`, result: result });
+                Core.inst.manager.ui.emit(this._base_view_name, { event: 'onHide', result: result });
+                Core.inst.manager.ui.emit('onHide', { name: this._base_view_name, result: result });
             } catch (error) {
-                console.error(error);
+                this.error('[hide]', error);
             }
 
             if (changeState) this._base_view_state = ViewState.Hid;
@@ -612,8 +612,8 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         }
 
         this.node.emit(event, result);
-        Core.inst.manager.ui.emit(`${this._base_view_name}`, { event: event, result: result });
-        Core.inst.manager.ui.emit(event, { name: `${this._base_view_name}`, result: result });
+        Core.inst.manager.ui.emit(this._base_view_name, { event: event, result: result });
+        Core.inst.manager.ui.emit(event, { name: this._base_view_name, result: result });
     }
 
     /**
@@ -626,14 +626,14 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         Core.inst.manager.ui.loadRes(this, path, type, callback);
     }
 
-    protected log(str, ...args) {
-        console.log(`[${this._base_view_name}] [log] ${str}`, ...args);
+    protected log(...args: any[]) {
+        console.log(`[${this._base_view_name}]`, ...args);
     }
-    protected warn(str, ...args) {
-        console.warn(`[${this._base_view_name}] [warn] ${str}`, ...args);
+    protected warn(...args: any[]) {
+        console.warn(`[${this._base_view_name}]`, ...args);
     }
-    protected error(str, ...args) {
-        console.error(`[${this._base_view_name}] [error] ${str}`, ...args);
+    protected error(...args: any[]) {
+        console.error(`[${this._base_view_name}]`, ...args);
     }
 
     // 以下为可重写

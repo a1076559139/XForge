@@ -37,7 +37,7 @@ export default class BaseManager extends Component {
         if (EDITOR) {
             DotReWriteFuns.forEach((funName) => {
                 if (BaseManager.prototype[funName] !== this[funName]) {
-                    warn(`[${this._base_manager_name}] [warn] 不应该重写父类方法{${funName}}`);
+                    warn(`[${this._base_manager_name}] 不应该重写父类方法{${funName}}`);
                 }
             });
         }
@@ -47,9 +47,9 @@ export default class BaseManager extends Component {
             Core.inst.Manager[managerName] = this.constructor;
             Core.inst.manager[managerName.toLowerCase()] = this;
         } else if (EDITOR) {
-            error(`[${this._base_manager_name}] [error] manager命名错误(应为 xxxxManager 以Manager结尾)`);
+            error(`[${this._base_manager_name}] manager命名错误(应为 xxxxManager 以Manager结尾)`);
         } else if (DEBUG) {
-            error(`[${this._base_manager_name}] [error] manager命名错误(应为 xxxxManager 以Manager结尾)`);
+            error(`[${this._base_manager_name}] manager命名错误(应为 xxxxManager 以Manager结尾)`);
         }
     }
 
@@ -91,14 +91,14 @@ export default class BaseManager extends Component {
         return uuid.create();
     }
 
-    protected log(str: any, ...args: any) {
-        console.log(`[${this._base_manager_name}] [log] ${str}`, ...args);
+    protected log(...args: any[]) {
+        console.log(`[${this._base_manager_name}]`, ...args);
     }
-    protected warn(str: any, ...args: any) {
-        console.warn(`[${this._base_manager_name}] [warn] ${str}`, ...args);
+    protected warn(...args: any[]) {
+        console.warn(`[${this._base_manager_name}]`, ...args);
     }
-    protected error(str: any, ...args: any) {
-        console.error(`[${this._base_manager_name}] [error] ${str}`, ...args);
+    protected error(...args: any[]) {
+        console.error(`[${this._base_manager_name}]`, ...args);
     }
 
     public emit(event: string | number, ...data) {
@@ -205,9 +205,20 @@ export default class BaseManager extends Component {
         let completeAsset = 0;
 
         const onProgress = function (next: Function, manager: BaseManager) {
-            if (DEBUG) log(`[BaseManager] [log] [beganProgress] %c${manager.managerName}`, 'color:red');
+            if (DEBUG) {
+                const time = window?.performance?.now ? performance.now() : Date.now();
+                log(`[BaseManager] [began] %c${manager.managerName}`, 'color:red');
+                return function () {
+                    manager.onInited();
+                    if (DEBUG) {
+                        log(`[BaseManager] [ended] %c${manager.managerName}`, 'color:green');
+                        log(`%c${manager.managerName}: ${(window?.performance?.now ? performance.now() : Date.now()) - time} ms`, 'color:orange');
+                    }
+                    progress && progress(++completeAsset, totalAsset);
+                    next();
+                };
+            }
             return function () {
-                if (DEBUG) log(`[BaseManager] [log] [endedProgress] %c${manager.managerName}`, 'color:green');
                 manager.onInited();
                 progress && progress(++completeAsset, totalAsset);
                 next();
@@ -230,7 +241,7 @@ export default class BaseManager extends Component {
             aSync2.add(function (next, retry) {
                 bundle.load(url, Prefab, function (err, prefab: Prefab) {
                     if (err || !prefab) {
-                        log(`[BaseManager] [log] [initManager] load ${url} fail, retry...`);
+                        log(`[BaseManager] [initManager] load ${url} fail, retry...`);
                         retry(0.1);
                     } else {
                         const node: Node = instantiate(prefab);

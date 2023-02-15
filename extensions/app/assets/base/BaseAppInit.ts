@@ -22,7 +22,7 @@ export default abstract class BaseAppInit extends Component {
         if (EDITOR) {
             DotReWriteFuns.forEach((funName) => {
                 if (BaseAppInit.prototype[funName] !== this[funName]) {
-                    warn(`[AppInit] [warn] 不应该重写父类方法{${funName}}`);
+                    warn(`[AppInit] 不应该重写父类方法{${funName}}`);
                 }
             });
         }
