@@ -7,17 +7,17 @@ import { convertPathToDir, createFolderByPath, getMeta, getReadme, getTemplate, 
  */
 function getScript(name: string) {
     const basePath = '../../../extensions/app/assets/base/BaseControl';
-    return "import BaseControl from '" + basePath + "';\r\n" +
-        "// 事件名(首字母大写),可以通过 " + name + ".Event 调用\r\n" +
-        "enum Event { \r\n" +
-        "    // Refresh\r\n" +
-        "}\r\n" +
-        "export class " + name + " extends BaseControl<" + name + ", typeof Event>(Event) {\r\n" +
-        "    // control中发射事件, view中监听事件:\r\n" +
-        "    // 1、view中需要将 「class " + name.slice(0, -7) + " extends BaseView」 改为=> 「class " + name.slice(0, -7) + " extends BaseView.bindControl(" + name + ")」\r\n" +
-        "    // 2、view中使用this.control.on监听事件\r\n" +
-        "    // refresh() { this.emit(Event.Refresh) }\r\n" +
-        "}";
+    return 'import BaseControl from \'' + basePath + '\';\r\n' +
+        '// 事件名(首字母大写),可以通过 ' + name + '.Event 调用\r\n' +
+        'enum Event { \r\n' +
+        '    // Refresh\r\n' +
+        '}\r\n' +
+        'export class ' + name + ' extends BaseControl<' + name + ', typeof Event>(Event) {\r\n' +
+        '    // control中发射事件, view中监听事件:\r\n' +
+        '    // 1、view中需要将 「class ' + name.slice(0, -7) + ' extends BaseView」 改为=> 「class ' + name.slice(0, -7) + ' extends BaseView.bindControl(' + name + ')」\r\n' +
+        '    // 2、view中使用this.control.on监听事件\r\n' +
+        '    // refresh() { this.emit(Event.Refresh) }\r\n' +
+        '}';
 }
 
 export default Vue.extend({
@@ -35,11 +35,11 @@ export default Vue.extend({
             const name = this.inputName;
 
             if (/^[a-zA-Z0-9_]+$/.test(name) === false) {
-                this.display = `[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/`;
+                this.display = '[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/';
                 return;
             }
 
-            const rootPath = `db://assets/app-builtin/app-control`;
+            const rootPath = 'db://assets/app-builtin/app-control';
             const controlName = `${stringCase(name)}Control`;
             const scriptUrl = `${rootPath}/${controlName}.ts`;
 

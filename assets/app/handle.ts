@@ -1,4 +1,4 @@
-import { App } from "./app";
+import { App } from './app';
 
 /**
  * ccc除物理引擎等外的基础功能已经准备好了

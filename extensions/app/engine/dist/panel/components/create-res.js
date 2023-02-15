@@ -26,10 +26,10 @@ exports.default = vue_1.default.extend({
             const folderPath = `db://assets/${folderName}`;
             const name = utils_1.stringCase(this.inputName, true);
             if (/^[a-zA-Z0-9_]+$/.test(name) === false) {
-                this.display = `[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/`;
+                this.display = '[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/';
                 return;
             }
-            this.display = `创建中`;
+            this.display = '创建中';
             this.showLoading = true;
             if (!await utils_1.createFolderByPath(folderPath, {
                 readme: utils_1.getReadme(folderName),
@@ -45,7 +45,7 @@ exports.default = vue_1.default.extend({
                 ]
             })) {
                 this.showLoading = false;
-                this.display = `[错误] 创建失败`;
+                this.display = '[错误] 创建失败';
                 return;
             }
             this.showLoading = false;

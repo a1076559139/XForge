@@ -13,7 +13,7 @@ export class PageGame extends BaseView {
     onShow(params: any) {
         this.showMiniViews({
             views: this.miniViews
-        })
+        });
     }
 
     // 界面关闭时的相关逻辑写在这(已经关闭的界面不会触发onHide)

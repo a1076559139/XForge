@@ -7,6 +7,10 @@
 ⚠️: 大部分的框架目录点击后，都会在属性检查器页面生成它的一些说明文字，可以进行查看。<br/>
 ⚠️: 框架暂时不允许自定义assets下的文件夹，所有文件夹可以通过菜单栏App来创建。<br/>
 
+## 0、ESLint
+* 在vscode中安装ESLint插件
+* 在项目根目录下执行**npm install**
+
 ## 1、UI
 * 通过菜单栏App/创建/View来创建UI，会自动创建于assets/app-bundle/app-view下。
 * UI分为4类：Page、Paper、Pop和Top，他们都继承自BaseView，它们的层级按顺序依次增大(同camera下)，即: Top > Pop > Paper > Page。

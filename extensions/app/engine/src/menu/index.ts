@@ -1,4 +1,4 @@
-import { AssetInfo } from "../../@types/packages/asset-db/@types/public";
+import { AssetInfo } from '../../@types/packages/asset-db/@types/public';
 // @ts-ignore
 
 function getMenu() {
@@ -20,16 +20,16 @@ function getMenu() {
 
 export function onCreateMenu(assetInfo: AssetInfo) {
     // return getMenu();
-};
+}
 
 export function onDBMenu(assetInfo: AssetInfo) {
     // return getMenu();
-};
+}
 
 export function onPanelMenu(assetInfo: AssetInfo) {
     // return getMenu();
-};
+}
 
 export function onAssetMenu(assetInfo: AssetInfo) {
     return getMenu();
-};
+}

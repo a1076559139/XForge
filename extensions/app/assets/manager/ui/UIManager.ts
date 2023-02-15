@@ -56,7 +56,7 @@ type IShade = {
     end?: number,
     /**透明变化速度 默认100 */
     speed?: number
-}
+};
 
 @ccclass('UIManager')
 export default class UIManager<UIName extends string, MiniName extends string> extends BaseManager {
@@ -69,7 +69,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     } = {};
 
     /**错误码 */
-    static ErrorCode = ErrorCode
+    static ErrorCode = ErrorCode;
 
     @property(Prefab)
     private loadingPre: Prefab = null;
@@ -124,11 +124,11 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 if (preload instanceof Array) {
                     task.add(preload.map(name => {
                         return next => this.installUI(name, next);
-                    }))
+                    }));
                 } else {
                     task.add(next => this.installUI(preload, next));
                 }
-            })
+            });
             task.start();
         }
     }
@@ -176,7 +176,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             widget.right = 0;
             widget.bottom = 0;
             widget.alignMode = Widget.AlignMode.ON_WINDOW_RESIZE;
-        })
+        });
     }
 
     private stopPropagation(event: Event) {
@@ -229,13 +229,13 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                     Core.inst.manager.loader.loadBundle({
                         bundle: this.getUINativeName(name),
                         onComplete: next
-                    })
+                    });
                 },
                 (next) => {
                     Core.inst.manager.loader.loadBundle({
                         bundle: this.getUIResName(name),
                         onComplete: next
-                    })
+                    });
                 }
             ])
             .add((next) => {
@@ -246,13 +246,13 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                     type: Prefab,
                     onProgress: progress,
                     onComplete: next
-                })
+                });
             })
             .start((results) => {
                 if (!results[1]) return complete && complete(false);
                 this.prefabCache[name] = results[1];
                 return complete && complete(true);
-            })
+            });
     }
 
     /**
@@ -279,7 +279,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 path: path,
                 type: type,
                 onComplete: callback
-            })
+            });
         } else {
             callback && callback(null);
         }
@@ -432,7 +432,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         for (let index = 0; index < UITypes.length; index++) {
             const name = UITypes[index];
             if (name.toLowerCase() === prefix) {
-                return [this.UIRoot2D.getChildByName(name), this.UIRoot3D.getChildByName(name)]
+                return [this.UIRoot2D.getChildByName(name), this.UIRoot3D.getChildByName(name)];
             }
         }
 
@@ -515,7 +515,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             View.isViewValid((valid: boolean) => {
                 callback(valid ? 1 : 0);
             }, data);
-        })
+        });
     }
 
     /**
@@ -681,14 +681,14 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 是否在队列中
      */
     public isInQueue(name: UIName) {
-        return !!this.showQueue.find((v) => { return v.name == name; })
+        return !!this.showQueue.find((v) => { return v.name == name; });
     }
 
     /**
      * 是否在加载中
      */
     public isLoading(name: UIName) {
-        return this.uiLoadingMap.has(name) && this.uiLoadingMap.get(name).length > 0
+        return this.uiLoadingMap.has(name) && this.uiLoadingMap.get(name).length > 0;
     }
 
     /**
@@ -751,10 +751,10 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 // 「没有指定onError」或「onError返回true」会自动发起重试
                 if (onError && onError(`${name} 不存在或加载失败`, UIManager.ErrorCode.LoadError) !== true) {
                     return;
-                };
+                }
                 this.scheduleOnce(show, 0.1);
                 this.showLoading(0.1);
-                return
+                return;
             }
 
             top && node.setSiblingIndex(-1);
@@ -796,7 +796,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                     // 「没有指定onError」或「onError返回true」会自动发起重试
                     if (onError && onError(`${name} 不存在或加载失败`, UIManager.ErrorCode.LoadError) !== true) {
                         return this.hideLoading(showLoadingUuid);
-                    };
+                    }
                     return retry(0.1);
                 }
 
@@ -810,8 +810,8 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
                 show();
                 this.hideLoading(showLoadingUuid);
-            })
-        })
+            });
+        });
     }
 
     /**

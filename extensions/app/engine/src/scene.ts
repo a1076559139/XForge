@@ -1,9 +1,9 @@
 import { join } from 'path';
 module.paths.push(join(Editor.App.path, 'node_modules'));
 
-export function load() { };
+export function load() { }
 
-export function unload() { };
+export function unload() { }
 
 // 在其他扩展脚本中，我们可以使用如下代码调用 rotateCamera 函数
 // const options: ExecuteSceneScriptMethodOptions = {
@@ -25,7 +25,7 @@ export const methods = {
 
             await new Promise((next) => {
                 setTimeout(next, 100);
-            })
+            });
         }
 
         const com = node.addComponent(name);

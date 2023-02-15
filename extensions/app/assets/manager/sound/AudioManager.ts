@@ -1,5 +1,5 @@
-import { AudioSource, Node } from "cc";
-import Audio from "./Audio";
+import { AudioSource, Node } from 'cc';
+import Audio from './Audio';
 
 export default class AudioManager {
     private static _inst: AudioManager = null;

@@ -20,7 +20,7 @@ exports.default = vue_1.default.extend({
             this.typeSelectIndex = Number(index);
         },
         async onClickCreate() {
-            this.display = `创建中`;
+            this.display = '创建中';
             this.showLoading = true;
             const rootPath = 'db://assets/app-bundle/app-sound';
             if (!await utils_1.createFolderByPath(rootPath, {
@@ -31,7 +31,7 @@ exports.default = vue_1.default.extend({
                 ]
             })) {
                 this.showLoading = false;
-                this.display = `[错误] 创建失败`;
+                this.display = '[错误] 创建失败';
                 return;
             }
             this.showLoading = false;

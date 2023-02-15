@@ -22,10 +22,10 @@
 
 // path.join不能正确处理'db://'结构，会把'//'变成'/'
 
-import { existsSync, readFileSync } from "fs";
-import path from "path";
-import { AssetInfo } from "../@types/packages/asset-db/@types/public";
-import { convertPathToDir, createFolderByPath, getMeta, getReadme, stringCase } from "./utils";
+import { existsSync, readFileSync } from 'fs';
+import path from 'path';
+import { AssetInfo } from '../@types/packages/asset-db/@types/public';
+import { convertPathToDir, createFolderByPath, getMeta, getReadme, stringCase } from './utils';
 
 const adminFolderName = 'app-admin';
 const controlFolderName = 'app-control';
@@ -88,9 +88,9 @@ async function deleteInvalidFolders() {
                 Editor.Dialog.error(`${deletePaths.join('\r\n')}\r\n只允许使用插件App创建的文件夹`, { title: '非法文件夹', buttons: ['确认'] });
                 deletePaths.forEach(deletePath => {
                     Editor.Message.request('asset-db', 'delete-asset', deletePath);
-                })
+                });
             }
-        })
+        });
 }
 
 function isExecutor(info: AssetInfo, strict = true) {
@@ -195,10 +195,10 @@ async function clearExecutor() {
     const musicKeys = { nerver: '' };
     const effecKeys = { nerver: '' };
 
-    let result = `/* eslint-disable */\n` +
-        `import { Component } from 'cc';\n` +
-        `import { app } from '../../app/app';\n` +
-        `import { DEV,EDITOR } from 'cc/env';\n\n`;
+    let result = '/* eslint-disable */\n' +
+        'import { Component } from \'cc\';\n' +
+        'import { app } from \'../../app/app\';\n' +
+        'import { DEV,EDITOR } from \'cc/env\';\n\n';
 
     result += 'enum viewNames { \'' + Object.keys(viewKeys).join('\',\'') + '\'}\n';
     result += 'const miniViewNames = ' + JSON.stringify(miniViewKeys) + '\n';
@@ -215,16 +215,16 @@ async function clearExecutor() {
     result += 'export type IEffecNames = IEffecName[]\n\n';
 
     // data
-    result += `if(!EDITOR||DEV) Object.assign(app.data, {})\n`;
+    result += 'if(!EDITOR||DEV) Object.assign(app.data, {})\n';
 
     // config
-    result += `if(!EDITOR||DEV) Object.assign(app.config, {})\n\n`;
+    result += 'if(!EDITOR||DEV) Object.assign(app.config, {})\n\n';
 
     result += 'export type IApp = {\n';
-    result += `    Manager: {},\n`;
-    result += `    manager: {},\n`;
-    result += `    data: {},\n`;
-    result += `    config: {}\n`;
+    result += '    Manager: {},\n';
+    result += '    manager: {},\n';
+    result += '    data: {},\n';
+    result += '    config: {}\n';
     result += '}\n';
 
     // 修正windows系统中的\为/
@@ -234,7 +234,7 @@ async function clearExecutor() {
     if (readFileSyncByPath(executorFilePath) !== result) {
         await Editor.Message.request('asset-db', 'create-asset', executorFilePath, result, {
             overwrite: true
-        })
+        });
     }
 }
 
@@ -362,7 +362,7 @@ async function updateExecutor() {
                     }
                     // 子界面
                     else if (filename === `${stringCase(viewDirArray[0], false)}${stringCase(viewDirArray[1], false)}${stringCase(viewDirArray[2], false)}`) {
-                        miniViewKeys[filename] = `${stringCase(viewDirArray[0], false)}${stringCase(viewDirArray[1], false)}`
+                        miniViewKeys[filename] = `${stringCase(viewDirArray[0], false)}${stringCase(viewDirArray[1], false)}`;
                     }
                 } else {
                     if (filename === `${stringCase(viewDirArray[1], false)}${stringCase(viewDirArray[2], false)}`) {
@@ -370,7 +370,7 @@ async function updateExecutor() {
                     }
                     // 子界面
                     else if (filename === `${stringCase(viewDirArray[1], false)}${stringCase(viewDirArray[2], false)}${stringCase(viewDirArray[3], false)}`) {
-                        miniViewKeys[filename] = `${stringCase(viewDirArray[0], false)}${stringCase(viewDirArray[1], false)}`
+                        miniViewKeys[filename] = `${stringCase(viewDirArray[0], false)}${stringCase(viewDirArray[1], false)}`;
                     }
                 }
             }
@@ -386,10 +386,10 @@ async function updateExecutor() {
         }
     }
 
-    let result = `/* eslint-disable */\n` +
-        `import { Component } from 'cc';\n` +
-        `import { app } from '../../app/app';\n` +
-        `import { DEV,EDITOR } from 'cc/env';\n\n`;
+    let result = '/* eslint-disable */\n' +
+        'import { Component } from \'cc\';\n' +
+        'import { app } from \'../../app/app\';\n' +
+        'import { DEV,EDITOR } from \'cc/env\';\n\n';
 
     const handle = function handle(arr: any[], module: boolean) {
         arr.forEach(function (value, index, array) {
@@ -469,7 +469,7 @@ async function updateExecutor() {
     if (readFileSyncByPath(executorFilePath) !== result) {
         await Editor.Message.request('asset-db', 'create-asset', executorFilePath, result, {
             overwrite: true
-        })
+        });
     }
 }
 
@@ -483,14 +483,14 @@ function callUpdateExecutor(clear = false) {
         timer = setTimeout(() => {
             updateExecutor().finally(() => {
                 timer = null;
-            })
+            });
         }, 500);
     }
 }
 
 export const methods: { [key: string]: (...any: any) => any } = {
     ['open-panel']() {
-        Editor.Panel.open(`app.open-panel`);
+        Editor.Panel.open('app.open-panel');
     },
     ['update-executor']() {
         callUpdateExecutor();
@@ -498,7 +498,7 @@ export const methods: { [key: string]: (...any: any) => any } = {
     ['asset-db:ready']() {
         updateExecutor().finally(() => {
             deleteInvalidFolders();
-        })
+        });
     },
     ['asset-db:asset-add'](uuid: string, info: AssetInfo) {
         if (!isFolderVaild(info)) {
@@ -534,8 +534,8 @@ export function load() {
             if (!ready) return;
             updateExecutor().finally(() => {
                 deleteInvalidFolders();
-            })
-        })
+            });
+        });
 }
 
 /**

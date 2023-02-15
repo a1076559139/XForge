@@ -25,11 +25,11 @@ export default Vue.extend({
             const name = stringCase(this.inputName, true);
 
             if (/^[a-zA-Z0-9_]+$/.test(name) === false) {
-                this.display = `[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/`;
+                this.display = '[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/';
                 return;
             }
 
-            this.display = `创建中`;
+            this.display = '创建中';
             this.showLoading = true;
 
             if (!await createFolderByPath(folderPath, {
@@ -46,7 +46,7 @@ export default Vue.extend({
                 ]
             })) {
                 this.showLoading = false;
-                this.display = `[错误] 创建失败`;
+                this.display = '[错误] 创建失败';
                 return;
             }
 

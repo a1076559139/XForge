@@ -39,14 +39,11 @@ function update(assetList, metaList) {
     }
 }
 exports.update = update;
-;
 function ready() {
     // TODO something
 }
 exports.ready = ready;
-;
 function close(his) {
     // TODO something
 }
 exports.close = close;
-;

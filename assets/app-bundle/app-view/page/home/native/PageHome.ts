@@ -20,7 +20,7 @@ export class PageHome extends BaseView {
                 app.manager.ui.load('PaperGameIndex');
                 app.manager.ui.load('PopTip');
             }
-        })
+        });
     }
 
     // 界面关闭时的相关逻辑写在这(已经关闭的界面不会触发onHide)

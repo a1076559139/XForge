@@ -5,10 +5,8 @@ const path_1 = require("path");
 module.paths.push(path_1.join(Editor.App.path, 'node_modules'));
 function load() { }
 exports.load = load;
-;
 function unload() { }
 exports.unload = unload;
-;
 // 在其他扩展脚本中，我们可以使用如下代码调用 rotateCamera 函数
 // const options: ExecuteSceneScriptMethodOptions = {
 //     name: scene.ts 所在的扩展包名, 如: App,

@@ -143,5 +143,5 @@ class Invoker {
 }
 const pipeline = {
     Command, ChainCommand, Invoker
-}
+};
 export default pipeline;

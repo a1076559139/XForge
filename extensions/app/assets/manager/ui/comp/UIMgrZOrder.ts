@@ -44,11 +44,11 @@ export default class UIMgrZOrder extends Component {
         this.tempArr
             .sort((a, b) => {
                 return (a.position.z - b.position.z)
-                    || (a.getSiblingIndex() - b.getSiblingIndex())
+                    || (a.getSiblingIndex() - b.getSiblingIndex());
             })
             .forEach((child, index) => {
                 child.setSiblingIndex(index);
-            })
+            });
 
         // 一定要放到最后再设置false，
         // 避免更新过程中设置siblingIndex，

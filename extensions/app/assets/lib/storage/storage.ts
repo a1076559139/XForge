@@ -1,15 +1,3 @@
-// interface Storage {
-//     _cache: any,
-//     set(key: string, value: any): boolean,
-//     get(key: string): unknown,
-//     add(key: string, value: number): number | boolean,
-//     remove(key: string): boolean,
-//     clear(): boolean,
-//     setWeek(key: string, value: any, cb: (oldValue: unknown, newValue: unknown) => boolean): boolean,
-//     getWeek(key: string): unknown,
-//     setDay(key: string, value: any, cb: (oldValue: unknown, newValue: unknown) => boolean): boolean,
-//     getDay(key: string): unknown,
-// }
 import { error, js, log, sys } from 'cc';
 
 const weekOfYear = function (curDate?: Date) {

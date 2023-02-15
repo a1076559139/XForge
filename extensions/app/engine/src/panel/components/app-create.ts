@@ -19,7 +19,7 @@ export default Vue.extend({
         return {
             menus: ['View', 'Manager', 'Model', 'Control', 'Sound', '资源目录'],
             content: 'ViewComponent'
-        }
+        };
     },
     methods: {
         onClick(index: number) {

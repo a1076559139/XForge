@@ -7,7 +7,7 @@ export default class LoaderManager extends BaseManager {
 
     private handle(handle: string, { bundle, path, type, onProgress, onComplete }: { bundle: string, path: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (result: any) => void }) {
         if (!handle) {
-            this.error(`handle is empty`);
+            this.error('handle is empty');
             return onComplete && onComplete(null);
         }
         if (!bundle) {
@@ -34,7 +34,7 @@ export default class LoaderManager extends BaseManager {
         assetManager.loadBundle(bundle, (err: string, bundle: AssetManager.Bundle) => {
             if (err) return onComplete && onComplete(null);
             bundle[handle](args[0], args[1], args[2], args[3]);
-        })
+        });
     }
 
     /**
@@ -94,7 +94,7 @@ export default class LoaderManager extends BaseManager {
 
         assetManager.loadBundle(bundle, (err: string, bundle: AssetManager.Bundle) => {
             onComplete && onComplete(err ? null : bundle);
-        })
+        });
     }
 
     /**

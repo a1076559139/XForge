@@ -1,5 +1,5 @@
-import SoundManager from "../../extensions/app/assets/manager/sound/SoundManager";
-import UIManager from "../../extensions/app/assets/manager/ui/UIManager";
+import SoundManager from '../../extensions/app/assets/manager/sound/SoundManager';
+import UIManager from '../../extensions/app/assets/manager/ui/UIManager';
 
 // 预加载的UI(符合app.lib.task.createAny规则)
 UIManager.setting.preload = ['PageHome', 'PaperHomeIndex'];

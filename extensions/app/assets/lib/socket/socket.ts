@@ -3,6 +3,7 @@ class EventEmitter {
 
     public on(event: string, cb: (data?: any) => void, target?: unknown) {
         if (typeof target === 'undefined') {
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
             target = this;
         }
 
@@ -28,6 +29,7 @@ class EventEmitter {
         }
 
         if (typeof target === 'undefined') {
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
             target = this;
         }
 
@@ -52,6 +54,7 @@ class EventEmitter {
 
     public offTarget(target?: unknown) {
         if (typeof target === 'undefined') {
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
             target = this;
         }
 

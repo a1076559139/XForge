@@ -29,7 +29,7 @@ class CallbackList {
     }
 
     public add(callback: Function, target: unknown = null, once: boolean = false) {
-        this.callbacks.push(new CallbackInfo(callback, target, once))
+        this.callbacks.push(new CallbackInfo(callback, target, once));
     }
 
     public emit(args: any[]) {

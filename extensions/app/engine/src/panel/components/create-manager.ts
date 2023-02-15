@@ -7,22 +7,22 @@ import { convertPathToDir, createFolderByPath, getMeta, getReadme, getTemplate, 
  */
 function getScript(name: string) {
     const basePath = '../../../../extensions/app/assets/base/BaseManager';
-    return "import { _decorator } from 'cc';\r\n" +
-        "import BaseManager from '" + basePath + "';\r\n" +
-        "const { ccclass, property } = _decorator;\r\n" +
-        "@ccclass('" + name + "')\r\n" +
-        "export class " + name + " extends BaseManager {\r\n" +
-        "    // [无序] 加载完成时触发\r\n" +
-        "    protected onLoad() { }\r\n\r\n" +
-        "    // [无序] 自身初始化完成, init执行完毕后被调用\r\n" +
-        "    protected onInited() { }\r\n\r\n" +
-        "    // [无序] 所有manager初始化完成\r\n" +
-        "    protected onFinished() { }\r\n\r\n" +
-        "    // [无序] 初始化manager，在初始化完成后，调用finish方法\r\n" +
-        "    protected init(finish: Function) {\r\n" +
-        "        super.init(finish);\r\n" +
-        "    }\r\n" +
-        "}";
+    return 'import { _decorator } from \'cc\';\r\n' +
+        'import BaseManager from \'' + basePath + '\';\r\n' +
+        'const { ccclass, property } = _decorator;\r\n' +
+        '@ccclass(\'' + name + '\')\r\n' +
+        'export class ' + name + ' extends BaseManager {\r\n' +
+        '    // [无序] 加载完成时触发\r\n' +
+        '    protected onLoad() { }\r\n\r\n' +
+        '    // [无序] 自身初始化完成, init执行完毕后被调用\r\n' +
+        '    protected onInited() { }\r\n\r\n' +
+        '    // [无序] 所有manager初始化完成\r\n' +
+        '    protected onFinished() { }\r\n\r\n' +
+        '    // [无序] 初始化manager，在初始化完成后，调用finish方法\r\n' +
+        '    protected init(finish: Function) {\r\n' +
+        '        super.init(finish);\r\n' +
+        '    }\r\n' +
+        '}';
 }
 
 export default Vue.extend({
@@ -40,7 +40,7 @@ export default Vue.extend({
             const name = this.inputName;
 
             if (/^[a-zA-Z0-9_]+$/.test(name) === false) {
-                this.display = `[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/`;
+                this.display = '[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/';
                 return;
             }
 

@@ -2,7 +2,7 @@ import { AssetManager, assetManager, Component, error, EventTarget, find, instan
 import { DEBUG, EDITOR } from 'cc/env';
 import Core from '../Core';
 
-const { ccclass, property } = _decorator;
+const { ccclass } = _decorator;
 
 const UserManagerRoot = 'Root2D/UserManager';
 const DotReWriteFuns = ['emit', 'on', 'once', 'off', 'targetOff'];
@@ -145,7 +145,7 @@ export default class BaseManager extends Component {
         // 一定会加载成功
         Core.inst.lib.task.excute((retry) => {
             assetManager.loadBundle(BundleName, (err, bundle) => {
-                if (err) return retry(0.1)
+                if (err) return retry(0.1);
                 this.bundle = bundle;
                 onFinish && onFinish();
             });

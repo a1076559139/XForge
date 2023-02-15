@@ -150,7 +150,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         group: Group,
         tooltip: '是否捕获焦点<响应onLostFocus和onFocus>\n⚠️注意:\n1、非UI_2D分组下会失效\n2、当一个捕获焦点的view处于最上层并展示时\n下层的view永远不会响应focus事件',
         visible() {
-            return this.node?.layer === Layers.Enum.UI_2D
+            return this.node?.layer === Layers.Enum.UI_2D;
         }
     })
     protected get captureFocus() {
@@ -170,7 +170,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         group: Group,
         tooltip: '是否需要底层遮罩\n⚠️注意:\n1、非UI_2D分组下会失效\n2、为Page页面时会失效',
         visible() {
-            return this.node?.layer === Layers.Enum.UI_2D
+            return this.node?.layer === Layers.Enum.UI_2D;
         }
     })
     protected get shade() {
@@ -204,7 +204,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         group: Group,
         tooltip: '是否阻断输入\n⚠️注意:\n1、非UI_2D分组下会失效',
         visible() {
-            return this.node?.layer === Layers.Enum.UI_2D
+            return this.node?.layer === Layers.Enum.UI_2D;
         }
     })
     protected get blockInput() {
@@ -321,14 +321,13 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
                 return UITransform.prototype.hitTest.apply(uiTransform, args);
             }
             return false;
-        }
+        };
 
         for (let i = 0; i < BlockEvents.length; i++) {
             this.node.on(BlockEvents[i], this.blockPropagation, this);
             this.node.on(BlockEvents[i], this.stopPropagation, this, true);
         }
     }
-
 
     /**
      * 关闭所有子界面

@@ -22,19 +22,15 @@ function onCreateMenu(assetInfo) {
     // return getMenu();
 }
 exports.onCreateMenu = onCreateMenu;
-;
 function onDBMenu(assetInfo) {
     // return getMenu();
 }
 exports.onDBMenu = onDBMenu;
-;
 function onPanelMenu(assetInfo) {
     // return getMenu();
 }
 exports.onPanelMenu = onPanelMenu;
-;
 function onAssetMenu(assetInfo) {
     return getMenu();
 }
 exports.onAssetMenu = onAssetMenu;
-;

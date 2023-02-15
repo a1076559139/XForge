@@ -1,6 +1,6 @@
 import { EventTarget, _decorator } from 'cc';
 import BaseManager from '../../base/BaseManager';
-const { ccclass, property } = _decorator;
+const { ccclass } = _decorator;
 
 @ccclass('EventManager')
 export default class EventManager extends BaseManager {

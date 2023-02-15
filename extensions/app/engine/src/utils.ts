@@ -1,5 +1,5 @@
-import { existsSync, readFileSync, writeFileSync } from "fs";
-import { basename, join } from "path";
+import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { basename, join } from 'path';
 
 export function getReadme(name: 'app' | 'app-appinit' | 'app-scene' | 'app-builtin' | 'app-bundle' | 'app-view' | 'app-admin' | 'app-control' | 'app-manager' | 'app-model' | 'app-sound' | 'effect' | 'music' | 'expansion' | 'native' | 'res-bundle' | 'res-native' | 'resources') {
     const Assets = join(__dirname, '../res/readme');
@@ -14,7 +14,7 @@ export function getMeta(name: 'app-admin' | 'app-control' | 'app-manager' | 'app
 
 export function getTemplate(name: string) {
     const Assets = join(__dirname, '../res/panel');
-    return readFileSync(join(Assets, `components/${name}.html`), 'utf-8')
+    return readFileSync(join(Assets, `components/${name}.html`), 'utf-8');
 }
 
 /**
@@ -144,6 +144,6 @@ export function delayFileExists(file: string) {
                 timer = null;
                 next(null);
             }
-        }, 100)
-    })
+        }, 100);
+    });
 }

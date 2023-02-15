@@ -1,7 +1,7 @@
 'use strict';
 
-import { existsSync, readFileSync } from "fs";
-import { join } from "path";
+import { existsSync, readFileSync } from 'fs';
+import { join } from 'path';
 
 interface Asset {
     displayName: string;
@@ -76,12 +76,12 @@ export function update(this: PanelThis, assetList: Asset[], metaList: Meta[]) {
     } else {
         this.$.section.hidden = false;
     }
-};
+}
 
 export function ready(this: PanelThis) {
     // TODO something
-};
+}
 
 export function close(his: PanelThis,) {
     // TODO something
-};
+}

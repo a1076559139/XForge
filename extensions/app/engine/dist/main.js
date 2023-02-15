@@ -196,10 +196,10 @@ async function clearExecutor() {
     const miniViewKeys = { nerver: '' };
     const musicKeys = { nerver: '' };
     const effecKeys = { nerver: '' };
-    let result = `/* eslint-disable */\n` +
-        `import { Component } from 'cc';\n` +
-        `import { app } from '../../app/app';\n` +
-        `import { DEV,EDITOR } from 'cc/env';\n\n`;
+    let result = '/* eslint-disable */\n' +
+        'import { Component } from \'cc\';\n' +
+        'import { app } from \'../../app/app\';\n' +
+        'import { DEV,EDITOR } from \'cc/env\';\n\n';
     result += 'enum viewNames { \'' + Object.keys(viewKeys).join('\',\'') + '\'}\n';
     result += 'const miniViewNames = ' + JSON.stringify(miniViewKeys) + '\n';
     result += 'enum musicNames { \'' + Object.keys(musicKeys).join('\',\'') + '\'}\n';
@@ -213,14 +213,14 @@ async function clearExecutor() {
     result += 'export type IEffecName = keyof typeof effecNames\n';
     result += 'export type IEffecNames = IEffecName[]\n\n';
     // data
-    result += `if(!EDITOR||DEV) Object.assign(app.data, {})\n`;
+    result += 'if(!EDITOR||DEV) Object.assign(app.data, {})\n';
     // config
-    result += `if(!EDITOR||DEV) Object.assign(app.config, {})\n\n`;
+    result += 'if(!EDITOR||DEV) Object.assign(app.config, {})\n\n';
     result += 'export type IApp = {\n';
-    result += `    Manager: {},\n`;
-    result += `    manager: {},\n`;
-    result += `    data: {},\n`;
-    result += `    config: {}\n`;
+    result += '    Manager: {},\n';
+    result += '    manager: {},\n';
+    result += '    data: {},\n';
+    result += '    config: {}\n';
     result += '}\n';
     // 修正windows系统中的\为/
     result = result.replace(/\\/g, '/');
@@ -377,10 +377,10 @@ async function updateExecutor() {
             }
         }
     }
-    let result = `/* eslint-disable */\n` +
-        `import { Component } from 'cc';\n` +
-        `import { app } from '../../app/app';\n` +
-        `import { DEV,EDITOR } from 'cc/env';\n\n`;
+    let result = '/* eslint-disable */\n' +
+        'import { Component } from \'cc\';\n' +
+        'import { app } from \'../../app/app\';\n' +
+        'import { DEV,EDITOR } from \'cc/env\';\n\n';
     const handle = function handle(arr, module) {
         arr.forEach(function (value, index, array) {
             // storage
@@ -480,7 +480,7 @@ function callUpdateExecutor(clear = false) {
 }
 exports.methods = {
     ['open-panel']() {
-        Editor.Panel.open(`app.open-panel`);
+        Editor.Panel.open('app.open-panel');
     },
     ['update-executor']() {
         callUpdateExecutor();

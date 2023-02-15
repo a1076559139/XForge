@@ -13,9 +13,9 @@ function getScript(type, name) {
     if (type === 'data' || type === 'config') {
         const BaseModel = '../../../extensions/app/assets/base/BaseModel';
         const className = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
-        return "import { IModel } from '" + BaseModel + "';\r\n" +
-            "export default class " + className + " implements IModel<" + className + "> {\r\n" +
-            "}";
+        return 'import { IModel } from \'' + BaseModel + '\';\r\n' +
+            'export default class ' + className + ' implements IModel<' + className + '> {\r\n' +
+            '}';
     }
     else {
         return '// 存放直接导出的interface、type或enum等\r\n\r\n' +
@@ -42,7 +42,7 @@ exports.default = vue_1.default.extend({
             const type = this.typeSelects[this.typeSelectIndex];
             const name = this.inputName;
             if (/^[a-zA-Z0-9_]+$/.test(name) === false) {
-                this.display = `[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/`;
+                this.display = '[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/';
                 return;
             }
             this.display = '创建中';

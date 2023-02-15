@@ -1,6 +1,6 @@
-import { AudioClip } from "cc";
-import Audio from "./Audio";
-import AudioManager from "./AudioManager";
+import { AudioClip } from 'cc';
+import Audio from './Audio';
+import AudioManager from './AudioManager';
 
 export default class AudioEngine {
     private static _inst: AudioEngine = null;
@@ -56,7 +56,7 @@ export default class AudioEngine {
     stopAllEffects() {
         this.effectMap.forEach((audio) => {
             audio.stop();
-        })
+        });
     }
 
     pauseEffect(id: number) {
@@ -66,7 +66,7 @@ export default class AudioEngine {
     pauseAllEffects() {
         this.effectMap.forEach((audio) => {
             audio.pause();
-        })
+        });
     }
 
     resumeEffect(id: number) {
@@ -76,7 +76,7 @@ export default class AudioEngine {
     resumeAllEffects() {
         this.effectMap.forEach((audio) => {
             audio.resume();
-        })
+        });
     }
 
     setEffectMute(id: number, mute: boolean) {
@@ -87,7 +87,7 @@ export default class AudioEngine {
         this.effectMute = mute;
         this.effectMap.forEach((audio) => {
             audio.setMute(mute);
-        })
+        });
     }
 
     getEffectMute(id: number) {
@@ -103,10 +103,10 @@ export default class AudioEngine {
     }
 
     setAllEffectsVolum(volum: number) {
-        this.effectVolume = volum
+        this.effectVolume = volum;
         this.effectMap.forEach((audio) => {
             audio.setVolume(volum);
-        })
+        });
     }
 
     getEffectVolum(id: number) {
@@ -122,10 +122,10 @@ export default class AudioEngine {
     }
 
     setAllEffectsVolumScale(scale: number) {
-        this.effectVolumeScale = scale
+        this.effectVolumeScale = scale;
         this.effectMap.forEach((audio) => {
             audio.setVolumeScale(scale);
-        })
+        });
     }
 
     getEffectVolumScale(id: number) {

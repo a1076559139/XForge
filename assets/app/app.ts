@@ -1,8 +1,8 @@
-import { Game, game } from "cc";
-import { DEBUG, DEV, EDITOR } from "cc/env";
-import Core from "../../extensions/app/assets/Core";
+import { Game, game } from 'cc';
+import { DEBUG, DEV, EDITOR } from 'cc/env';
+import Core from '../../extensions/app/assets/Core';
 import { IApp } from '../app-builtin/app-admin/executor';
-import { appInited, appReady, cccInited, cccReady } from "./handle";
+import { appInited, appReady, cccInited, cccReady } from './handle';
 
 export class App extends Core<IApp> {
     protected static _inst: App = null;
@@ -12,7 +12,7 @@ export class App extends Core<IApp> {
     }
 
     private constructor() {
-        super()
+        super();
     }
 }
 

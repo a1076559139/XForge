@@ -41,7 +41,7 @@ export default abstract class BaseAppInit extends Component {
                     assetManager.loadBundle(ModelBundleName, (err) => {
                         if (err) return retry(0.1);
                         next();
-                    })
+                    });
                 },
                 (next, retry) => {
                     // 加载control
@@ -49,7 +49,7 @@ export default abstract class BaseAppInit extends Component {
                     assetManager.loadBundle(ControlBundlename, (err) => {
                         if (err) return retry(0.1);
                         next();
-                    })
+                    });
                 }
             ])
             .add([
@@ -59,7 +59,7 @@ export default abstract class BaseAppInit extends Component {
                     assetManager.loadBundle(AdminBundleName, (err) => {
                         if (err) return retry(0.1);
                         next();
-                    })
+                    });
                 },
                 (next) => {
                     // 加载manager
@@ -82,7 +82,7 @@ export default abstract class BaseAppInit extends Component {
                 }, () => {
                     this.onUserInit(this._base_completed - this._base_mgr_total);
                 });
-            })
+            });
     }
     /**
      * [避免重写] 初始化下一步，用户部分每完成一步需要调用一次

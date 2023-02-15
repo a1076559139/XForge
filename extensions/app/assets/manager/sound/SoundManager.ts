@@ -3,7 +3,7 @@ import { IEffecName, IMusicName } from '../../../../../assets/app-builtin/app-ad
 import BaseManager from '../../base/BaseManager';
 import Core from '../../Core';
 import AudioEngine from './AudioEngine';
-const { ccclass, property } = _decorator;
+const { ccclass } = _decorator;
 
 interface playMusic<T> { name: T, volum?: number, force?: boolean, onPlay?: Function, onError?: Function }
 interface playEffect<T> { name: T, volum?: number, loop?: boolean, interval?: number, onPlay?: Function, onError?: Function, onEnded?: Function }
@@ -80,7 +80,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
                 bundle: BundleName,
                 type: AudioClip,
                 path: path
-            })
+            });
         });
     }
 
@@ -146,7 +146,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
                     complete && complete(null);
                 }
             }
-        })
+        });
 
         return false;
     }
@@ -162,7 +162,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         }
 
         delete this.audioCache[soundPath as string];
-        Core.inst.manager.loader.release({ bundle: BundleName, path: soundPath, type: AudioClip })
+        Core.inst.manager.loader.release({ bundle: BundleName, path: soundPath, type: AudioClip });
     }
 
     /**
@@ -296,7 +296,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
             this.playMusic({
                 name: this.playingMusic.name as any,
                 volum: this.playingMusic.volum
-            })
+            });
         }
     }
 
