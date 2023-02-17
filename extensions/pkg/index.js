@@ -22,7 +22,7 @@ async function spawnCmd(cmd, args, options) {
             console.log('[err]: ' + data);
         });
     });
-};
+}
 
 /**
  * 获得文件夹所有文件路径
@@ -55,7 +55,7 @@ function eachDirectory(dir, callback) {
     const files = fs.readdirSync(dir);
     files.forEach(function (item) {
         const item_path = path.join(dir, item);
-        callback(item_path, fs.statSync(item_path).isDirectory())
+        callback(item_path, fs.statSync(item_path).isDirectory());
     });
 }
 
@@ -70,12 +70,12 @@ async function main() {
             if (!path.basename(item_path).startsWith('@')) return;
             getFiles(item_path).forEach((item_path2) => {
                 if (!item_path2.endsWith('.meta')) return;
-                metaMap[item_path2] = fs.readFileSync(item_path2, 'utf-8')
-            })
+                metaMap[item_path2] = fs.readFileSync(item_path2, 'utf-8');
+            });
         } else if (item_path.endsWith('.meta')) {
             metaMap[item_path] = fs.readFileSync(item_path, 'utf-8');
         }
-    })
+    });
 
     // npm指令
     const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
@@ -86,17 +86,17 @@ async function main() {
         if (code !== 0) console.error(`[失败]: ${code}`);
     } else if (process.argv[2] === 'remove') {
         const cmd = ['uninstall', '--prefix', packageDir];
-        if (!process.argv[3]) return console.error(`[失败]: 输入要卸载的名字`);
+        if (!process.argv[3]) return console.error('[失败]: 输入要卸载的名字');
         cmd.push(process.argv[3]);
         const code = await spawnCmd(npm, cmd);
         if (code !== 0) {
             console.error(`[失败]: ${code}`);
         } else if (fs.existsSync(path.join(moduleDir, process.argv[3].trim()))) {
             // 如果文件夹未删除成功 则 强制删除
-            await spawnCmd('rm', [`-rf`, path.join(moduleDir, process.argv[3].trim())]);
+            await spawnCmd('rm', ['-rf', path.join(moduleDir, process.argv[3].trim())]);
         }
     } else {
-        return console.error(`[未知指令]`);
+        return console.error('[未知指令]');
     }
 
     // 还原meta，或删除无用meta

@@ -1,0 +1,14 @@
+{
+    "name": "engine",
+    "dependencies": {
+        "vue": "2.6.14"
+    },
+    "devDependencies": {
+        "@types/node": "16.0.1",
+        "typescript": "4.3.4"
+    },
+    "scripts": {
+        "build": "tsc -b",
+        "watch": "tsc -w"
+    }
+}
