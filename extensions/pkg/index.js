@@ -44,12 +44,12 @@ function getFiles(dir) {
 }
 
 /**
- * 
+ * 遍历文件
  * @param {string} dir 
  * @param {( item_path: string, isDirectory: boolean ) => void} callback 
  * @returns 
  */
-function eachDirectory(dir, callback) {
+function eachFiles(dir, callback) {
     if (fs.existsSync(dir) !== true) return;
 
     const files = fs.readdirSync(dir);
@@ -59,13 +59,33 @@ function eachDirectory(dir, callback) {
     });
 }
 
+/**
+ * 删除文件夹
+ * @param {string} dir 
+ * @returns 
+ */
+function deleteDirectory(dir) {
+    if (!fs.existsSync(dir)) return;
+
+    fs.readdirSync(dir).forEach((file) => {
+        const fileDir = path.join(dir, file);
+        if (fs.statSync(fileDir).isDirectory()) {
+            deleteDirectory(fileDir); //递归删除文件夹
+        } else {
+            fs.unlinkSync(fileDir); //删除文件
+        }
+    });
+
+    fs.rmdirSync(dir);
+}
+
 const packageDir = path.join(__dirname, 'package');
 const moduleDir = path.join(packageDir, 'node_modules');
 
 async function main() {
     // 存储meta信息
     const metaMap = {};
-    eachDirectory(moduleDir, (item_path, isDirectory) => {
+    eachFiles(moduleDir, (item_path, isDirectory) => {
         if (isDirectory) {
             if (!path.basename(item_path).startsWith('@')) return;
             getFiles(item_path).forEach((item_path2) => {
@@ -93,7 +113,7 @@ async function main() {
             console.error(`[失败]: ${code}`);
         } else if (fs.existsSync(path.join(moduleDir, process.argv[3].trim()))) {
             // 如果文件夹未删除成功 则 强制删除
-            await spawnCmd('rm', ['-rf', path.join(moduleDir, process.argv[3].trim())]);
+            deleteDirectory(path.join(moduleDir, process.argv[3].trim()));
         }
     } else {
         return console.error('[未知指令]');

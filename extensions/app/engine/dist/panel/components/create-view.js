@@ -242,7 +242,7 @@ exports.default = vue_1.default.extend({
             fs_1.writeFileSync(path_1.join(utils_1.convertPathToDir(typePath), `.${type}.md`), `所有${type}类型UI的根目录`);
             if (isPaper)
                 fs_1.writeFileSync(path_1.join(utils_1.convertPathToDir(`${typePath}/${PageBaseName[owner]}`), `.${PageBaseName[owner]}.md`), `归属于Page${utils_1.stringCase(PageBaseName[owner])}`);
-            fs_1.writeFileSync(path_1.join(utils_1.convertPathToDir(uiPath), `.${name}.md`), `${uiName}所在文件夹, 通过${isPaper ? '在page中配置miniViews属性并调用showMiniViews方法' : 'app.manager.ui.show'}的方式加载`);
+            fs_1.writeFileSync(path_1.join(utils_1.convertPathToDir(uiPath), `.${name}.md`), `${uiName}所在文件夹\n1、通过${isPaper ? `在${owner}中配置miniViews属性并调用showMiniViews方法` : `app.manager.ui.show({ name:'${uiName}' })`}的方式加载`);
             fs_1.writeFileSync(path_1.join(utils_1.convertPathToDir(nativePath), '.native.md'), utils_1.getReadme('native'));
             fs_1.writeFileSync(path_1.join(utils_1.convertPathToDir(resourcesPath), '.resources.md'), utils_1.getReadme('resources'));
             fs_1.writeFileSync(path_1.join(utils_1.convertPathToDir(expansionPath), '.expansion.md'), utils_1.getReadme('expansion'));

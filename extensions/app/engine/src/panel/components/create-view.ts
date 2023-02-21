@@ -263,7 +263,7 @@ export default Vue.extend({
             writeFileSync(join(convertPathToDir(typePath), `.${type}.md`), `所有${type}类型UI的根目录`);
             if (isPaper) writeFileSync(join(convertPathToDir(`${typePath}/${PageBaseName[owner]}`), `.${PageBaseName[owner]}.md`), `归属于Page${stringCase(PageBaseName[owner])}`);
 
-            writeFileSync(join(convertPathToDir(uiPath), `.${name}.md`), `${uiName}所在文件夹, 通过${isPaper ? '在page中配置miniViews属性并调用showMiniViews方法' : 'app.manager.ui.show'}的方式加载`);
+            writeFileSync(join(convertPathToDir(uiPath), `.${name}.md`), `${uiName}所在文件夹\n1、通过${isPaper ? `在${owner}中配置miniViews属性并调用showMiniViews方法` : `app.manager.ui.show({ name:'${uiName}' })`}的方式加载`);
             writeFileSync(join(convertPathToDir(nativePath), '.native.md'), getReadme('native'));
             writeFileSync(join(convertPathToDir(resourcesPath), '.resources.md'), getReadme('resources'));
             writeFileSync(join(convertPathToDir(expansionPath), '.expansion.md'), getReadme('expansion'));

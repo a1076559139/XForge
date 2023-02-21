@@ -14,8 +14,8 @@ const BlockEvents = [
 ];
 
 const HideEvent = Enum({
-    active: 1,
-    destroy: 2
+    destroy: 1,
+    active: 2
 });
 
 interface IEvent<E> {
@@ -114,16 +114,16 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     @property({
         group: Group,
         type: HideEvent,
-        tooltip: '何种方式隐藏节点',
+        tooltip: '何种模式隐藏节点\n1、destroy: 销毁UI并释放对应的所有资源\n2、active: 缓存UI并加速下次的打开速度',
     })
-    protected hideEvent = HideEvent.active;
+    protected hideEvent = HideEvent.destroy;
 
     @property
     private _singleton = true;
     private static _singleton = true;
     @property({
         group: Group,
-        tooltip: '是否是单例模式(非单例模式下view会被重复创建)',
+        tooltip: '是否是单例模式\n1、单例模式: UI只会被创建一次(onShow会被重复触发)\n2、非单例模式: UI会被重复创建',
     })
     protected get singleton(): boolean {
         if (this._base_view_name?.indexOf('Page') === 0) return true;
@@ -148,7 +148,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     private _captureFocus = true;
     @property({
         group: Group,
-        tooltip: '是否捕获焦点<响应onLostFocus和onFocus>\n⚠️注意:\n1、非UI_2D分组下会失效\n2、当一个捕获焦点的view处于最上层并展示时\n下层的view永远不会响应focus事件',
+        tooltip: '是否捕获焦点<响应onLostFocus和onFocus>\n1、非UI_2D分组下会失效\n2、当一个捕获焦点的UI处于最上层并展示时\n下层的UI永远不会响应focus事件',
         visible() {
             return this.node?.layer === Layers.Enum.UI_2D;
         }
@@ -168,7 +168,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     private _shade = true;
     @property({
         group: Group,
-        tooltip: '是否需要底层遮罩\n⚠️注意:\n1、非UI_2D分组下会失效\n2、为Page页面时会失效',
+        tooltip: '是否需要底层遮罩\n1、非UI_2D分组下会失效\n2、为Page类型时会失效',
         visible() {
             return this.node?.layer === Layers.Enum.UI_2D;
         }
@@ -202,7 +202,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     private _blockInput = true;
     @property({
         group: Group,
-        tooltip: '是否阻断输入\n⚠️注意:\n1、非UI_2D分组下会失效',
+        tooltip: '是否阻断输入\n1、非UI_2D分组下会失效',
         visible() {
             return this.node?.layer === Layers.Enum.UI_2D;
         }
