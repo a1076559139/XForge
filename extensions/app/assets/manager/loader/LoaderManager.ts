@@ -5,19 +5,16 @@ const { ccclass } = _decorator;
 @ccclass('LoaderManager')
 export default class LoaderManager extends BaseManager {
 
-    private handle(handle: string, { bundle, path, type, onProgress, onComplete }: { bundle: string, path: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (result: any) => void }) {
+    private handle(handle: string, { bundle, path, type, onProgress, onComplete }: { bundle?: string, path: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (result: any) => void }) {
         if (!handle) {
             this.error('handle is empty');
-            return onComplete && onComplete(null);
-        }
-        if (!bundle) {
-            this.error(`${handle} fail. bundle is empty`);
             return onComplete && onComplete(null);
         }
         if (!path) {
             this.error(`${handle} fail. path is empty`);
             return onComplete && onComplete(null);
         }
+        if (!bundle) bundle = 'resources';
 
         const args: any[] = [path];
         if (type) args.push(type);
@@ -39,59 +36,61 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 预加载
+     * @param {string} bundle 默认为resources
      */
-    public preload(params: { bundle: string, path: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (items: AssetManager.RequestItem[]) => void }) {
+    public preload(params: { path: string, bundle?: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (items: AssetManager.RequestItem[]) => void }) {
         this.handle('preload', params);
     }
 
     /**
      * 预加载
+     * @param {string} bundle 默认为resources
      */
-    public preloadDir(params: { bundle: string, path: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (items: AssetManager.RequestItem[]) => void }) {
+    public preloadDir(params: { path: string, bundle?: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (items: AssetManager.RequestItem[]) => void }) {
         this.handle('preloadDir', params);
     }
 
     /**
      * 加载一个bundle下的资源
+     * @param {string} bundle 默认为resources
      */
-    public load<T extends typeof Asset>(params: { bundle: string, path: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (result: InstanceType<T>) => void }) {
+    public load<T extends typeof Asset>(params: { path: string, bundle?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (result: InstanceType<T>) => void }) {
         this.handle('load', params);
     }
 
     /**
      * 销毁一个bundle中对应path和type的资源
+     * @param {string} bundle 默认为resources
      */
-    public release({ path, bundle, type }: { path: string, bundle: string, type?: typeof Asset }) {
-        if (!bundle) return this.error('release fail. bundle is empty');
+    public release({ path, bundle, type }: { path: string, bundle?: string, type?: typeof Asset }) {
+        if (!bundle) bundle = 'resources';
         assetManager.getBundle(bundle)?.release(path, type);
     }
 
     /**
      * 销毁一个bundle中所有的资源
+     * @param {string} bundle 默认为resources
      */
-    public releaseAll(bundle: string) {
-        if (!bundle) return this.error('releaseAll fail. bundle is empty');
+    public releaseAll(bundle?: string) {
+        if (!bundle) bundle = 'resources';
         assetManager.getBundle(bundle)?.releaseAll();
     }
 
     /**
      * 销毁一个bundle中未使用的资源
-     * @param {*} res
+     * @param {string} bundle 默认为resources
      */
-    public releaseUnused(bundle: string) {
-        if (!bundle) return this.error('releaseUnused fail. bundle is empty');
+    public releaseUnused(bundle?: string) {
+        if (!bundle) bundle = 'resources';
         assetManager.getBundle(bundle)?.releaseUnusedAssets();
     }
 
     /**
      * 加载一个bundle
+     * @param {string} bundle 默认为resources
      */
-    public loadBundle({ bundle, onComplete }: { bundle: string, onComplete?: (bundle: AssetManager.Bundle) => any }) {
-        if (!bundle) {
-            this.error('loadBundle fail. bundle is empty');
-            return onComplete && onComplete(null);
-        }
-
+    public loadBundle({ bundle, onComplete }: { bundle?: string, onComplete?: (bundle: AssetManager.Bundle) => any }) {
+        if (!bundle) bundle = 'resources';
         assetManager.loadBundle(bundle, (err: string, bundle: AssetManager.Bundle) => {
             onComplete && onComplete(err ? null : bundle);
         });
@@ -99,21 +98,19 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 获取一个已经加载的bundle
+     * @param {string} bundle 默认为resources
      */
-    public getBundle(bundle: string) {
-        if (!bundle) {
-            this.error('getBundle fail. bundle is empty');
-            return null;
-        }
-
+    public getBundle(bundle?: string) {
+        if (!bundle) bundle = 'resources';
         return assetManager.getBundle(bundle);
     }
 
     /**
      * 移除一个已经加载的bundle
+     * @param {string} bundle 默认为resources
      */
-    public removeBundle(bundle: string) {
-        if (!bundle) return this.error('releaseUnused fail. bundle is empty');
+    public removeBundle(bundle?: string) {
+        if (!bundle) bundle = 'resources';
         const b = assetManager.getBundle(bundle);
         if (b) assetManager.removeBundle(b);
     }
