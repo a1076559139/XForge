@@ -15,7 +15,7 @@ function getComScript(name = 'NewClass') {
     const isPage = name.toLocaleLowerCase().startsWith('page');
     const isPaper = name.toLocaleLowerCase().startsWith('paper');
     const basePath = isPaper ? '../../../../../../../extensions/app/assets/base/BaseView' : '../../../../../../extensions/app/assets/base/BaseView';
-    return 'import { _decorator } from \'cc\';\r\n' +
+    return 'import { _decorator, Node } from \'cc\';\r\n' +
         'import BaseView from \'' + basePath + '\';\r\n' +
         `${isPage ? 'import { IMiniViewNames } from \'../../../../../app-builtin/app-admin/executor\';\r\n' : ''}` +
         'const { ccclass, property } = _decorator;\r\n' +
