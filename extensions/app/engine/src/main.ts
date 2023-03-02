@@ -286,7 +286,7 @@ async function updateExecutor() {
     let result1: AssetInfo[] = await Editor.Message.request('asset-db', 'query-assets', { pattern: builtinPath + '/{app-control,app-manager/*,app-model}/*.{ts,prefab}' }).catch(_ => []);
     result1 = result1.sort((a, b) => compareStr(a.name, b.name));
     // app-sound
-    let result2: AssetInfo[] = await Editor.Message.request('asset-db', 'query-assets', { pattern: soundPath + '/{music,effect}/*.*' }).catch(_ => []);
+    let result2: AssetInfo[] = await Editor.Message.request('asset-db', 'query-assets', { pattern: soundPath + '/{music,effect}/**/*.*' }).catch(_ => []);
     result2 = result2.sort((a, b) => compareStr(a.name, b.name));
     // app-view
     let result3: AssetInfo[] = await Editor.Message.request('asset-db', 'query-assets', { pattern: viewPath + '/{page,pop,top,paper/*}/*/native/*.{ts,prefab}' }).catch(_ => []);
@@ -375,7 +375,7 @@ async function updateExecutor() {
                 }
             }
         } else if (dirname.indexOf(soundFolderName + '/') >= 0) {
-            const dir = path.join(dirname.split(soundFolderName + '/').pop() as string, filename);
+            const dir = path.join(dirname.split(soundFolderName + '/').pop(), filename);
             if (dir.startsWith('music')) {
                 // musicKeys
                 musicKeys[dir] = dir;

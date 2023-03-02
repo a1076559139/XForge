@@ -297,8 +297,8 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     private blockPropagation(event: EventTouch) {
         if (this.blockInput) {
             event.propagationStopped = true;
-            if (event.type !== Node.EventType.MOUSE_MOVE) {
-                this.log('阻断触摸');
+            if (event.type === Node.EventType.TOUCH_START) {
+                this.log('阻断触摸向下层传递');
             }
         }
     }
@@ -307,7 +307,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         if (!this._base_touch_enable) {
             event.propagationStopped = true;
             event.propagationImmediateStopped = true;
-            if (event.type !== Node.EventType.MOUSE_MOVE) {
+            if (event.type === Node.EventType.TOUCH_START) {
                 this.log('屏蔽触摸');
             }
         }
