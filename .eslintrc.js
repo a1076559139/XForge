@@ -21,6 +21,8 @@ module.exports = {
         'comma-spacing': 'error',
         'space-infix-ops': 'error',
         'no-constant-condition': 0,
+        'no-inner-declarations': 0,
+        '@typescript-eslint/no-namespace': 0,
         'arrow-spacing': ['error', { before: true, after: true }],
         'no-multiple-empty-lines': ['error', { max: 1, maxEOF: 1 }],
         'space-before-function-paren': ['error', { 'anonymous': 'always', 'named': 'never', 'asyncArrow': 'always' }],
