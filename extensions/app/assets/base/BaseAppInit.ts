@@ -96,10 +96,8 @@ export default abstract class BaseAppInit extends Component {
         if (this._base_completed === this._base_total) {
             Core.emit(Core.EventType.EVENT_APPINIT_FINISHED);
             return Core.inst.manager.ui.showDefault(() => {
-                // 销毁当前节点
-                this.node.active = false;
-                this.node.parent = null;
-                this.node.destroy();
+                // 初始化完成
+                this.onFinish();
                 // 播放默认音乐
                 Core.inst.manager.sound.playDefaultMusic();
             });
@@ -135,4 +133,9 @@ export default abstract class BaseAppInit extends Component {
      * [建议重写] 获得用户资源总量，这里返回几，就需要用户自行调用几次nextInit
      */
     protected getUserAssetNum(): number { return 0; }
+
+    /**
+     * [建议重写] 初始化完成
+     */
+    protected onFinish() { }
 }
