@@ -59,23 +59,23 @@ export class NumberMap<K> extends CusTomMap<K, number> {
 export class SetMap<K, V> extends CusTomMap<K, Set<V>> {
     add(key: K, value: V) {
         if (!this.has(key)) {
-            this.set(key, new Set<V>().add(value));
+            return this.set(key, new Set<V>().add(value)).size;
         } else {
-            this.get(key).add(value);
+            return this.get(key).add(value).size;
         }
     }
     sub(key: K, value: V) {
-        if (!this.has(key)) return;
-        this.get(key).delete(value);
-    }
-
-    subDel(key: K, value: V) {
-        this.sub(key, value);
-
+        if (!this.has(key)) return 0;
         const set = this.get(key);
-        if (set && set.size === 0) {
+        set.delete(value);
+        return set.size;
+    }
+    subDel(key: K, value: V) {
+        if (this.sub(key, value) === 0) {
             this.delete(key);
+            return true;
         }
+        return false;
     }
 }
 
@@ -86,35 +86,73 @@ export class UArrayMap<K, V> extends CusTomMap<K, Array<V>> {
     add(key: K, value: V) {
         if (!this.has(key)) {
             this.set(key, [value]);
+            return 1;
         } else {
             const array = this.get(key);
             if (array.indexOf(value) === -1) {
                 array.push(value);
             }
+            return array.length;
         }
     }
     sub(key: K, value: V) {
-        if (!this.has(key)) return;
+        if (!this.has(key)) return 0;
 
         const array = this.get(key);
         const index = array.indexOf(value);
         if (index >= 0) {
             array.splice(index, 1);
         }
+
+        return array.length;
+    }
+    subDel(key: K, value: V) {
+        if (this.sub(key, value) === 0) {
+            this.delete(key);
+            return true;
+        }
+        return false;
+    }
+}
+
+export class Cache<V> {
+    private cache: V[] = [];
+
+    get() {
+        if (this.cache.length) {
+            return this.cache.pop();
+        }
+        return null;
     }
 
-    subDel(key: K, value: V) {
-        this.sub(key, value);
+    put(v: V) {
+        this.cache.push(v);
+    }
+}
 
-        const array = this.get(key);
-        if (array && array.length === 0) {
-            this.delete(key);
+export class CacheMap<V> {
+    private cache: Map<string, V[]> = new Map();
+
+    get(k: string) {
+        const array = this.cache.get(k);
+        if (array && array.length) {
+            return array.pop();
+        }
+        return null;
+    }
+
+    put(k: string, v: V) {
+        const array = this.cache.get(k);
+        if (array) {
+            array.push(v);
+        } else {
+            this.cache.set(k, [v]);
         }
     }
 }
 
-export function createMap(forceDictMode) {
-    var map = Object.create(null);
+export function createMap(forceDictMode: boolean) {
+    let map = Object.create(null);
     if (forceDictMode) {
         const INVALID_IDENTIFIER_1 = '.';
         const INVALID_IDENTIFIER_2 = '/';
@@ -124,4 +162,11 @@ export function createMap(forceDictMode) {
         delete map[INVALID_IDENTIFIER_2];
     }
     return map;
-};
+}
+
+export function CreateUUID() {
+    let uuid = 0;
+    return function CreateUUID() {
+        return ++uuid;
+    };
+}

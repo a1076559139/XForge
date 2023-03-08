@@ -1,19 +1,10 @@
-import { EcsBase, ecsclass } from "./ecs";
-import EcsEntity from "./EcsEntity";
+import { EcsBase, ecsclass, IComponent, IEntity, ITypeofComponent } from './ecs';
+import { CreateUUID } from './EcsUtils';
 
-let uuidIndex = 0;
-function createUUID() {
-    if (uuidIndex++ > 10000000) uuidIndex = 0;
-    return `Com-${Date.now()}-${uuidIndex}`;
-}
+const createUUID = CreateUUID();
 
 @ecsclass('EcsComponent')
-export class EcsComponent extends EcsBase {
-    /**类名 */
-    public get ecsClassName() {
-        return (this.constructor as typeof EcsBase).ecsClassName;
-    }
-
+export class EcsComponent<E extends IEntity = IEntity> extends EcsBase implements IComponent {
     /**
      * 唯一ID
      */
@@ -29,38 +20,36 @@ export class EcsComponent extends EcsBase {
     public get isValid() {
         return this._isValid;
     }
+    private set isValid(value) {
+        this._isValid = value;
+    }
 
     /**
      * 组件的实体
      */
-    private _entity: EcsEntity = null;
+    private _entity: E = null;
     public get entity() {
         return this._entity;
     }
-
-    /**
-     * 实体绑定的节点
-     */
-    public get node() {
-        if (!this.entity) return null;
-        return this.entity.node;
+    private set entity(value) {
+        this._entity = value;
     }
 
     /**
      * 融合的EcsComponent
      */
-    protected mixs: typeof EcsComponent[] = [];
+    protected mixs: ITypeofComponent[] = [];
     /**
      * 融合处理
      */
-    protected handleMixComponent(com: EcsComponent, index: number) { }
+    protected handleMixComponent(com: IComponent, index: number) { }
 
     /**
      * 内部生效函数
      */
-    private innerEnable(entity: EcsEntity) {
-        this._isValid = true;
-        this._entity = entity;
+    private innerEnable(entity: E) {
+        this.isValid = true;
+        this.entity = entity;
         this.beforeEnable();
         this.onEnable();
     }
@@ -71,8 +60,8 @@ export class EcsComponent extends EcsBase {
     private innerDisable() {
         this.onDisable();
         this.afterDisable();
-        this._isValid = false;
-        this._entity = null;
+        this.isValid = false;
+        this.entity = null;
     }
 
     /**
@@ -80,8 +69,8 @@ export class EcsComponent extends EcsBase {
      */
     protected beforeEnable() {
         this.mixs.forEach((Component, index) => {
-            const com = this.addComponent(Component);
-            this.handleMixComponent(com, index)
+            const com = this.entity?.addComponent(Component, this);
+            this.handleMixComponent(com, index);
         });
     }
 
@@ -100,7 +89,7 @@ export class EcsComponent extends EcsBase {
      */
     protected afterDisable() {
         this.mixs.forEach(Comment => {
-            this.removeComponent(Comment);
+            this.entity?.removeComponent(Comment, this);
         });
     }
 
@@ -108,41 +97,18 @@ export class EcsComponent extends EcsBase {
      * 销毁
      * @param target 权柄
      */
-    public destroy(target?: any) {
+    public destroy(target?: any): boolean {
+        if (!this.entity) return false;
         return this.entity.removeComponent(this, target);
     }
 
-    public getComponent(className: string): any;
-    public getComponent<T extends EcsComponent>(type: { prototype: T }): T;
-    public getComponent(type: any) {
-        if (!this.entity) return null;
-        return this.entity.getComponent(type, this);
-    };
-
-    public getComponents(className: string): any[];
-    public getComponents<T extends EcsComponent>(type: { prototype: T }): T[];
-    public getComponents(type: any) {
-        if (!this.entity) return [];
-        return this.entity.getComponents(type, [], this);
-    };
-
-    public addComponent<T extends typeof EcsComponent>(Com: T | string): InstanceType<T> {
-        if (!this.entity) return null;
-        return this.entity.addComponent(Com, this);
+    protected log(...args: any[]) {
+        console.log(`[${this.ecsName}] [log]`, ...args);
     }
-
-    public removeComponent<T extends typeof EcsComponent>(Com: T | string): boolean {
-        if (!this.entity) return null;
-        return this.entity.removeComponent(Com, this);
-    };
-
-    protected log(str: any, ...args: any[]) {
-        console.log(`[${this.ecsClassName}] [log] ${str}`, ...args);
+    protected warn(...args: any[]) {
+        console.warn(`[${this.ecsName}] [warn]`, ...args);
     }
-    protected warn(str: any, ...args: any[]) {
-        console.warn(`[${this.ecsClassName}] [warn] ${str}`, ...args);
-    }
-    protected error(str: any, ...args: any[]) {
-        console.error(`[${this.ecsClassName}] [error] ${str}`, ...args);
+    protected error(...args: any[]) {
+        console.error(`[${this.ecsName}] [error]`, ...args);
     }
 }

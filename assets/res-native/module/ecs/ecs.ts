@@ -1,9 +1,91 @@
-import { EcsComponent } from "./EcsComponent";
-import EcsEntity from "./EcsEntity";
-import { EcsSystem } from "./EcsSystem";
-import { NumberMap } from "./EcsUtils";
+import { Node } from 'cc';
+import { Cache, NumberMap } from './EcsUtils';
 
-type IFlag = number[];
+export type IEntityUUID = number;
+export type IComponentName = string;
+export type IComponentUUID = number;
+export type IFlag = number[];
+
+export type ITypeofComponent = { new(): IComponent, ecsName: string, recovery: boolean };
+export type ITypeofSystem = { prototype: ISystem, ecsName: string, recovery: boolean };
+export type ITypeofEntity = { new(): IEntity, ecsName: string, recovery: boolean };
+
+export interface IComponent<E extends IEntity = IEntity> extends EcsBase {
+    entity: E;
+    isValid: boolean;
+    uuid: IComponentUUID;
+    destroy(target?: any): boolean;
+}
+
+export interface IEntity extends EcsBase {
+    uuid: IEntityUUID
+    isValid: boolean
+    enabled: boolean
+    readonly node: Node
+    destroy(): boolean
+    size(): number
+    checkFlagAll(flag: IFlag): boolean
+    checkFlagAny(flag: IFlag): boolean
+    checkFlagOnly(flag: IFlag): boolean
+    addComponent<T extends ITypeofComponent>(Com: T | IComponentName, target?: any): InstanceType<T>
+    getOrAddComponent<T extends ITypeofComponent>(Com: T | IComponentName, target?: any): InstanceType<T>
+    removeComponent(Com: ITypeofComponent | IComponentName | IComponent, target?: any): boolean
+    removeComponents(Com: ITypeofComponent | IComponentName, target?: any): boolean;
+    removeAllComponents(except?: (ITypeofComponent | IComponentName)[] | ITypeofComponent | IComponentName, target?: any): void;
+    hasComponent(Com: ITypeofComponent | IComponentName, target?: any): boolean
+    getComponent<T extends ITypeofComponent>(Com: T | IComponentName, target?: any): InstanceType<T>
+    getComponents<T extends ITypeofComponent>(Com: T | IComponentName, out?: InstanceType<T>[], target?: any): InstanceType<T>[]
+}
+
+export type ISystem = EcsBase;
+
+interface IECS {
+    /**过滤条件 */
+    filter: Filter
+    addSystem<T extends ITypeofSystem>(System: T): void
+    removeSystem<T extends ITypeofSystem>(System: T): void
+    /**添加单例组件 */
+    addSingletion<T extends ITypeofComponent>(param: T): InstanceType<T>
+    addSingletion<T extends IComponent>(param: T): T
+    /**获取单例组件 */
+    getSingletion<T extends ITypeofComponent>(param: T): InstanceType<T>
+    /**移除单例组件 */
+    removeSingletion<T extends ITypeofComponent>(param: T): InstanceType<T>
+    /**创建一个实体 */
+    createEntity<T extends ITypeofEntity>(Entity: T, options?: { node?: Node, ecsID?: number }): InstanceType<T>
+    /**清理所有数据 */
+    clearAll(): any
+    /**一般由游戏循环驱动 */
+    execute(...args: any[]): any
+    /**等同于execute，一般情况下用不到，比如当需要区分逻辑帧与渲染帧时，用于渲染帧 */
+    update(...args: any[]): any
+}
+
+interface IECSManager extends IECS {
+    getECS(ecsID: number): IECS
+    deleteECS(ecsID: number): void
+    clearECSs(): void
+}
+
+export class EcsBase {
+    /**类名 */
+    static ecsName = 'EcsBase';
+    /**类名 */
+    public get ecsName() {
+        return (this.constructor as typeof EcsBase).ecsName;
+    }
+    /**回收 */
+    static recovery = false;
+    /**回收 */
+    public get recovery() {
+        return (this.constructor as typeof EcsBase).recovery;
+    }
+    /**生效*/
+    protected onEnable() { }
+    /**失效*/
+    protected onDisable() { }
+}
+
 /** 
  * flag位管理器
 */
@@ -92,12 +174,12 @@ class FlagManager {
 
         const FlagBits = this.bits;
 
-        if (this.index >= FlagBits * 30) {
-            throw new Error(`当前Component的种类超过${FlagBits * 30}个`);
+        if (this.index >= FlagBits * 31) {
+            throw new Error(`当前Component的种类超过${FlagBits * 31}个`);
         }
 
         const flag: IFlag = new Array(FlagBits).fill(0);
-        flag[(this.index / 30) >>> 0] = (1 << (this.index % 30));
+        flag[(this.index / 31) >>> 0] = (1 << (this.index % 31));
         this.cache.set(name, flag);
         this.index++;
 
@@ -125,30 +207,18 @@ class FlagManager {
     }
 
     get bits() {
-        return Math.ceil(classManager.getComCount() / 30);
+        return Math.ceil(classManager.comSize / 31);
     }
 }
 export const flagManager = new FlagManager();
-
-export abstract class EcsBase {
-    /**类名 */
-    static ecsClassName = 'EcsBase';
-    /**类名 */
-    public get ecsClassName() { return 'EcsBase'; }
-    /**生效*/
-    protected onEnable() { }
-    /**失效*/
-    protected onDisable() { }
-}
 
 /**
  * 类管理器
  */
 class ClassManager {
-    private sysCount = 0;
-    private comCount = 0;
+    private comClassCount = 0;
     private nameToSuperName: Map<string, string> = new Map();
-    private nameToClass: Map<string, typeof EcsComponent | typeof EcsSystem> = new Map();
+    private nameToClass: Map<string, ITypeofComponent | ITypeofSystem> = new Map();
     /**
      * 获取父类
      */
@@ -159,7 +229,7 @@ class ClassManager {
         return dunderProto && dunderProto.constructor;
     }
 
-    add(ctor: typeof EcsComponent | typeof EcsSystem, className: string) {
+    add(ctor: ITypeofComponent, className: string) {
         if (this.nameToClass.has(className)) {
             console.error(`[ecs] ${className}已存在`);
         }
@@ -167,16 +237,14 @@ class ClassManager {
 
         // 存储类名继承对应关系
         let superClss = this.getSuper(ctor);
-        while (superClss && superClss !== EcsBase && superClss.ecsClassName !== 'EcsComponent' && superClss.ecsClassName !== 'EcsSystem') {
-            this.nameToSuperName.set(className, superClss.ecsClassName);
+        while (superClss && superClss !== EcsBase) {
+            this.nameToSuperName.set(className, superClss.ecsName);
             superClss = this.getSuper(ctor = superClss);
-            className = ctor.ecsClassName;
+            className = ctor.ecsName;
         }
 
-        if (superClss.ecsClassName === 'EcsComponent') {
-            this.comCount++;
-        } else if (superClss.ecsClassName === 'EcsSystem') {
-            this.sysCount++;
+        if (ctor.ecsName === 'EcsComponent') {
+            this.comClassCount++;
         }
     }
 
@@ -223,15 +291,8 @@ class ClassManager {
     /**
      * 组件种类数量
      */
-    getComCount() {
-        return this.comCount;
-    }
-
-    /**
-     * 系统种类数量
-     */
-    getSysCount() {
-        return this.sysCount;
+    get comSize() {
+        return this.comClassCount;
     }
 }
 export const classManager = new ClassManager();
@@ -239,21 +300,21 @@ export const classManager = new ClassManager();
 /**
  * EcsComponent与EcsSystem装饰器
  */
-export function ecsclass(className: string) {
+export function ecsclass(className: string, recovery = false) {
     return function fNOP(ctor: any) {
-        // EcsName需要先初始化
-        ctor.ecsClassName = className;
+        // ecsName需要先初始化
+        (<typeof EcsBase>ctor).ecsName = className;
+        (<typeof EcsBase>ctor).recovery = recovery;
         classManager.add(ctor, className);
         return ctor;
-    }
+    };
 }
 
-type IComponentName = string;
 /**
  * 组件管理器
  */
 class ComponentManager {
-    private entities: Map<IComponentName, NumberMap<EcsEntity>> = new Map();
+    private entities: Map<IComponentName, NumberMap<IEntity>> = new Map();
 
     private getEntities(name: IComponentName) {
         if (!this.entities.has(name)) {
@@ -265,7 +326,7 @@ class ComponentManager {
     /**
      * 添加一个组件名对应的实体
      */
-    addEntity(comName: IComponentName, entity: EcsEntity) {
+    addEntity(comName: IComponentName, entity: IEntity) {
         if (!comName) return;
 
         // 添加当前
@@ -278,7 +339,7 @@ class ComponentManager {
     /**
      * 移除一个组件名对应的实体
      */
-    removeEntity(comName: IComponentName, entity: EcsEntity) {
+    removeEntity(comName: IComponentName, entity: IEntity) {
         if (!comName) return;
 
         // 删除当前
@@ -296,32 +357,32 @@ class ComponentManager {
         return this.entities.get(comName) || null;
     }
 
-    each(callback: (value: NumberMap<EcsEntity>) => void) {
+    each(callback: (value: NumberMap<IEntity>) => void) {
         this.entities.forEach(function (value) {
             callback(value);
-        })
+        });
     }
 
     clear() {
         this.entities.clear();
     }
 }
-type IEntityUUID = string;
+
 /**
  * 实体管理器
  */
 class EntityManager {
-    private entities: Map<IEntityUUID, EcsEntity> = new Map();
+    private entities: Map<IEntityUUID, IEntity> = new Map();
 
     has(uuid: IEntityUUID) {
         return this.entities.get(uuid) || null;
     }
 
-    add(entity: EcsEntity) {
+    add(entity: IEntity) {
         this.entities.set(entity.uuid, entity);
     }
 
-    remove(entity: EcsEntity) {
+    remove(entity: IEntity) {
         return this.entities.delete(entity.uuid);
     }
 
@@ -329,12 +390,12 @@ class EntityManager {
         return this.entities.get(uuid) || null;
     }
 
-    getAll(out: EcsEntity[]) {
+    getAll(out: IEntity[]) {
         this.entities.forEach(entity => out.push(entity));
         return out;
     }
 
-    each(callback: (value: EcsEntity) => void) {
+    each(callback: (value: IEntity) => void) {
         this.entities.forEach(callback);
     }
 
@@ -347,29 +408,26 @@ class EntityManager {
  * 系统管理器
  */
 class SystemManager {
-    private systemNames: string[] = [];
-    private systems: EcsSystem[] = [];
+    private systems: ISystem[] = [];
 
     /**
      * 添加系统
      */
-    add(system: EcsSystem) {
+    add(system: ISystem) {
         this.systems.push(system);
-        this.systemNames.push(system.ecsClassName);
     }
 
-    get(System: typeof EcsSystem) {
-        const index = this.systemNames.indexOf(System.ecsClassName);
+    get(System: ITypeofSystem) {
+        const index = this.systems.findIndex(system => system.ecsName === System.ecsName);
         return this.systems[index];
     }
 
     /**
      * 移除系统
      */
-    remove(System: typeof EcsSystem) {
-        const index = this.systemNames.indexOf(System.ecsClassName);
+    remove(System: ITypeofSystem) {
+        const index = this.systems.findIndex(system => system.ecsName === System.ecsName);
         if (index >= 0) {
-            this.systemNames.splice(index, 1);
             return this.systems.splice(index, 1)[0] || null;
         }
         return null;
@@ -379,11 +437,10 @@ class SystemManager {
      * 清空所有
      */
     clear() {
-        this.systemNames.length = 0;
         this.systems.length = 0;
     }
 
-    each(callback: (value: EcsSystem) => void) {
+    each(callback: (value: ISystem) => void) {
         this.systems.forEach(callback);
     }
 
@@ -396,24 +453,24 @@ export interface IFilter {
     /**
      * 有这些组件中的任何一个
      */
-    any(...args: typeof EcsComponent[]): this
+    any(...args: ITypeofComponent[]): this
     /**
      * 必须包含所有这些组件
      */
-    all(...args: typeof EcsComponent[]): this
+    all(...args: ITypeofComponent[]): this
     /**
      * 仅仅只有这些组件
      */
-    only(...args: typeof EcsComponent[]): this
+    only(...args: ITypeofComponent[]): this
     /**
      * 不能包含其中的任何一个组件
      */
-    exclude(...args: typeof EcsComponent[]): this
+    exclude(...args: ITypeofComponent[]): this
 }
 
 class Filter implements IFilter {
     static query(entityManager: EntityManager, componentManager: ComponentManager, filter: Filter) {
-        let result: EcsEntity[] = [];
+        let result: IEntity[] = [];
         if (!filter) return result;
 
         // 优先验证anys
@@ -423,8 +480,8 @@ class Filter implements IFilter {
                 if (entities && entities.size) entities.forEach((comCount, entity) => {
                     if (result.indexOf(entity) >= 0) return;
                     result.push(entity);
-                })
-            })
+                });
+            });
             if (result.length === 0) return result;
         }
 
@@ -451,7 +508,7 @@ class Filter implements IFilter {
     static find(entityManager: EntityManager, componentManager: ComponentManager, filter: Filter) {
         if (!filter) return null;
 
-        let result: EcsEntity[] = [];
+        let result: IEntity[] = [];
 
         // 优先验证anys
         for (let index = 0, len = filter.anys.length; index < len; index++) {
@@ -487,23 +544,23 @@ class Filter implements IFilter {
     private anys: IComponentName[] = [];
     private include: IComponentName = '';
     private hasExclude: boolean = false;
-    private pipeline: ((entities: EcsEntity[]) => EcsEntity[])[] = [];
+    private pipeline: ((entities: IEntity[]) => IEntity[])[] = [];
 
     constructor() {
-        this.pipeline.push(function valid(entities: EcsEntity[]) {
-            return entities.filter(entity => entity.isEntityValid);
-        })
+        this.pipeline.push(function valid(entities: IEntity[]) {
+            return entities.filter(entity => entity.enabled && entity.isValid);
+        });
     }
 
     /**
      * 有这些组件中的任何一个
      */
-    any(...coms: typeof EcsComponent[]) {
+    any(...coms: ITypeofComponent[]) {
         if (coms.length === 0) return this;
 
         coms.forEach(com => {
-            if (this.anys.indexOf(com.ecsClassName) >= 0) return;
-            this.anys.push(com.ecsClassName);
+            if (this.anys.indexOf(com.ecsName) >= 0) return;
+            this.anys.push(com.ecsName);
         });
 
         return this;
@@ -511,52 +568,55 @@ class Filter implements IFilter {
     /**
      * 必须包含所有这些组件
      */
-    all(...coms: typeof EcsComponent[]) {
+    all(...coms: ITypeofComponent[]) {
         if (coms.length === 0) return this;
-        if (!this.include) this.include = coms[0].ecsClassName;
+        if (!this.include) this.include = coms[0].ecsName;
 
         let flag: IFlag = null;
-        this.pipeline.push(function all(entities: EcsEntity[]) {
-            if (!flag) flag = flagManager.getByNames(coms.map(com => com.ecsClassName));
+        this.pipeline.push(function all(entities: IEntity[]) {
+            if (!flag) flag = flagManager.getByNames(coms.map(com => com.ecsName));
             return entities.filter(entity => entity.checkFlagAll(flag));
-        })
+        });
         return this;
     }
     /**
      * 仅仅只有这些组件
      */
-    only(...coms: typeof EcsComponent[]) {
+    only(...coms: ITypeofComponent[]) {
         if (coms.length === 0) return this;
-        if (!this.include) this.include = coms[0].ecsClassName;
+        if (!this.include) this.include = coms[0].ecsName;
 
         let flag: IFlag = null;
-        this.pipeline.push(function only(entities: EcsEntity[]) {
-            if (!flag) flag = flagManager.getByNames(coms.map(com => com.ecsClassName));
+        this.pipeline.push(function only(entities: IEntity[]) {
+            if (!flag) flag = flagManager.getByNames(coms.map(com => com.ecsName));
             return entities.filter(entity => entity.checkFlagOnly(flag));
-        })
+        });
         return this;
     }
     /**
      * 不能包含其中的任何一个组件
      */
-    exclude(...coms: typeof EcsComponent[]) {
+    exclude(...coms: ITypeofComponent[]) {
         if (coms.length === 0) return this;
         this.hasExclude = true;
 
         let flag: IFlag = null;
-        this.pipeline.push(function only(entities: EcsEntity[]) {
-            if (!flag) flag = flagManager.getByNames(coms.map(com => com.ecsClassName));
+        this.pipeline.push(function exclude(entities: IEntity[]) {
+            if (!flag) flag = flagManager.getByNames(coms.map(com => com.ecsName));
             return entities.filter(entity => !entity.checkFlagAny(flag));
-        })
+        });
 
         return this;
     }
 }
 
-export class ECS {
+const entityCache = new Cache<IEntity>;
+
+export class ECS implements IECS {
     private entityManager = new EntityManager();
     private systemManager = new SystemManager();
     private componentManager = new ComponentManager();
+    private singletions: IComponent[] = [];
 
     /**
      * 过滤条件
@@ -568,9 +628,9 @@ export class ECS {
     /**
      * 查询实体
      */
-    public query<T extends EcsEntity>(filter: IFilter): T[]
-    public query<T extends EcsComponent>(filter: IFilter, Comment: { new(): T }): T[]
-    public query<T>(filter: IFilter, Comment?: typeof EcsComponent): T[] {
+    public query<T extends IEntity>(filter: IFilter): T[];
+    public query<T extends IComponent>(filter: IFilter, Comment: { new(): T }): T[];
+    public query<T>(filter: IFilter, Comment?: ITypeofComponent): T[] {
         const entities = Filter.query(this.entityManager, this.componentManager, filter as any);
         if (!Comment) return entities as T[];
         return entities.map(entity => entity.getComponent(Comment)) as T[];
@@ -579,9 +639,9 @@ export class ECS {
     /**
      * 查询实体
      */
-    public find<T extends EcsEntity>(filter: IFilter): T
-    public find<T extends EcsComponent>(filter: IFilter, Comment: { new(): T }): T
-    public find<T>(filter: IFilter, Comment?: typeof EcsComponent): T {
+    public find<T extends IEntity>(filter: IFilter): T;
+    public find<T extends IComponent>(filter: IFilter, Comment: { new(): T }): T;
+    public find<T>(filter: IFilter, Comment?: ITypeofComponent): T {
         const entity = Filter.find(this.entityManager, this.componentManager, filter as any);
         if (!entity) return null;
         if (!Comment) return entity as T;
@@ -596,121 +656,118 @@ export class ECS {
     }
 
     /**
-     * 添加一个实体
+     * 添加单例组件
      */
-    protected addEntity(entity: EcsEntity) {
-        this.entityManager.add(entity);
-        // 将实体的组件从组件管理器中移除
-        entity['components'].forEach(component => {
-            this.componentManager.addEntity(component.ecsClassName, component.entity);
-        })
+    public addSingletion<T extends ITypeofComponent>(param: T): InstanceType<T>;
+    public addSingletion<T extends IComponent>(param: T): T;
+    public addSingletion(param: ITypeofComponent | IComponent) {
+        const com = this.singletions.find(com => com.ecsName === param.ecsName);
+        if (com) return com;
+
+        if (param instanceof EcsBase) {
+            this.singletions.push(param);
+            //@ts-ignore
+            param.innerEnable();
+            return param;
+        } else {
+            const com = new param();
+            this.singletions.push(com);
+            //@ts-ignore
+            com.innerEnable();
+            return com;
+        }
     }
 
     /**
-     * 移除一个 
+     * 获取单例组件
      */
-    protected removeEntity(entity: EcsEntity) {
-        // 将实体的组件添加进组件管理器中
-        entity['components'].forEach(component => {
-            this.componentManager.removeEntity(component.ecsClassName, component.entity);
-        })
+    public getSingletion<T extends ITypeofComponent>(param: T): InstanceType<T> {
+        return this.singletions.find(com => com.ecsName === param.ecsName) as InstanceType<T>;
+    }
+
+    /**
+     * 移除单例组件
+     */
+    public removeSingletion<T extends ITypeofComponent>(param: T): InstanceType<T> {
+        const index = this.singletions.findIndex(com => com.ecsName === param.ecsName);
+        if (index >= 0) {
+            const com = this.singletions.splice(index, 1)[0];
+            //@ts-ignore
+            com.innerDisable();
+            return com as InstanceType<T>;
+        }
+        return null;
+    }
+
+    /**
+     * 创建一个实体
+     */
+    public createEntity<T extends ITypeofEntity>(Entity: T, options?: { node?: Node, ecsID?: number }): InstanceType<T> {
+        const entity = entityCache.get() || new Entity();
+        //@ts-ignore
+        entity.init(options?.ecsID, options?.node);
+        return entity as InstanceType<T>;
+    }
+
+    /**
+     * 添加一个实体
+     */
+    protected addEntity(entity: IEntity) {
+        this.entityManager.add(entity);
+    }
+
+    /**
+     * 移除一个实体
+     */
+    protected removeEntity(entity: IEntity) {
         this.entityManager.remove(entity);
+        if (entity.recovery) entityCache.put(entity);
     }
 
     /**
      * 添加一个组件
      */
-    protected addComponent(entity: EcsEntity, component: EcsComponent, target?: any) {
+    protected addComponent(entity: IEntity, component: IComponent, target?: any) {
         //@ts-ignore
         const result = entity.innerAddComponent(component, target) as boolean;
         if (!result) return false;
 
-        this.componentManager.addEntity(component.ecsClassName, entity);
+        this.componentManager.addEntity(component.ecsName, entity);
         return true;
-    };
+    }
 
     /**
      * 移除一个组件
      */
-    protected removeComponent(component: EcsComponent, target?: any) {
+    protected removeComponent(component: IComponent, target?: any) {
         const entity = component.entity;
-        const componentName = component.ecsClassName;
+        const componentName = component.ecsName;
         //@ts-ignore
         const result = entity.innerRemoveComponent(component, target) as boolean;
         if (!result) return false;
 
         this.componentManager.removeEntity(componentName, entity);
         return true;
-    };
-
-    /**
-     * 根据类型获取单个EcsEntity
-     */
-    // public getEntity<T extends EcsEntity>(include: typeof EcsComponent | (typeof EcsComponent)[], exclude?: typeof EcsComponent | (typeof EcsComponent)[]): T {
-    //     return this.getEntities<T>(include, exclude)[0];
-    // }
-
-    /**
-     * 获取某个组件的集合
-     */
-    // public getComponents<T extends typeof EcsComponent>(include: T, exclude?: typeof EcsComponent | (typeof EcsComponent)[]): InstanceType<T>[] {
-    //     return this.getEntities(include, exclude).map(entity => entity.getComponent(include)) as InstanceType<T>[];
-    // }
-
-    /**
-     * 根据类型获取多个ecsEntity
-     * @param include 包含 all
-     * @param exclude 排除 some
-     * @returns 
-     */
-    // public getEntities<T extends EcsEntity>(include: typeof EcsComponent | (typeof EcsComponent)[], exclude?: typeof EcsComponent | (typeof EcsComponent)[]): T[] {
-    //     if (include instanceof Array) {
-    //         if (!include.length) return [];
-
-    //         const result = this.getEntities(include[0], exclude);
-    //         const flags = flagManager.getByNames(include.map(com => com.ecsClassName));
-    //         return result.filter(entity => entity.checkFlagAll(flags)) as T[];
-    //     } else {
-    //         if (!include) return [];
-
-    //         const componentName = include.ecsClassName;
-    //         const entities = this.componentManager.hasEntities(componentName);
-    //         const result = entities ? Array.from(entities.keys()) as T[] : [];
-    //         if (!exclude) return result;
-
-    //         const flag = (exclude instanceof Array) ?
-    //             flagManager.getByNames(exclude.map(com => com.ecsClassName)) :
-    //             flagManager.getByName(exclude.ecsClassName);
-    //         return result.filter(entity => {
-    //             return entity.isEntityValid && !entity.checkFlagAny(flag);
-    //         });
-    //     }
-    // };
+    }
 
     /**
     * 添加一个系统
     */
-    public addSystem<T extends typeof EcsSystem>(System: T): InstanceType<T> {
+    public addSystem<T extends ITypeofSystem>(System: T): void {
+        //@ts-ignore
         const system = new System();
         this.systemManager.add(system);
-        system['onEnable']();
-        return system as InstanceType<T>;
-    }
-
-    /**
-     * 获取一个系统
-     */
-    public getSystem<T extends typeof EcsSystem>(System: T): InstanceType<T> {
-        return this.systemManager.get(System) as InstanceType<T>;
+        //@ts-ignore
+        system.onEnable();
     }
 
     /**
      * 移除一个系统
      */
-    public removeSystem<T extends typeof EcsSystem>(System: T): InstanceType<T> {
+    public removeSystem<T extends ITypeofSystem>(System: T): void {
         const system = this.systemManager.remove(System);
-        if (system) system['onDisable']();
-        return system as InstanceType<T>;
+        //@ts-ignore
+        if (system) system.onDisable();
     }
 
     /**
@@ -720,40 +777,41 @@ export class ECS {
         this.systemManager.clear();
         this.entityManager.clear();
         this.componentManager.clear();
+        this.singletions.length = 0;
     }
 
     private executeSystem(args: any[]) {
         this.systemManager.each(function (system) {
             system['execute'].apply(system, args);
-        })
+        });
     }
     private beforeExecuteSystem(args: any[]) {
         this.systemManager.each(function (system) {
             system['timerExecute'](args);
             system['beforeExecute'].apply(system, args);
-        })
+        });
     }
     private afterExecuteSystem(args: any[]) {
         this.systemManager.each(function (system) {
             system['afterExecute'].apply(system, args);
-        })
+        });
     }
 
     private updateSystem(args: any[]) {
         this.systemManager.each(function (system) {
             system['update'].apply(system, args);
-        })
+        });
     }
     private beforeUpdateSystem(args: any[]) {
         this.systemManager.each(function (system) {
             system['timerUpdate'](args);
             system['beforeUpdate'].apply(system, args);
-        })
+        });
     }
     private afterUpdateSystem(args: any[]) {
         this.systemManager.each(function (system) {
             system['afterUpdate'].apply(system, args);
-        })
+        });
     }
 
     /**
@@ -775,25 +833,25 @@ export class ECS {
     }
 }
 
-class ECSManager extends ECS {
-    private ecss: Map<string, ECS> = new Map();
+class ECSManager extends ECS implements IECSManager {
+    private ecss: Map<number, IECS> = new Map();
 
-    public getECS(ecsName: string): ECS {
-        if (!ecsName || ecsName === 'default') {
+    public getECS(ecsID: number = 0): IECS {
+        if (ecsID === 0) {
             return this;
         }
-        if (!this.ecss.has(ecsName)) {
-            this.ecss.set(ecsName, new ECS());
+        if (!this.ecss.has(ecsID)) {
+            this.ecss.set(ecsID, new ECS());
         }
 
-        return this.ecss.get(ecsName);
+        return this.ecss.get(ecsID);
     }
 
-    public deleteECS(ecsName: string) {
-        const ecs = this.ecss.get(ecsName);
+    public deleteECS(ecsID: number) {
+        const ecs = this.ecss.get(ecsID);
         if (!ecs) return;
         ecs.clearAll();
-        this.ecss.delete(ecsName);
+        this.ecss.delete(ecsID);
     }
 
     public clearECSs() {
@@ -802,4 +860,4 @@ class ECSManager extends ECS {
     }
 }
 
-export const ecs = new ECSManager();
+export const ecs: IECSManager = new ECSManager();

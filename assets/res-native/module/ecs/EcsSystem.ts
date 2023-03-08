@@ -1,5 +1,4 @@
-import { ECS, ecs, EcsBase, ecsclass, IFilter } from "./ecs";
-import EcsEntity from "./EcsEntity";
+import { ecs, EcsBase, ecsclass, IComponent, IEntity, IFilter, ISystem, ITypeofComponent } from './ecs';
 
 interface ITimerCallback {
     (...args: any[]): false | void
@@ -27,7 +26,7 @@ class Timer {
 /**
  * 定时器管理器
  * @example
- * timer.on(this,()=>cc.log(1),3,2) // 3个update后执行cc.log(1)，执行2次
+ * timer.on(this,()=>console.log(1),3,2) // 3个update后执行cc.log(1)，执行2次
  */
 class TimerManager {
     /**基于次数 */
@@ -55,7 +54,7 @@ class TimerManager {
     off(callback: ITimerCallback, target?: any) {
         for (let index = this.timers.length - 1; index >= 0; index--) {
             const timer = this.timers[index];
-            if (timer[1] === callback && (target ? timer[0] === target : true)) {
+            if (timer.callback === callback && (target ? timer.target === target : true)) {
                 this.timers.splice(index, 1);
             }
         }
@@ -84,31 +83,25 @@ class TimerManager {
 }
 
 @ecsclass('EcsSystem')
-export class EcsSystem extends EcsBase {
-    /**类名 */
-    public get ecsClassName() {
-        return (this.constructor as typeof EcsBase).ecsClassName;
-    }
-
+export class EcsSystem extends EcsBase implements ISystem {
     /**
-     * 指定ecs名字
+     * 指定ecsID
      */
-    private ecsName: string = 'default';
-    private _ecs: ECS = null;
+    private ecsID = 0;
+
     protected get ecs() {
-        if (!this._ecs) this._ecs = ecs.getECS(this.ecsName);
-        return this._ecs;
+        return ecs.getECS(this.ecsID);
     }
 
     protected readonly executeTimer = new TimerManager();
     protected readonly updateTimer = new TimerManager();
 
     /**
-     * 可以根据name绑定一个ecs，默认是default
+     * 指定ecsID
      */
-    constructor(ecsName?: string) {
+    constructor(ecsID?: number) {
         super();
-        this.ecsName = typeof ecsName !== 'string' ? 'default' : (ecsName || 'default');
+        this.ecsID = ecsID || 0;
     }
 
     /**系统生效 */
@@ -122,25 +115,41 @@ export class EcsSystem extends EcsBase {
     /**开启并配置filter后，才能响应onEntityEnter、onEntityLeave */
     protected openWatchEntities = false;
     /**开启openWatchEntities功能后用来记录数据 */
-    private watchEntities: EcsEntity[] = null;
+    private watchEntities: IEntity[] = null;
 
     /**使用filter进行查询 */
-    protected query<T extends EcsEntity>(): T[] {
-        if (this.watchEntities) return this.watchEntities as T[];
-        return this.ecs.query<T>(this.filter);
+    protected query<T extends IEntity>(): T[];
+    protected query<T extends IEntity>(filter: IFilter): T[];
+    protected query<T extends IComponent>(filter: IFilter, Comment: { new(): T }): T[];
+    protected query<T>(filter?: IFilter, Comment?: ITypeofComponent): T[] {
+        //@ts-ignore
+        return this.ecs.query(filter || this.filter, Comment);
+    }
+
+    protected find<T extends IEntity>(): T;
+    protected find<T extends IEntity>(filter: IFilter): T;
+    protected find<T extends IComponent>(filter: IFilter, Comment: { new(): T }): T;
+    protected find<T>(filter?: IFilter, Comment?: ITypeofComponent): T {
+        //@ts-ignore
+        return this.ecs.find(filter || this.filter, Comment);
+    }
+
+    protected exist(filter?: IFilter): boolean {
+        //@ts-ignore
+        return this.ecs.exist(filter || this.filter);
     }
 
     /**实体进入系统，会在excute流程最开始调用*/
-    protected onEntityEnter(entities: EcsEntity[]) { };
+    protected onEntityEnter(entities: IEntity[]) { }
 
     /**实体进入系统，会在excute流程最开始调用*/
-    protected onEntityLeave(entities: EcsEntity[]) { };
+    protected onEntityLeave(entities: IEntity[]) { }
 
     // 由ecs.execute驱动
     private timerExecute(args: any[]) {
         if (this.filter && this.openWatchEntities) {
             const oldEntities = this.watchEntities;
-            this.watchEntities = this.ecs.query(this.filter);
+            this.watchEntities = this.query();
             const enter = this.watchEntities.filter(entity => {
                 return oldEntities.indexOf(entity) === -1;
             });
@@ -163,13 +172,13 @@ export class EcsSystem extends EcsBase {
     protected beforeUpdate(...args: any[]) { }
     protected afterUpdate(...args: any[]) { }
 
-    protected log(str: any, ...args: any[]) {
-        console.log(`[${this.ecsClassName}] [log] ${str}`, ...args);
+    protected log(...args: any[]) {
+        console.log(`[${this.ecsName}] [log]`, ...args);
     }
-    protected warn(str: any, ...args: any[]) {
-        console.warn(`[${this.ecsClassName}] [warn] ${str}`, ...args);
+    protected warn(...args: any[]) {
+        console.warn(`[${this.ecsName}] [warn]`, ...args);
     }
-    protected error(str: any, ...args: any[]) {
-        console.error(`[${this.ecsClassName}] [error] ${str}`, ...args);
+    protected error(...args: any[]) {
+        console.error(`[${this.ecsName}] [error]`, ...args);
     }
 }
