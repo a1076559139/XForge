@@ -1,3 +1,4 @@
+# 介绍
 > 框架设计之初主要考虑H5环境(捎带着小游戏环境)，最终的目的是希望：<br/>
 > 1、更好的多人协同开发体验。<br/>
 > 2、尽可能统一的开发规范(尽量避免口头约束)。<br/>
@@ -7,6 +8,13 @@
 ⚠️: 大部分的框架目录点击后，都会在属性检查器页面生成它的一些说明文字，可以进行查看。<br/>
 ⚠️: 框架暂时不允许自定义assets下的文件夹，所有文件夹可以通过菜单栏App来创建。<br/>
 
+# 使用
+## 0、创建
+* 在空文件夹下执行```npx @gamex/cc-cli```或```npx @gamex/cc-cli --registry https://registry.npmjs.org```
+## 1、更新
+* 在非空项目跟目录下执行```npx @gamex/cc-cli```或```npx @gamex/cc-cli --registry https://registry.npmjs.org```
+
+# 关键点说明
 ## 0、ESLint
 * 在vscode中安装ESLint插件
 * 在项目根目录下执行**npm install**
@@ -115,14 +123,14 @@ app.config.xxx
 * 可以自定义一些扩展包，发布至npm上(注意如果是Component、Prefab、Image、Audio等资源需要生成.meta文件)
 ```
 // 项目根目录下执行添加
-npm run pkg:add @xxx/game-sdk
+npm run pkg:add @gamex/quadtree
 // 项目根目录下执行移除
-npm run pkg:remove @xxx/game-sdk
+npm run pkg:remove @gamex/quadtree
 // 以上操作如果导致编辑器报错，则尝试点击资源管理器右上角的「刷新按钮」，或菜单[开发者->缓存->代码缓存]
 
 // 在项目中使用
-import gameSDK from 'db://pkg/@xxx/game-sdk'
-gameSDK.xxx();
+import Quadtree from 'db://pkg/@gamex/quadtree'
+new Quadtree(...);
 ```
 
 ## 11、其它
