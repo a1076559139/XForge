@@ -10,9 +10,9 @@
 
 # 使用
 ## 0、创建
-* 在空文件夹下执行```npx @gamex/cc-cli@```或```npx --registry=https://registry.npmjs.org @gamex/cc-cli@```
+* 在空文件夹下执行```npx @gamex/cc-cli@latest```或```npx --registry=https://registry.npmjs.org @gamex/cc-cli@latest```
 ## 1、更新
-* 在非空项目根目录下执行```npx @gamex/cc-cli@```或```npx --registry=https://registry.npmjs.org @gamex/cc-cli@```
+* 在非空项目根目录下执行```npx @gamex/cc-cli@latest```或```npx --registry=https://registry.npmjs.org @gamex/cc-cli@latest```
 
 # 关键点说明
 ## 0、ESLint
