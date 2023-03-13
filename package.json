@@ -11,9 +11,10 @@
     "eslint": "^8.34.0"
   },
   "scripts": {
-    "upgrade":"npx @gamex/cc-cli@latest upgrade",
-    "app:build":"npm run --prefix ./extensions/app build",
-    "app:watch":"npm run --prefix ./extensions/app watch",
+    "upgrade": "npx @gamex/cc-cli@latest upgrade 用于升级框架",
+    "package": "npx @gamex/cc-cli@latest package 用于管理扩展",
+    "app:build": "npm run --prefix ./extensions/app build",
+    "app:watch": "npm run --prefix ./extensions/app watch",
     "pkg:add": "npm run --prefix ./extensions/pkg add",
     "pkg:remove": "npm run --prefix ./extensions/pkg remove"
   }
