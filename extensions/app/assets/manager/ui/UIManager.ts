@@ -271,7 +271,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 加载ui内部资源
      */
-    public loadRes<T extends Asset>(target: Component, path: string, type: typeof Asset, callback?: (result: T) => any) {
+    public loadRes<T extends typeof Asset>(target: Component, path: string, type: T, callback?: (result: InstanceType<T>) => any) {
         const view = this.getBaseView(target.node) || this.getViewInParents(target.node);
         if (view) {
             Core.inst.manager.loader.load({

@@ -3,7 +3,8 @@
   "extends": "./temp/tsconfig.cocos.json",
   /* Add your custom configuration here. */
   "compilerOptions": {
-    "strict": false
+    "strict": false,
+    "noImplicitAny": true
   },
   "exclude": [
     "node_modules",
