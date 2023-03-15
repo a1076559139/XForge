@@ -100,12 +100,12 @@ async function main() {
     // npm指令
     const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
     if (process.argv[2] === 'add') {
-        const cmd = ['--registry=https://registry.npmjs.org ', 'install', '--prefix', packageDir];
+        const cmd = ['--registry=https://registry.npmjs.org', 'install', '--prefix', packageDir];
         if (process.argv[3]) cmd.push(process.argv[3]);
         const code = await spawnCmd(npm, cmd);
         if (code !== 0) console.error(`[失败]: ${code}`);
     } else if (process.argv[2] === 'remove') {
-        const cmd = ['--registry=https://registry.npmjs.org ', 'uninstall', '--prefix', packageDir];
+        const cmd = ['--registry=https://registry.npmjs.org', 'uninstall', '--prefix', packageDir];
         if (!process.argv[3]) return console.error('[失败]: 输入要卸载的名字');
         cmd.push(process.argv[3]);
         const code = await spawnCmd(npm, cmd);
