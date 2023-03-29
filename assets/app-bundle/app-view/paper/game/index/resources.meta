@@ -27,6 +27,6 @@
     },
     "priority": 8,
     "isBundle": true,
-    "bundleName": "app-view_PaperGameIndex_Res"
+    "bundleName": "paper-game-index-res"
   }
 }

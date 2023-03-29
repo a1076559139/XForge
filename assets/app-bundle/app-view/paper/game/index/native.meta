@@ -43,6 +43,6 @@
       "wechatgame": false
     },
     "isBundle": true,
-    "bundleName": "app-view_PaperGameIndex"
+    "bundleName": "paper-game-index"
   }
 }

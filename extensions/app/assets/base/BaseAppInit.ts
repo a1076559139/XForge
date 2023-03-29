@@ -1,4 +1,4 @@
-import { assetManager, Component, settings, warn, _decorator } from 'cc';
+import { assetManager, Component, Settings, settings, warn, _decorator } from 'cc';
 import { EDITOR } from 'cc/env';
 import Core from '../Core';
 import BaseManager from './BaseManager';
@@ -32,7 +32,7 @@ export default abstract class BaseAppInit extends Component {
      * [避免重写] 开始初始化
      */
     protected startInit() {
-        const projectBundles = settings.querySettings('assets', 'projectBundles') as string[];
+        const projectBundles = settings.querySettings(Settings.Category.ASSETS, 'projectBundles') as string[];
         Core.inst.lib.task.createAny()
             .add([
                 (next, retry) => {

@@ -27,6 +27,6 @@
     },
     "priority": 8,
     "isBundle": true,
-    "bundleName": "app-view_PaperHomeIndex_Res"
+    "bundleName": "paper-home-index-res"
   }
 }

@@ -27,6 +27,6 @@
     },
     "priority": 8,
     "isBundle": true,
-    "bundleName": "app-view_PageGame_Res"
+    "bundleName": "page-game-res"
   }
 }

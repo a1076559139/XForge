@@ -40,29 +40,32 @@ exports.default = vue_1.default.extend({
     methods: {
         async onClickCreate() {
             const name = this.inputName;
-            if (/^[a-zA-Z0-9_]+$/.test(name) === false) {
-                this.display = '[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/';
+            if (/^[a-z][a-z0-9-]*[a-z0-9]+$/.test(name) === false) {
+                this.display = '[错误] 名字不合法\n匹配规则: /^[a-z][a-z0-9-]*[a-z0-9]+$/\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
                 return;
             }
             const rootPath = 'db://assets/app-builtin/app-manager';
             const managerName = `${utils_1.stringCase(name)}Manager`;
-            const folderName = utils_1.stringCase(name, true);
+            const folderName = name;
             const folderPath = `${rootPath}/${folderName}`;
             const scriptUrl = `${folderPath}/${managerName}.ts`;
             const prefabUrl = `${folderPath}/${managerName}.prefab`;
             this.display = '创建中';
             this.showLoading = true;
-            if (fs_1.existsSync(utils_1.convertPathToDir(folderPath))) {
+            if (fs_1.existsSync(utils_1.convertUrlToPath(folderPath))) {
                 this.showLoading = false;
                 this.display = `[错误] 目录已存在, 请删除\n${folderPath}`;
                 return;
             }
             // 目录如果不存在则创建
-            if (!await utils_1.createFolderByPath(rootPath, {
+            if (!await utils_1.createFolderByUrl(rootPath, {
                 meta: utils_1.getMeta('app-manager'),
                 readme: utils_1.getReadme('app-manager'),
                 subFolders: [
-                    { folder: folderName, readme: `${managerName}所在文件夹, 通过app.manager.${folderName}的方式调用` }
+                    {
+                        folder: folderName,
+                        readme: `${managerName}所在文件夹, 通过app.manager.${utils_1.stringCase(name, true)}的方式调用`
+                    }
                 ]
             })) {
                 this.showLoading = false;

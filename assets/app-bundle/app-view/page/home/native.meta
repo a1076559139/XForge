@@ -43,6 +43,6 @@
       "wechatgame": false
     },
     "isBundle": true,
-    "bundleName": "app-view_PageHome"
+    "bundleName": "page-home"
   }
 }

@@ -10,5 +10,6 @@ export class AppInit extends BaseAppInit {
 
     onFinish() {
         // 执行完成操作
+        this.node.destroy();
     }
 }

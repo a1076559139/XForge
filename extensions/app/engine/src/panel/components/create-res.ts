@@ -1,5 +1,5 @@
 import Vue from 'vue/dist/vue';
-import { createFolderByPath, getReadme, getTemplate, stringCase } from '../../utils';
+import { createFolderByUrl, getReadme, getTemplate, stringCase } from '../../utils';
 
 const typeNames: ('res-bundle' | 'res-native' | 'resources')[] = ['res-bundle', 'res-native', 'resources'];
 export default Vue.extend({
@@ -24,15 +24,15 @@ export default Vue.extend({
             const folderPath = `db://assets/${folderName}`;
             const name = stringCase(this.inputName, true);
 
-            if (/^[a-zA-Z0-9_]+$/.test(name) === false) {
-                this.display = '[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/';
+            if (/^[a-z][a-z0-9-]*[a-z0-9]+$/.test(name) === false) {
+                this.display = '[错误] 名字不合法\n匹配规则: /^[a-z][a-z0-9-]*[a-z0-9]+$/\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
                 return;
             }
 
             this.display = '创建中';
             this.showLoading = true;
 
-            if (!await createFolderByPath(folderPath, {
+            if (!await createFolderByUrl(folderPath, {
                 readme: getReadme(folderName),
                 subFolders: [
                     {

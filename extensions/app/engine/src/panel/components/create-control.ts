@@ -1,6 +1,6 @@
 import { existsSync } from 'fs';
 import Vue from 'vue/dist/vue';
-import { convertPathToDir, createFolderByPath, getMeta, getReadme, getTemplate, stringCase } from '../../utils';
+import { convertUrlToPath, createFolderByUrl, getMeta, getReadme, getTemplate, stringCase } from '../../utils';
 
 /**
  * 根据语言获取脚本内容
@@ -34,8 +34,8 @@ export default Vue.extend({
         async onClickCreate() {
             const name = this.inputName;
 
-            if (/^[a-zA-Z0-9_]+$/.test(name) === false) {
-                this.display = '[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/';
+            if (/^[a-z][a-z0-9-]*[a-z0-9]+$/.test(name) === false) {
+                this.display = '[错误] 名字不合法\n匹配规则: /^[a-z][a-z0-9-]*[a-z0-9]+$/\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
                 return;
             }
 
@@ -46,14 +46,14 @@ export default Vue.extend({
             this.display = '创建中';
             this.showLoading = true;
 
-            if (existsSync(convertPathToDir(scriptUrl))) {
+            if (existsSync(convertUrlToPath(scriptUrl))) {
                 this.showLoading = false;
                 this.display = `[错误] 文件已存在, 请删除\n${scriptUrl}`;
                 return;
             }
 
             // 目录如果不存在则创建
-            if (!await createFolderByPath(rootPath, { meta: getMeta('app-control'), readme: getReadme('app-control') })) {
+            if (!await createFolderByUrl(rootPath, { meta: getMeta('app-control'), readme: getReadme('app-control') })) {
                 this.showLoading = false;
                 this.display = `[错误] 创建目录失败\n${rootPath}`;
                 return;

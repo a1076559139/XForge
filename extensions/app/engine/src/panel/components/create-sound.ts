@@ -1,5 +1,5 @@
 import Vue from 'vue/dist/vue';
-import { createFolderByPath, getMeta, getReadme, getTemplate } from '../../utils';
+import { createFolderByUrl, getMeta, getReadme, getTemplate } from '../../utils';
 
 export default Vue.extend({
     template: getTemplate('create-sound'),
@@ -23,11 +23,14 @@ export default Vue.extend({
 
             const rootPath = 'db://assets/app-bundle/app-sound';
 
-            if (!await createFolderByPath(rootPath, {
+            if (!await createFolderByUrl(rootPath, {
                 meta: getMeta('app-sound'),
                 readme: getReadme('app-sound'),
                 subFolders: [
-                    { folder: this.typeSelectIndex === 0 ? 'music' : 'effect', readme: getReadme(this.typeSelectIndex === 0 ? 'music' : 'effect') }
+                    {
+                        folder: this.typeSelectIndex === 0 ? 'music' : 'effect',
+                        readme: getReadme(this.typeSelectIndex === 0 ? 'music' : 'effect')
+                    }
                 ]
             })) {
                 this.showLoading = false;

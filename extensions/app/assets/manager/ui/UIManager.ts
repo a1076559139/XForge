@@ -1,4 +1,4 @@
-import { Asset, AssetManager, Component, error, Event, find, instantiate, isValid, js, Layers, Node, Prefab, Scene, UITransform, Widget, _decorator } from 'cc';
+import { Asset, AssetManager, Component, error, Event, find, instantiate, isValid, js, Layers, Node, Prefab, Scene, Settings, settings, UITransform, Widget, _decorator } from 'cc';
 import { DEBUG } from 'cc/env';
 import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
 import BaseManager from '../../base/BaseManager';
@@ -227,13 +227,13 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             .add([
                 (next) => {
                     Core.inst.manager.loader.loadBundle({
-                        bundle: this.getUINativeName(name),
+                        bundle: this.getNativeBundleName(name),
                         onComplete: next
                     });
                 },
                 (next) => {
                     Core.inst.manager.loader.loadBundle({
-                        bundle: this.getUIResName(name),
+                        bundle: this.getResBundleName(name),
                         onComplete: next
                     });
                 }
@@ -241,7 +241,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             .add((next) => {
                 if (!task.results[0] || !task.results[0][1]) return next(null);
                 Core.inst.manager.loader.load({
-                    bundle: this.getUINativeName(name),
+                    bundle: this.getNativeBundleName(name),
                     path: this.getUIPath(name),
                     type: Prefab,
                     onProgress: progress,
@@ -260,8 +260,8 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      */
     private uninstallUI(name: string) {
         delete this.prefabCache[name];
-        const naBundle = this.getUINativeName(name);
-        const resBundle = this.getUIResName(name);
+        const naBundle = this.getNativeBundleName(name);
+        const resBundle = this.getResBundleName(name);
         Core.inst.manager.loader.releaseAll(resBundle);
         Core.inst.manager.loader.releaseAll(naBundle);
         Core.inst.manager.loader.removeBundle(resBundle);
@@ -271,17 +271,26 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 加载ui内部资源
      */
-    public loadRes<T extends typeof Asset>(target: Component, path: string, type: T, callback?: (result: InstanceType<T>) => any) {
-        const view = this.getBaseView(target.node) || this.getViewInParents(target.node);
-        if (view) {
+    public loadRes<T extends typeof Asset>(target: Component | UIName | MiniName, path: string, type: T, callback?: (result: InstanceType<T>) => any) {
+        if (typeof target === 'string') {
             Core.inst.manager.loader.load({
-                bundle: this.getUIResName(view.viewName),
+                bundle: this.getResBundleName(target),
                 path: path,
                 type: type,
                 onComplete: callback
             });
         } else {
-            callback && callback(null);
+            const view = this.getBaseView(target.node) || this.getViewInParents(target.node);
+            if (view) {
+                Core.inst.manager.loader.load({
+                    bundle: this.getResBundleName(view.viewName),
+                    path: path,
+                    type: type,
+                    onComplete: callback
+                });
+            } else {
+                callback && callback(null);
+            }
         }
     }
 
@@ -363,17 +372,28 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     /**
-     * 获取UI所在的native名字
+     * 获取UI原生Bundle名字
      */
-    private getUINativeName(uiName: string) {
-        return `app-view_${uiName}`;
+    public getNativeBundleName(uiName: string) {
+        const oldBundleName = `app-view_${uiName}`;
+        const projectBundles = settings.querySettings(Settings.Category.ASSETS, 'projectBundles') as string[];
+        if (projectBundles && projectBundles.indexOf(oldBundleName) >= 0) {
+            return oldBundleName;
+        }
+        return BaseManager.stringCaseNegate(uiName);
     }
 
     /**
-     * 获取UI所在的resources名字
+     * 获取UI资源Bundle名字
      */
-    private getUIResName(uiName: string) {
-        return `app-view_${uiName}_Res`;
+    public getResBundleName(uiName: string) {
+        const oldBundleName = `app-view_${uiName}_Res`;
+        const projectBundles = settings.querySettings(Settings.Category.ASSETS, 'projectBundles') as string[];
+        if (projectBundles && projectBundles.indexOf(oldBundleName) >= 0) {
+            return oldBundleName;
+        }
+
+        return `${BaseManager.stringCaseNegate(uiName)}-res`;
     }
 
     /**

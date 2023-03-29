@@ -1,6 +1,6 @@
 import { existsSync } from 'fs';
 import Vue from 'vue/dist/vue';
-import { convertPathToDir, createFolderByPath, getMeta, getReadme, getTemplate, stringCase } from '../../utils';
+import { convertUrlToPath, createFolderByUrl, getMeta, getReadme, getTemplate, stringCase } from '../../utils';
 
 /**
  * 根据语言获取脚本内容
@@ -39,14 +39,14 @@ export default Vue.extend({
         async onClickCreate() {
             const name = this.inputName;
 
-            if (/^[a-zA-Z0-9_]+$/.test(name) === false) {
-                this.display = '[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/';
+            if (/^[a-z][a-z0-9-]*[a-z0-9]+$/.test(name) === false) {
+                this.display = '[错误] 名字不合法\n匹配规则: /^[a-z][a-z0-9-]*[a-z0-9]+$/\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
                 return;
             }
 
             const rootPath = 'db://assets/app-builtin/app-manager';
             const managerName = `${stringCase(name)}Manager`;
-            const folderName = stringCase(name, true);
+            const folderName = name;
             const folderPath = `${rootPath}/${folderName}`;
             const scriptUrl = `${folderPath}/${managerName}.ts`;
             const prefabUrl = `${folderPath}/${managerName}.prefab`;
@@ -54,18 +54,21 @@ export default Vue.extend({
             this.display = '创建中';
             this.showLoading = true;
 
-            if (existsSync(convertPathToDir(folderPath))) {
+            if (existsSync(convertUrlToPath(folderPath))) {
                 this.showLoading = false;
                 this.display = `[错误] 目录已存在, 请删除\n${folderPath}`;
                 return;
             }
 
             // 目录如果不存在则创建
-            if (!await createFolderByPath(rootPath, {
+            if (!await createFolderByUrl(rootPath, {
                 meta: getMeta('app-manager'),
                 readme: getReadme('app-manager'),
                 subFolders: [
-                    { folder: folderName, readme: `${managerName}所在文件夹, 通过app.manager.${folderName}的方式调用` }
+                    {
+                        folder: folderName,
+                        readme: `${managerName}所在文件夹, 通过app.manager.${stringCase(name, true)}的方式调用`
+                    }
                 ]
             })) {
                 this.showLoading = false;

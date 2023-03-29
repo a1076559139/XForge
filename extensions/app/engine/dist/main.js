@@ -36,24 +36,24 @@ const soundFolderName = 'app-sound';
 const viewFolderName = 'app-view';
 const builtinFolderName = 'app-builtin';
 const bundleFolderName = 'app-bundle';
-const builtinPath = 'db://assets/' + builtinFolderName;
-const builtinDir = utils_1.convertPathToDir(builtinPath);
-const bundlePath = 'db://assets/' + bundleFolderName;
-const bundleDir = utils_1.convertPathToDir(bundlePath);
-const adminPath = builtinPath + '/' + adminFolderName;
-const adminDir = builtinDir + '/' + adminFolderName;
-const controlPath = builtinPath + '/' + controlFolderName;
-const controlDir = builtinDir + '/' + controlFolderName;
-const managerPath = builtinPath + '/' + managerFolderName;
-const managerDir = builtinDir + '/' + managerFolderName;
-const modelPath = builtinPath + '/' + modelFolderName;
-const modelDir = builtinDir + '/' + modelFolderName;
-const soundPath = bundlePath + '/' + soundFolderName;
-const soundDir = bundleDir + '/' + soundFolderName;
-const viewPath = bundlePath + '/' + viewFolderName;
-const viewDir = bundleDir + '/' + viewFolderName;
-const executorFilePath = adminPath + '/executor.ts';
-const executorFileDir = adminDir + '/executor.ts';
+const builtinFolderUrl = 'db://assets/' + builtinFolderName;
+const builtinFolderPath = utils_1.convertUrlToPath(builtinFolderUrl);
+const bundleFolderUrl = 'db://assets/' + bundleFolderName;
+const bundleFolderPath = utils_1.convertUrlToPath(bundleFolderUrl);
+const adminFolderUrl = builtinFolderUrl + '/' + adminFolderName;
+const adminFolderPath = builtinFolderPath + '/' + adminFolderName;
+const controlFolderUrl = builtinFolderUrl + '/' + controlFolderName;
+const controlFolderPath = builtinFolderPath + '/' + controlFolderName;
+const managerFolderUrl = builtinFolderUrl + '/' + managerFolderName;
+const managerFolderPath = builtinFolderPath + '/' + managerFolderName;
+const modelFolderUrl = builtinFolderUrl + '/' + modelFolderName;
+const modelFolderPath = builtinFolderPath + '/' + modelFolderName;
+const soundFolderUrl = bundleFolderUrl + '/' + soundFolderName;
+const soundFolderPath = bundleFolderPath + '/' + soundFolderName;
+const viewFolderUrl = bundleFolderUrl + '/' + viewFolderName;
+const viewFolderPath = bundleFolderPath + '/' + viewFolderName;
+const executorFileUrl = adminFolderUrl + '/executor.ts';
+const executorFilePath = adminFolderPath + '/executor.ts';
 function isFolderVaild(info) {
     if (!info.path)
         return true;
@@ -105,34 +105,34 @@ function isExecutor(info, strict = true) {
             return true;
         return false;
     }
-    if (info.path === builtinPath)
+    if (info.path === builtinFolderUrl)
         return true;
-    if (info.path === bundlePath)
+    if (info.path === bundleFolderUrl)
         return true;
-    if (info.path === managerPath)
+    if (info.path === managerFolderUrl)
         return true;
-    if (info.path === controlPath)
+    if (info.path === controlFolderUrl)
         return true;
-    if (info.path === modelPath)
+    if (info.path === modelFolderUrl)
         return true;
-    if (info.path === soundPath)
+    if (info.path === soundFolderUrl)
         return true;
-    if (info.path === viewPath)
+    if (info.path === viewFolderUrl)
         return true;
-    if (info.path.startsWith(controlPath)) {
+    if (info.path.startsWith(controlFolderUrl)) {
         return info.path.endsWith('Control') && info.type === 'cc.Script';
     }
-    if (info.path.startsWith(managerPath)) {
+    if (info.path.startsWith(managerFolderUrl)) {
         return info.path.endsWith('Manager') && (info.type === 'cc.Script' || info.type === 'cc.Prefab');
     }
-    if (info.path.startsWith(modelPath)) {
+    if (info.path.startsWith(modelFolderUrl)) {
         return (info.name.startsWith('data.') || info.name.startsWith('config.')) && info.type === 'cc.Script';
     }
-    if (info.path.startsWith(viewPath)) {
+    if (info.path.startsWith(viewFolderUrl)) {
         return (info.name.startsWith('Page') || info.name.startsWith('Paper') || info.name.startsWith('Pop') || info.name.startsWith('Top'))
             && (info.type === 'cc.Script' || info.type === 'cc.Prefab');
     }
-    if (info.path.startsWith(soundPath)) {
+    if (info.path.startsWith(soundFolderUrl)) {
         return info.type === 'cc.AudioClip';
     }
 }
@@ -164,7 +164,7 @@ function compareStr(str1, str2) {
 const viewSelect = ['Page', 'Paper', 'Pop', 'Top'];
 const viewRegExp = RegExp(`^(${viewSelect.join('|')})`);
 function readFileSyncByPath(url) {
-    const filepath = utils_1.convertPathToDir(url);
+    const filepath = utils_1.convertUrlToPath(url);
     return fs_1.existsSync(filepath) ? fs_1.readFileSync(filepath, 'utf8') : '';
 }
 function isTSDefault(value) {
@@ -180,7 +180,7 @@ function isTSDefault(value) {
     // }
     // return false;
     // storage,db://assets/app/lib/storage,storage,ts
-    const filepath = path_1.default.join(utils_1.convertPathToDir(value[1]), filename + '.ts');
+    const filepath = path_1.default.join(utils_1.convertUrlToPath(value[1]), filename + '.ts');
     const js = fs_1.readFileSync(filepath, 'utf8');
     return js.search(/export\s+default/) >= 0;
 }
@@ -190,7 +190,7 @@ const keyWords = [
     'miniViewNames', 'viewNamesEnum', 'musicNamesEnum', 'effecNamesEnum'
 ];
 async function clearExecutor() {
-    if (!fs_1.existsSync(executorFileDir))
+    if (!fs_1.existsSync(executorFilePath))
         return;
     const viewKeys = { nerver: '' };
     const miniViewKeys = { nerver: '' };
@@ -225,44 +225,19 @@ async function clearExecutor() {
     // 修正windows系统中的\为/
     result = result.replace(/\\/g, '/');
     // save
-    if (readFileSyncByPath(executorFilePath) !== result) {
-        await Editor.Message.request('asset-db', 'create-asset', executorFilePath, result, {
+    if (readFileSyncByPath(executorFileUrl) !== result) {
+        await Editor.Message.request('asset-db', 'create-asset', executorFileUrl, result, {
             overwrite: true
         });
     }
 }
 async function updateExecutor() {
     // app-builtin文件夹不存在, 创建
-    if (!fs_1.existsSync(builtinDir))
-        await utils_1.createFolderByPath(builtinPath, { readme: utils_1.getReadme(builtinFolderName) });
+    if (!fs_1.existsSync(builtinFolderPath))
+        await utils_1.createFolderByUrl(builtinFolderUrl, { readme: utils_1.getReadme(builtinFolderName) });
     // app-admin文件夹不存在, 创建
-    if (!fs_1.existsSync(adminDir))
-        await utils_1.createFolderByPath(adminPath, { meta: utils_1.getMeta(adminFolderName), readme: utils_1.getReadme(adminFolderName) });
-    // // 检查app-control
-    // const appControlMeta = !existsSync(controlDir) ? null : await Editor.Message.request('asset-db', 'query-asset-meta', controlPath).catch(_ => null);
-    // if (appControlMeta && !appControlMeta.userData?.isBundle) {
-    //     appControlMeta.userData = getMeta(controlFolderName).userData;
-    //     await Editor.Message.request('asset-db', 'save-asset-meta', controlPath, JSON.stringify(appControlMeta)).catch(_ => null);
-    // }
-    // // 检查app-manager
-    // const appManagerMeta = !existsSync(managerDir) ? null : await Editor.Message.request('asset-db', 'query-asset-meta', managerPath).catch(_ => null);
-    // if (appManagerMeta && !appManagerMeta.userData?.isBundle) {
-    //     appManagerMeta.userData = getMeta(managerFolderName).userData;
-    //     await Editor.Message.request('asset-db', 'save-asset-meta', managerPath, JSON.stringify(appManagerMeta)).catch(_ => null);
-    // }
-    // // 检查app-model
-    // const appModelMeta = !existsSync(modelDir) ? null : await Editor.Message.request('asset-db', 'query-asset-meta', modelPath).catch(_ => null);
-    // if (appModelMeta && !appModelMeta.userData?.isBundle) {
-    //     appModelMeta.userData = getMeta(modelFolderName).userData;
-    //     await Editor.Message.request('asset-db', 'save-asset-meta', modelPath, JSON.stringify(appModelMeta)).catch(_ => null);
-    // }
-    // // 检查app-sound
-    // const appSoundMeta = !existsSync(soundDir) ? null : await Editor.Message.request('asset-db', 'query-asset-meta', soundPath).catch(_ => null);
-    // if (appSoundMeta && !appSoundMeta.userData?.isBundle) {
-    //     appSoundMeta.userData = getMeta(soundFolderName).userData;
-    //     await Editor.Message.request('asset-db', 'save-asset-meta', soundPath, JSON.stringify(appSoundMeta)).catch(_ => null);
-    // }
-    const libs = [];
+    if (!fs_1.existsSync(adminFolderPath))
+        await utils_1.createFolderByUrl(adminFolderUrl, { meta: utils_1.getMeta(adminFolderName), readme: utils_1.getReadme(adminFolderName) });
     const mgrs = [];
     const datas = [];
     const confs = [];
@@ -271,21 +246,34 @@ async function updateExecutor() {
     const musicKeys = {};
     const effecKeys = {};
     // app-control app-manager app-model
-    let result1 = await Editor.Message.request('asset-db', 'query-assets', { pattern: builtinPath + '/{app-control,app-manager/*,app-model}/*.{ts,prefab}' }).catch(_ => []);
-    result1 = result1.sort((a, b) => compareStr(a.name, b.name));
+    const result1 = await Editor.Message.request('asset-db', 'query-assets', { pattern: builtinFolderUrl + '/{app-control,app-manager/*,app-model}/*.ts' })
+        .then(res => {
+        return res.sort((a, b) => compareStr(a.name, b.name));
+    })
+        .catch(() => []);
     // app-sound
-    let result2 = await Editor.Message.request('asset-db', 'query-assets', { pattern: soundPath + '/{music,effect}/**/*.*' }).catch(_ => []);
-    result2 = result2.sort((a, b) => compareStr(a.name, b.name));
+    const result2 = await Editor.Message.request('asset-db', 'query-assets', { pattern: soundFolderUrl + '/{music,effect}/**/*.*' })
+        .then(res => {
+        return res.sort((a, b) => compareStr(a.name, b.name));
+    })
+        .catch(() => []);
     // app-view
-    let result3 = await Editor.Message.request('asset-db', 'query-assets', { pattern: viewPath + '/{page,pop,top,paper/*}/*/native/*.{ts,prefab}' }).catch(_ => []);
-    result3 = result3.sort((a, b) => compareStr(a.name, b.name));
-    // lia manager
-    let result4 = await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://app/{lib,manager}/**/*.{ts,prefab}' }).catch(_ => []);
-    result4 = result4.sort((a, b) => compareStr(a.name, b.name));
+    const result3 = await Editor.Message.request('asset-db', 'query-assets', { pattern: viewFolderUrl + '/{page,pop,top,paper/*}/*/native/*.prefab' })
+        .then(res => {
+        return res.sort((a, b) => compareStr(a.name, b.name));
+    })
+        .catch(() => []);
+    // manager
+    const result4 = await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://app/manager/**/*.ts' })
+        .then(res => {
+        return res.sort((a, b) => compareStr(a.name, b.name));
+    })
+        .catch(() => []);
     // 集合
     const results = result1.slice().concat(result2).concat(result3).concat(result4);
     for (let index = 0; index < results.length; index++) {
         const result = results[index];
+        const fileurl = result.url;
         // 文件名.扩展名
         const basename = path_1.default.basename(result.url || '') || '';
         // 扩展名
@@ -304,31 +292,23 @@ async function updateExecutor() {
             continue;
         if (extname === '.ts') {
             // 变量名
-            const varname = filename.split('.').join('_');
+            const varname = filename.replace(/[.-]/g, '_');
             if (keyWords.indexOf(varname) >= 0) {
                 console.log(`[跳过此文件] [${filename}] 原因: ${varname}与关键字中(${JSON.stringify(keyWords)})的一个重复`);
             }
-            else if (dirname.includes(managerFolderName)) {
+            else if (fileurl.startsWith(managerFolderUrl)) {
                 // 用户manager
-                if (filename.endsWith('Manager') && filename !== 'BaseManager') {
-                    if (dirname.toLowerCase().includes(`${managerFolderName}/${filename.slice(0, -7).toLowerCase()}`)) {
-                        mgrs.push([filename, dirname, varname, extname]);
-                    }
+                if (filename.endsWith('Manager') && dirname.endsWith(utils_1.stringCaseNegate(filename.slice(0, -7)))) {
+                    mgrs.push([filename, dirname, varname, extname]);
                 }
             }
-            else if (dirname.includes('app/manager')) {
+            else if (fileurl.startsWith('db://app/manager/')) {
                 // 系统manager
-                if (filename.endsWith('Manager') && filename !== 'BaseManager') {
-                    if (dirname.toLowerCase().includes(`app/manager/${filename.slice(0, -7).toLowerCase()}`)) {
-                        mgrs.push([filename, dirname, varname, extname]);
-                    }
+                if (filename.endsWith('Manager') && dirname.endsWith(filename.slice(0, -7).toLocaleLowerCase())) {
+                    mgrs.push([filename, dirname, varname, extname]);
                 }
             }
-            else if (dirname.endsWith(`app/lib/${filename}`)) {
-                // lib
-                libs.push([filename, dirname, varname, extname]);
-            }
-            else if (dirname.endsWith('model')) {
+            else if (fileurl.startsWith(modelFolderUrl)) {
                 // model
                 if (filename.startsWith('data.')) {
                     datas.push([filename, dirname, varname, extname]);
@@ -339,7 +319,7 @@ async function updateExecutor() {
             }
         }
         else if (extname === '.prefab') {
-            if (dirname.indexOf(viewFolderName + '/') >= 0 && viewRegExp.test(filename)) {
+            if (fileurl.startsWith(viewFolderUrl) && viewRegExp.test(filename)) {
                 const dirArray = dirname.split('/');
                 const index = dirArray.indexOf(viewFolderName);
                 const viewDirArray = dirArray.slice(index + 1);
@@ -365,7 +345,7 @@ async function updateExecutor() {
                 }
             }
         }
-        else if (dirname.indexOf(soundFolderName + '/') >= 0) {
+        else if (fileurl.startsWith(soundFolderUrl)) {
             const dir = path_1.default.join(dirname.split(soundFolderName + '/').pop(), filename);
             if (dir.startsWith('music')) {
                 // musicKeys
@@ -390,13 +370,13 @@ async function updateExecutor() {
             // storage
             const varname = value[2];
             if (isTSDefault(value)) {
-                result += `import ${varname} from '${path_1.default.join(path_1.default.relative(adminDir, utils_1.convertPathToDir(dirname)), filename)}'\n`;
+                result += `import ${varname} from '${path_1.default.join(path_1.default.relative(adminFolderPath, utils_1.convertUrlToPath(dirname)), filename)}'\n`;
             }
             else if (module) {
-                result += `import {${varname}} from '${path_1.default.join(path_1.default.relative(adminDir, utils_1.convertPathToDir(dirname)), filename)}'\n`;
+                result += `import {${varname}} from '${path_1.default.join(path_1.default.relative(adminFolderPath, utils_1.convertUrlToPath(dirname)), filename)}'\n`;
             }
             else {
-                result += `import * as ${varname} from '${path_1.default.join(path_1.default.relative(adminDir, utils_1.convertPathToDir(dirname)), filename)}'\n`;
+                result += `import * as ${varname} from '${path_1.default.join(path_1.default.relative(adminFolderPath, utils_1.convertUrlToPath(dirname)), filename)}'\n`;
             }
             array[index] = varname;
         });
@@ -456,8 +436,8 @@ async function updateExecutor() {
     // 修正windows系统中的\为/
     result = result.replace(/\\/g, '/');
     // save
-    if (readFileSyncByPath(executorFilePath) !== result) {
-        await Editor.Message.request('asset-db', 'create-asset', executorFilePath, result, {
+    if (readFileSyncByPath(executorFileUrl) !== result) {
+        await Editor.Message.request('asset-db', 'create-asset', executorFileUrl, result, {
             overwrite: true
         });
     }

@@ -45,7 +45,7 @@ export default class BaseManager extends Component {
         if (this._base_manager_name !== 'Manager' && this._base_manager_name.slice(-7) === 'Manager') {
             const managerName = this._base_manager_name.slice(0, - 7);
             Core.inst.Manager[managerName] = this.constructor;
-            Core.inst.manager[managerName.toLowerCase()] = this;
+            Core.inst.manager[managerName.toLocaleLowerCase()] = this;
         } else if (EDITOR) {
             error(`[${this._base_manager_name}] manager命名错误(应为 xxxxManager 以Manager结尾)`);
         } else if (DEBUG) {
@@ -122,6 +122,38 @@ export default class BaseManager extends Component {
     }
 
     /***********************************静态***********************************/
+    /**
+     * 将串式命名转成驼峰命名
+     * @param str 串式字符串
+     * @param lower 首字母是否小写(默认大写)
+     * @returns 
+     */
+    public static stringCase(str: string, lower = false) {
+        str = str.replace(/-/g, '_');
+        const arr = str.split('_');
+
+        return arr.map(function (str, index) {
+            if (index === 0 && lower) {
+                return str.charAt(0).toLocaleLowerCase() + str.slice(1);
+            }
+            return str.charAt(0).toLocaleUpperCase() + str.slice(1);
+        }).join('');
+    }
+
+    /**
+     * 将驼峰命名转成串式命名
+     * @param str 驼峰字符串
+     * @returns 
+     */
+    public static stringCaseNegate(str: string) {
+        return str.replace(/[A-Z]/g, (serchStr, startIndex) => {
+            if (startIndex === 0) {
+                return serchStr.toLocaleLowerCase();
+            } else {
+                return '-' + serchStr.toLocaleLowerCase();
+            }
+        });
+    }
     /**
      * manager asset bundle
      */

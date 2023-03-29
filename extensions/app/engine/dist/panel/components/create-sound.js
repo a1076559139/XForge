@@ -23,11 +23,14 @@ exports.default = vue_1.default.extend({
             this.display = '创建中';
             this.showLoading = true;
             const rootPath = 'db://assets/app-bundle/app-sound';
-            if (!await utils_1.createFolderByPath(rootPath, {
+            if (!await utils_1.createFolderByUrl(rootPath, {
                 meta: utils_1.getMeta('app-sound'),
                 readme: utils_1.getReadme('app-sound'),
                 subFolders: [
-                    { folder: this.typeSelectIndex === 0 ? 'music' : 'effect', readme: utils_1.getReadme(this.typeSelectIndex === 0 ? 'music' : 'effect') }
+                    {
+                        folder: this.typeSelectIndex === 0 ? 'music' : 'effect',
+                        readme: utils_1.getReadme(this.typeSelectIndex === 0 ? 'music' : 'effect')
+                    }
                 ]
             })) {
                 this.showLoading = false;

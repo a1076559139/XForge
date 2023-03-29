@@ -35,8 +35,8 @@ exports.default = vue_1.default.extend({
     methods: {
         async onClickCreate() {
             const name = this.inputName;
-            if (/^[a-zA-Z0-9_]+$/.test(name) === false) {
-                this.display = '[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/';
+            if (/^[a-z][a-z0-9-]*[a-z0-9]+$/.test(name) === false) {
+                this.display = '[错误] 名字不合法\n匹配规则: /^[a-z][a-z0-9-]*[a-z0-9]+$/\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
                 return;
             }
             const rootPath = 'db://assets/app-builtin/app-control';
@@ -44,13 +44,13 @@ exports.default = vue_1.default.extend({
             const scriptUrl = `${rootPath}/${controlName}.ts`;
             this.display = '创建中';
             this.showLoading = true;
-            if (fs_1.existsSync(utils_1.convertPathToDir(scriptUrl))) {
+            if (fs_1.existsSync(utils_1.convertUrlToPath(scriptUrl))) {
                 this.showLoading = false;
                 this.display = `[错误] 文件已存在, 请删除\n${scriptUrl}`;
                 return;
             }
             // 目录如果不存在则创建
-            if (!await utils_1.createFolderByPath(rootPath, { meta: utils_1.getMeta('app-control'), readme: utils_1.getReadme('app-control') })) {
+            if (!await utils_1.createFolderByUrl(rootPath, { meta: utils_1.getMeta('app-control'), readme: utils_1.getReadme('app-control') })) {
                 this.showLoading = false;
                 this.display = `[错误] 创建目录失败\n${rootPath}`;
                 return;

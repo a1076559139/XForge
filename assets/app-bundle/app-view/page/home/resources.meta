@@ -27,6 +27,6 @@
     },
     "priority": 8,
     "isBundle": true,
-    "bundleName": "app-view_PageHome_Res"
+    "bundleName": "page-home-res"
   }
 }

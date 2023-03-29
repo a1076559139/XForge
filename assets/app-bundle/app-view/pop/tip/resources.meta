@@ -27,6 +27,6 @@
     },
     "priority": 8,
     "isBundle": true,
-    "bundleName": "app-view_PopTip_Res"
+    "bundleName": "pop-tip-res"
   }
 }

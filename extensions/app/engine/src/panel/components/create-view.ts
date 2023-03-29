@@ -1,9 +1,7 @@
 import { existsSync, readdirSync, statSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import Vue from 'vue/dist/vue';
-import { convertPathToDir, createFolderByPath, delayFileExists, getReadme, getTemplate, stringCase } from '../../utils';
-
-const PageBaseName: { [name: string]: string } = {};
+import { convertUrlToPath, createFolderByUrl, delayFileExistsByUrl, getReadme, getTemplate, stringCase } from '../../utils';
 
 /**
  * 获取脚本内容
@@ -34,7 +32,7 @@ function getComScript(name = 'NewClass') {
         '}';
 }
 
-function getMetaUserData(name = 'NewClass') {
+function getMetaUserData(name = 'new-class') {
     return {
         'compressionType': {
             'web-desktop': 'merge_all_json',
@@ -73,11 +71,11 @@ function getMetaUserData(name = 'NewClass') {
             'wechatgame': false
         },
         'isBundle': true,
-        'bundleName': `app-view_${name}`
+        'bundleName': `${name}`
     };
 }
 
-function getResMetaUserData(name = 'NewClass') {
+function getResMetaUserData(name = 'new-class') {
     return {
         'compressionType': {},
         'isRemoteBundle': {
@@ -100,30 +98,38 @@ function getResMetaUserData(name = 'NewClass') {
         },
         'priority': 8,
         'isBundle': true,
-        'bundleName': `app-view_${name}_Res`
+        'bundleName': `${name}-res`
     };
 }
 
-function getPages() {
+/**
+ * UI类型(小写)
+ */
+const TypeSelects = ['page', 'paper', 'pop', 'top'];
+/**
+ * 大驼峰UI名(带page前缀) => 串式UI目录名(不带page前缀)
+ */
+const PageNames: Map<string, string> = new Map();
+function updatePages() {
+    PageNames.clear();
+
     // page目录
-    const pageDir = join(Editor.Project.path, 'assets/app-bundle/app-view/page');
+    const pageRootPath = join(Editor.Project.path, 'assets/app-bundle/app-view/page');
 
     // 读取page目录下所有文件
-    const files = existsSync(pageDir) ? readdirSync(pageDir) : [];
+    const folderNames = existsSync(pageRootPath) ? readdirSync(pageRootPath) : [];
 
-    // 筛选
-    const PageSelects: string[] = [];
-    files.forEach((name) => {
-        const item_dir = join(pageDir, name);
-        const isDirectory = statSync(item_dir).isDirectory();
+    // 大驼峰命名的UI名
+    folderNames.forEach((folderName) => {
+        // folderName为串式命名法
+        const pagePath = join(pageRootPath, folderName);
+        const isDirectory = statSync(pagePath).isDirectory();
         if (isDirectory) {
-            const page_name = `Page${stringCase(name)}`;
-            PageSelects.push(page_name);
-            PageBaseName[page_name] = name;
+            PageNames.set(`Page${stringCase(folderName)}`, folderName);
         }
     });
 
-    return PageSelects;
+    return Array.from(PageNames.keys());
 }
 
 export default Vue.extend({
@@ -137,7 +143,7 @@ export default Vue.extend({
             inputName: '',
             display: '',
 
-            typeSelects: ['page', 'paper', 'pop', 'top'],
+            typeSelects: TypeSelects,
             typeSelectIndex: 0,
 
             groupSelects: ['2D', '3D'],
@@ -162,7 +168,7 @@ export default Vue.extend({
 
             if (index == '1') {
                 this.pageSelectIndex = 0;
-                this.pageSelects = getPages();
+                this.pageSelects = updatePages();
                 this.showSelectPage = true;
             } else {
                 this.showSelectPage = false;
@@ -175,101 +181,112 @@ export default Vue.extend({
             const isPage = this.typeSelectIndex == 0;
             const isPaper = this.typeSelectIndex == 1;
 
+            // ui归属(大驼峰)
             const owner = this.pageSelects[this.pageSelectIndex];
-            const type = stringCase(this.typeSelects[this.typeSelectIndex], true);
-            const name = stringCase(this.inputName, true);
+            // ui类型(小写)
+            const type = this.typeSelects[this.typeSelectIndex];
+            // ui名字(串式)
+            const name = this.inputName;
 
-            if (/^[a-zA-Z0-9_]+$/.test(name) === false) {
-                this.display = '[错误] 名字不合法, 请修改\n匹配规则: /^[a-zA-Z0-9_]+$/';
+            if (/^[a-z][a-z0-9-]*[a-z0-9]+$/.test(name) === false) {
+                this.display = '[错误] 名字不合法\n匹配规则: /^[a-z][a-z0-9-]*[a-z0-9]+$/\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
                 return;
             }
 
-            const bundlePath = 'db://assets/app-bundle';
-            const viewPath = `${bundlePath}/app-view`;
             const is3D = (isPage || isPaper) && this.groupSelectIndex == 1;
             const uiName = isPaper ?
-                `${stringCase(type)}${stringCase(PageBaseName[owner])}${stringCase(name)}` :
+                `${stringCase(type)}${stringCase(PageNames.get(owner))}${stringCase(name)}` :
                 `${stringCase(type)}${stringCase(name)}`;
-            const typePath = `${viewPath}/${type}`;
-            const uiPath = isPaper ?
-                `${typePath}/${PageBaseName[owner]}/${name}` :
-                `${typePath}/${name}`;
-            const nativePath = `${uiPath}/native`;
-            const resourcesPath = `${uiPath}/resources`;
-            const expansionPath = `${nativePath}/expansion`;
-            const scriptUrl = `${nativePath}/${uiName}.ts`;
-            const prefabUrl = `${nativePath}/${uiName}.prefab`;
+            const bundleName = isPaper ?
+                `${type}-${PageNames.get(owner)}-${name}` :
+                `${type}-${name}`;
+
+            const bundleFolderUrl = 'db://assets/app-bundle';
+            const viewFolderUrl = `${bundleFolderUrl}/app-view`;
+            const typeFolderUrl = `${viewFolderUrl}/${type}`;
+            const uiFolderUrl = isPaper ?
+                `${typeFolderUrl}/${PageNames.get(owner)}/${name}` :
+                `${typeFolderUrl}/${name}`;
+            const nativeUrl = `${uiFolderUrl}/native`;
+            const resourcesUrl = `${uiFolderUrl}/resources`;
+            const expansionUrl = `${nativeUrl}/expansion`;
+            const scriptUrl = `${nativeUrl}/${uiName}.ts`;
+            const prefabUrl = `${nativeUrl}/${uiName}.prefab`;
 
             this.display = '创建中';
             this.showLoading = true;
 
-            if (existsSync(convertPathToDir(uiPath))) {
-                this.showLoading = false;
-                this.display = `[错误] 目录已存在, 请删除\n${uiPath}`;
-                return;
-            }
+            // if (existsSync(convertUrlToPath(uiFolderUrl))) {
+            //     this.showLoading = false;
+            //     this.display = `[错误] 目录已存在, 请删除\n${uiFolderUrl}`;
+            //     return;
+            // }
 
-            // 创建UI目录
-            if (!await createFolderByPath(uiPath, { subPaths: ['native', 'resources', 'native/expansion'] })) {
+            // 创建目录
+            if (!await createFolderByUrl(uiFolderUrl, { subPaths: ['native', 'resources', 'native/expansion'] })) {
                 this.showLoading = false;
-                this.display = `[错误] 创建目录失败\n${uiPath}`;
-                return;
-            }
-
-            // 创建script
-            const createScriptResult = await Editor.Message.request('asset-db', 'create-asset', scriptUrl, getComScript(uiName)).catch(_ => null);
-            if (!createScriptResult) {
-                this.showLoading = false;
-                this.display = `[错误] 创建脚本失败\n${scriptUrl}`;
-                return;
-            }
-
-            // 创建prefab
-            const createPrefabResult = await Editor.Message.request('scene', 'execute-scene-script', {
-                name: 'app',
-                method: 'createPrefab',
-                args: [uiName, prefabUrl, is3D]
-            }).catch(_ => null);
-            if (!createPrefabResult) {
-                this.showLoading = false;
-                this.display = `[错误] 创建预制体失败\n${prefabUrl}`;
+                this.display = `[错误] 创建目录失败\n${uiFolderUrl}`;
                 return;
             }
 
             // 设置native分包
-            await delayFileExists(`${convertPathToDir(nativePath)}.meta`);
-            const queryNativeMeta = await Editor.Message.request('asset-db', 'query-asset-meta', nativePath).catch(_ => null);
+            await delayFileExistsByUrl(`${nativeUrl}.meta`);
+            const queryNativeMeta = await Editor.Message.request('asset-db', 'query-asset-meta', nativeUrl).catch(_ => null);
             if (!queryNativeMeta) {
                 this.showLoading = false;
                 this.display = '[错误] 设置native分包配置失败';
                 return;
             }
-            queryNativeMeta.userData = getMetaUserData(uiName);
-            await Editor.Message.request('asset-db', 'save-asset-meta', nativePath, JSON.stringify(queryNativeMeta)).catch(_ => null);
+            queryNativeMeta.userData = getMetaUserData(bundleName);
+            await Editor.Message.request('asset-db', 'save-asset-meta', nativeUrl, JSON.stringify(queryNativeMeta)).catch(_ => null);
 
             // 设置resources分包
-            await delayFileExists(`${convertPathToDir(resourcesPath)}.meta`);
-            const queryResMeta = await Editor.Message.request('asset-db', 'query-asset-meta', resourcesPath).catch(_ => null);
+            await delayFileExistsByUrl(`${resourcesUrl}.meta`);
+            const queryResMeta = await Editor.Message.request('asset-db', 'query-asset-meta', resourcesUrl).catch(_ => null);
             if (!queryResMeta) {
                 this.showLoading = false;
                 this.display = '[错误] 设置resources分包配置失败';
                 return;
             }
-            queryResMeta.userData = getResMetaUserData(uiName);
-            await Editor.Message.request('asset-db', 'save-asset-meta', resourcesPath, JSON.stringify(queryResMeta)).catch(_ => null);
+            queryResMeta.userData = getResMetaUserData(bundleName);
+            await Editor.Message.request('asset-db', 'save-asset-meta', resourcesUrl, JSON.stringify(queryResMeta)).catch(_ => null);
 
-            writeFileSync(join(convertPathToDir(bundlePath), '.app-bundle.md'), getReadme('app-bundle'));
-            writeFileSync(join(convertPathToDir(viewPath), '.app-view.md'), getReadme('app-view'));
-            writeFileSync(join(convertPathToDir(typePath), `.${type}.md`), `所有${type}类型UI的根目录`);
-            if (isPaper) writeFileSync(join(convertPathToDir(`${typePath}/${PageBaseName[owner]}`), `.${PageBaseName[owner]}.md`), `归属于Page${stringCase(PageBaseName[owner])}`);
+            writeFileSync(join(convertUrlToPath(bundleFolderUrl), '.app-bundle.md'), getReadme('app-bundle'));
+            writeFileSync(join(convertUrlToPath(viewFolderUrl), '.app-view.md'), getReadme('app-view'));
+            writeFileSync(join(convertUrlToPath(typeFolderUrl), `.${type}.md`), `所有${type}类型UI的根目录`);
+            if (isPaper) writeFileSync(join(convertUrlToPath(`${typeFolderUrl}/${PageNames.get(owner)}`), `.${PageNames.get(owner)}.md`), `归属于Page${stringCase(PageNames.get(owner))}`);
 
-            writeFileSync(join(convertPathToDir(uiPath), `.${name}.md`), `${uiName}所在文件夹\n1、通过${isPaper ? `在${owner}中配置miniViews属性并调用showMiniViews方法` : `app.manager.ui.show({ name:'${uiName}' })`}的方式加载`);
-            writeFileSync(join(convertPathToDir(nativePath), '.native.md'), getReadme('native'));
-            writeFileSync(join(convertPathToDir(resourcesPath), '.resources.md'), getReadme('resources'));
-            writeFileSync(join(convertPathToDir(expansionPath), '.expansion.md'), getReadme('expansion'));
+            writeFileSync(join(convertUrlToPath(uiFolderUrl), `.${name}.md`), `${uiName}所在文件夹\n1、通过${isPaper ? `在${owner}中配置miniViews属性并调用showMiniViews方法` : `app.manager.ui.show({ name:'${uiName}' })`}的方式加载`);
+            writeFileSync(join(convertUrlToPath(nativeUrl), '.native.md'), getReadme('native'));
+            writeFileSync(join(convertUrlToPath(resourcesUrl), '.resources.md'), getReadme('resources'));
+            writeFileSync(join(convertUrlToPath(expansionUrl), '.expansion.md'), getReadme('expansion'));
+
+            // 创建script
+            if (!existsSync(convertUrlToPath(scriptUrl))) {
+                const createScriptResult = await Editor.Message.request('asset-db', 'create-asset', scriptUrl, getComScript(uiName)).catch(_ => null);
+                if (!createScriptResult) {
+                    this.showLoading = false;
+                    this.display = `[错误] 创建脚本失败\n${scriptUrl}`;
+                    return;
+                }
+            }
+
+            // 创建prefab
+            if (!existsSync(convertUrlToPath(prefabUrl))) {
+                const createPrefabResult = await Editor.Message.request('scene', 'execute-scene-script', {
+                    name: 'app',
+                    method: 'createPrefab',
+                    args: [uiName, prefabUrl, is3D]
+                }).catch(_ => null);
+                if (!createPrefabResult) {
+                    this.showLoading = false;
+                    this.display = `[错误] 创建预制体失败\n${prefabUrl}`;
+                    return;
+                }
+            }
 
             this.showLoading = false;
-            this.display = `[成功] 创建成功\n${uiPath}`;
+            this.display = `[成功] 创建成功\n${uiFolderUrl}`;
         }
     }
 });
