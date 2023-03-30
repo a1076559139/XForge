@@ -1,6 +1,5 @@
 import { Component, EventTarget } from 'cc';
 import http from './lib/http/http';
-import pipeline from './lib/pipeline/pipeline';
 import Queue from './lib/queue/queue';
 import Socket from './lib/socket/socket';
 import storage from './lib/storage/storage';
@@ -51,7 +50,7 @@ interface ICore {
 }
 
 const EventMap = {};
-const Lib = { task, http, queue: Queue, socket: Socket, storage, pipeline };
+const Lib = { task, http, queue: Queue, socket: Socket, storage };
 const Config = {};
 const Data = {};
 const Manager = {};
