@@ -4,6 +4,7 @@
 > 2、尽可能统一的开发规范(尽量避免口头约束)。<br/>
 > 3、更小的首屏/首包体积。<br/>
 > 4、更小的增量更新体积。<br/>
+> 5、复用通用模块的能力。<br/>
 
 ⚠️: 大部分的框架目录点击后，都会在属性检查器页面生成它的一些说明文字，可以进行查看。<br/>
 ⚠️: 框架暂时不允许自定义assets下的文件夹，所有文件夹可以通过菜单栏App来创建。<br/>
@@ -94,15 +95,13 @@ app.lib.http
 
 ## 7、自定义Manager
 * 通过菜单栏App/创建/Manager来创建自定义Manager，位置处于assets/app-builtin/app-manager下
-* 继承自BaseManager
 ```
-// 通过app.manager来访问
 app.manager.xxx
 ```
 
 ## 8、自定义Control
 * 通过菜单栏App/创建/Control来创建自定义Control，位置处于assets/app-builtin/app-control下
-* 继承自BaseControl，它与Manager的区别是: Manager更偏向一些全局类的功能，而Control更偏向于作为某个UI的对外接口(UI是不能直接进行访问的)
+* 它与Manager的区别是: Manager更偏向一些全局类的功能，而Control更偏向于作为某个UI的对外接口(UI是不能直接进行访问的)
 ```
   1、作为对外输出，Control内部可以新建变量和方法，在外部(通过XXXControl.inst调用)变量和方法会自动变为只读。
   2、Control内部额外有一个emit和call方法，用来发射事件，这个方法在其它任何地方都是无法访问的。区别在于call方法只会执行第一个注册的事件并获得返回值。
@@ -114,7 +113,6 @@ app.manager.xxx
 ## 9、自定义Model
 * 通过菜单栏App/创建/Model来创建自定义Model，位置处于assets/app-builtin/app-model下
 ```
-// 通过app.data或app.config来使用
 app.data.xxx
 app.config.xxx
 ```

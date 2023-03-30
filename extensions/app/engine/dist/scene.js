@@ -29,16 +29,6 @@ exports.methods = {
         }
         const com = node.addComponent(name);
         com.resetInEditor && com.resetInEditor();
-        if (name.toLocaleLowerCase().startsWith('page')) {
-            com.shade = false;
-            com.blockInput = is3D ? false : true;
-            com.captureFocus = is3D ? false : true;
-        }
-        else if (name.toLocaleLowerCase().startsWith('paper')) {
-            com.shade = false;
-            com.captureFocus = false;
-            com.blockInput = false;
-        }
         // @ts-ignore
         const info = cce.Prefab.generatePrefabDataFromNode(node);
         node.destroy();

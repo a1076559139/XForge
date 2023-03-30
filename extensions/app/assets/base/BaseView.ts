@@ -271,7 +271,18 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     // 用来初始化组件或节点的一些属性，当该组件被第一次添加到节点上或用户点击了它的 Reset 菜单时调用。这个回调只会在编辑器下调用。
     resetInEditor(): any {
         if (EDITOR) {
-            if (this.node.layer !== Layers.Enum.UI_2D) return;
+            const is3D = this.node.layer !== Layers.Enum.UI_2D;
+            if (this.viewName.toLocaleLowerCase().startsWith('page')) {
+                this.shade = false;
+                this.blockInput = is3D ? false : true;
+                this.captureFocus = is3D ? false : true;
+            } else if (this.viewName.toLocaleLowerCase().startsWith('paper')) {
+                this.shade = false;
+                this.captureFocus = false;
+                this.blockInput = false;
+            }
+
+            if (is3D) return;
             this.node.getComponent(UITransform) || this.node.addComponent(UITransform);
 
             const widget = this.node.getComponent(Widget) || this.node.addComponent(Widget);
