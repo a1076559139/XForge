@@ -38,7 +38,7 @@ export default class LoaderManager extends BaseManager {
      * 预加载
      * @param {string} bundle 默认为resources
      */
-    public preload(params: { path: string, bundle?: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (items: AssetManager.RequestItem[]) => void }) {
+    public preload(params: { path: string, bundle?: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (item: AssetManager.RequestItem) => void }) {
         this.handle('preload', params);
     }
 
@@ -51,11 +51,19 @@ export default class LoaderManager extends BaseManager {
     }
 
     /**
-     * 加载一个bundle下的资源
+     * 加载bundle下的资源
      * @param {string} bundle 默认为resources
      */
-    public load<T extends typeof Asset>(params: { path: string, bundle?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (result: InstanceType<T>) => void }) {
+    public load<T extends typeof Asset>(params: { path: string, bundle?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (item: InstanceType<T>) => void }) {
         this.handle('load', params);
+    }
+
+    /**
+     * 加载bundle下的资源
+     * @param {string} bundle 默认为resources
+     */
+    public loadDir<T extends typeof Asset>(params: { path: string, bundle?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (items: InstanceType<T>[]) => void }) {
+        this.handle('loadDir', params);
     }
 
     /**

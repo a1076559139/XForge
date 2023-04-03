@@ -271,7 +271,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 加载ui内部资源
      */
-    public loadRes<T extends typeof Asset>(target: Component | UIName | MiniName, path: string, type: T, callback?: (result: InstanceType<T>) => any) {
+    public loadRes<T extends typeof Asset>(target: Component, path: string, type: T, callback?: (item: InstanceType<T>) => any) {
         if (typeof target === 'string') {
             Core.inst.manager.loader.load({
                 bundle: this.getResBundleName(target),
@@ -290,6 +290,32 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 });
             } else {
                 callback && callback(null);
+            }
+        }
+    }
+
+    /**
+     * 加载ui内部资源
+     */
+    public loadResDir<T extends typeof Asset>(target: Component, path: string, type: T, callback?: (items: InstanceType<T>[]) => any) {
+        if (typeof target === 'string') {
+            Core.inst.manager.loader.loadDir({
+                bundle: this.getResBundleName(target),
+                path: path,
+                type: type,
+                onComplete: callback
+            });
+        } else {
+            const view = this.getBaseView(target.node) || this.getViewInParents(target.node);
+            if (view) {
+                Core.inst.manager.loader.loadDir({
+                    bundle: this.getResBundleName(view.viewName),
+                    path: path,
+                    type: type,
+                    onComplete: callback
+                });
+            } else {
+                callback && callback([]);
             }
         }
     }
