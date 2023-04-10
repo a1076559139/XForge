@@ -29,7 +29,7 @@ exports.default = vue_1.default.extend({
                 subFolders: [
                     {
                         folder: this.typeSelectIndex === 0 ? 'music' : 'effect',
-                        readme: utils_1.getReadme(this.typeSelectIndex === 0 ? 'music' : 'effect')
+                        readme: utils_1.getReadme(this.typeSelectIndex === 0 ? 'sound-music' : 'sound-effect')
                     }
                 ]
             })) {

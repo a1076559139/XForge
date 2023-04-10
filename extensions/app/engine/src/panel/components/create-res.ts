@@ -1,5 +1,5 @@
 import Vue from 'vue/dist/vue';
-import { createFolderByUrl, getReadme, getTemplate, stringCase } from '../../utils';
+import { createFolderByUrl, getMeta, getReadme, getTemplate, stringCase } from '../../utils';
 
 const typeNames: ('res-bundle' | 'res-native' | 'resources')[] = ['res-bundle', 'res-native', 'resources'];
 export default Vue.extend({
@@ -34,14 +34,11 @@ export default Vue.extend({
 
             if (!await createFolderByUrl(folderPath, {
                 readme: getReadme(folderName),
+                meta: folderName === 'resources' ? getMeta('resources') : undefined,
                 subFolders: [
                     {
                         folder: name,
-                        meta: this.typeSelectIndex === 0 ? {
-                            userData: {
-                                isBundle: true
-                            }
-                        } : undefined
+                        meta: this.typeSelectIndex === 0 ? getMeta('resources') : undefined
                     }
                 ]
             })) {

@@ -32,7 +32,7 @@ function getComScript(name = 'NewClass') {
         '}';
 }
 
-function getMetaUserData(name = 'new-class') {
+function getNaMetaUserData(name = 'new-class') {
     return {
         'compressionType': {
             'web-desktop': 'merge_all_json',
@@ -237,7 +237,7 @@ export default Vue.extend({
                 this.display = '[错误] 设置native分包配置失败';
                 return;
             }
-            queryNativeMeta.userData = getMetaUserData(bundleName);
+            queryNativeMeta.userData = getNaMetaUserData(bundleName);
             await Editor.Message.request('asset-db', 'save-asset-meta', nativeUrl, JSON.stringify(queryNativeMeta)).catch(_ => null);
 
             // 设置resources分包
@@ -257,9 +257,9 @@ export default Vue.extend({
             if (isPaper) writeFileSync(join(convertUrlToPath(`${typeFolderUrl}/${PageNames.get(owner)}`), `.${PageNames.get(owner)}.md`), `归属于Page${stringCase(PageNames.get(owner))}`);
 
             writeFileSync(join(convertUrlToPath(uiFolderUrl), `.${name}.md`), `${uiName}所在文件夹\n1、通过${isPaper ? `在${owner}中配置miniViews属性并调用showMiniViews方法` : `app.manager.ui.show({ name:'${uiName}' })`}的方式加载`);
-            writeFileSync(join(convertUrlToPath(nativeUrl), '.native.md'), getReadme('native'));
-            writeFileSync(join(convertUrlToPath(resourcesUrl), '.resources.md'), getReadme('resources'));
-            writeFileSync(join(convertUrlToPath(expansionUrl), '.expansion.md'), getReadme('expansion'));
+            writeFileSync(join(convertUrlToPath(nativeUrl), '.native.md'), getReadme('view-native'));
+            writeFileSync(join(convertUrlToPath(resourcesUrl), '.resources.md'), getReadme('view-resources'));
+            writeFileSync(join(convertUrlToPath(expansionUrl), '.expansion.md'), getReadme('view-expansion'));
 
             // 创建script
             if (!existsSync(convertUrlToPath(scriptUrl))) {

@@ -1,12 +1,12 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { basename, join } from 'path';
 
-export function getReadme(name: 'app' | 'app-appinit' | 'app-scene' | 'app-builtin' | 'app-bundle' | 'app-view' | 'app-admin' | 'app-control' | 'app-manager' | 'app-model' | 'app-sound' | 'effect' | 'music' | 'expansion' | 'native' | 'res-bundle' | 'res-native' | 'resources') {
+export function getReadme(name: 'resources' | 'app' | 'app-appinit' | 'app-scene' | 'app-builtin' | 'app-bundle' | 'app-view' | 'app-admin' | 'app-control' | 'app-manager' | 'app-model' | 'app-sound' | 'sound-effect' | 'sound-music' | 'view-expansion' | 'view-native' | 'res-bundle' | 'res-native' | 'view-resources') {
     const Assets = join(__dirname, '../res/readme');
-    return readFileSync(join(Assets, `.${name}.md`), 'utf-8');
+    return readFileSync(join(Assets, `${name}.md`), 'utf-8');
 }
 
-export function getMeta(name: 'app-admin' | 'app-control' | 'app-manager' | 'app-model' | 'app-sound'): { userData: object } {
+export function getMeta(name: 'resources' | 'app-admin' | 'app-control' | 'app-manager' | 'app-model' | 'app-sound' | 'view-native' | 'view-resources'): { userData: object } {
     const Assets = join(__dirname, '../res/meta');
     const str = readFileSync(join(Assets, `${name}.meta`), 'utf-8');
     return str ? JSON.parse(str) : null;

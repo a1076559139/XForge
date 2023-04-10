@@ -5,7 +5,7 @@ const fs_1 = require("fs");
 const path_1 = require("path");
 function getReadme(name) {
     const Assets = path_1.join(__dirname, '../res/readme');
-    return fs_1.readFileSync(path_1.join(Assets, `.${name}.md`), 'utf-8');
+    return fs_1.readFileSync(path_1.join(Assets, `${name}.md`), 'utf-8');
 }
 exports.getReadme = getReadme;
 function getMeta(name) {

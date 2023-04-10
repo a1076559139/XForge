@@ -33,14 +33,11 @@ exports.default = vue_1.default.extend({
             this.showLoading = true;
             if (!await utils_1.createFolderByUrl(folderPath, {
                 readme: utils_1.getReadme(folderName),
+                meta: folderName === 'resources' ? utils_1.getMeta('resources') : undefined,
                 subFolders: [
                     {
                         folder: name,
-                        meta: this.typeSelectIndex === 0 ? {
-                            userData: {
-                                isBundle: true
-                            }
-                        } : undefined
+                        meta: this.typeSelectIndex === 0 ? utils_1.getMeta('resources') : undefined
                     }
                 ]
             })) {

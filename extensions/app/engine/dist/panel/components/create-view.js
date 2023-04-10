@@ -33,7 +33,7 @@ function getComScript(name = 'NewClass') {
         '    }\r\n' +
         '}';
 }
-function getMetaUserData(name = 'new-class') {
+function getNaMetaUserData(name = 'new-class') {
     return {
         'compressionType': {
             'web-desktop': 'merge_all_json',
@@ -219,7 +219,7 @@ exports.default = vue_1.default.extend({
                 this.display = '[错误] 设置native分包配置失败';
                 return;
             }
-            queryNativeMeta.userData = getMetaUserData(bundleName);
+            queryNativeMeta.userData = getNaMetaUserData(bundleName);
             await Editor.Message.request('asset-db', 'save-asset-meta', nativeUrl, JSON.stringify(queryNativeMeta)).catch(_ => null);
             // 设置resources分包
             await utils_1.delayFileExistsByUrl(`${resourcesUrl}.meta`);
@@ -237,9 +237,9 @@ exports.default = vue_1.default.extend({
             if (isPaper)
                 fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(`${typeFolderUrl}/${PageNames.get(owner)}`), `.${PageNames.get(owner)}.md`), `归属于Page${utils_1.stringCase(PageNames.get(owner))}`);
             fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(uiFolderUrl), `.${name}.md`), `${uiName}所在文件夹\n1、通过${isPaper ? `在${owner}中配置miniViews属性并调用showMiniViews方法` : `app.manager.ui.show({ name:'${uiName}' })`}的方式加载`);
-            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(nativeUrl), '.native.md'), utils_1.getReadme('native'));
-            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(resourcesUrl), '.resources.md'), utils_1.getReadme('resources'));
-            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(expansionUrl), '.expansion.md'), utils_1.getReadme('expansion'));
+            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(nativeUrl), '.native.md'), utils_1.getReadme('view-native'));
+            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(resourcesUrl), '.resources.md'), utils_1.getReadme('view-resources'));
+            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(expansionUrl), '.expansion.md'), utils_1.getReadme('view-expansion'));
             // 创建script
             if (!fs_1.existsSync(utils_1.convertUrlToPath(scriptUrl))) {
                 const createScriptResult = await Editor.Message.request('asset-db', 'create-asset', scriptUrl, getComScript(uiName)).catch(_ => null);
