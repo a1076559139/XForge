@@ -42,6 +42,11 @@ exports.default = vue_1.default.extend({
             const rootPath = 'db://assets/app-builtin/app-control';
             const controlName = `${utils_1.stringCase(name)}Control`;
             const scriptUrl = `${rootPath}/${controlName}.ts`;
+            // 创建前确认
+            const createResponse = await Editor.Dialog.info('请确认', { detail: controlName, buttons: ['创建并打开', '仅创建', '取消'], default: 0, cancel: 2 });
+            if (createResponse.response == 2) {
+                return;
+            }
             this.display = '创建中';
             this.showLoading = true;
             if (fs_1.existsSync(utils_1.convertUrlToPath(scriptUrl))) {
@@ -64,6 +69,10 @@ exports.default = vue_1.default.extend({
             }
             this.showLoading = false;
             this.display = `[成功] 创建成功\n${rootPath}`;
+            // 是否打开
+            if (createResponse.response == 0) {
+                Editor.Message.request('asset-db', 'open-asset', scriptUrl);
+            }
         }
     },
 });

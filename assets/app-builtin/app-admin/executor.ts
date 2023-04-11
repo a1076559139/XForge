@@ -10,8 +10,8 @@ import TimerManager from '../../../extensions/app/assets/manager/timer/TimerMana
 import UIManager from '../../../extensions/app/assets/manager/ui/UIManager'
 enum viewNames { 'PageGame','PageHome','PopTip'}
 const miniViewNames = {"PaperGameIndex":"PaperGame","PaperHomeIndex":"PaperHome"}
-enum musicNames { 'nerver'}
-enum effecNames { 'nerver'}
+enum musicNames { 'never'}
+enum effecNames { 'never'}
 
 export type IViewName = keyof typeof viewNames
 export type IViewNames = IViewName[]

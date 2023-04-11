@@ -44,12 +44,18 @@ export default Vue.extend({
                 return;
             }
 
-            this.display = '创建中';
-            this.showLoading = true;
-
             const rootPath = 'db://assets/app-builtin/app-model';
             const modelName = `${type}.${name}`;
             const scriptUrl = `${rootPath}/${modelName}.ts`;
+
+            // 创建前确认
+            const createResponse = await Editor.Dialog.info('请确认', { detail: modelName, buttons: ['创建并打开', '仅创建', '取消'], default: 0, cancel: 2 });
+            if (createResponse.response == 2) {
+                return;
+            }
+
+            this.display = '创建中';
+            this.showLoading = true;
 
             // 目录如果不存在则创建
             if (!await createFolderByUrl(rootPath, { meta: getMeta('app-model'), readme: getReadme('app-model') })) {
@@ -73,6 +79,11 @@ export default Vue.extend({
 
             this.showLoading = false;
             this.display = `[成功] 创建成功\n${rootPath}`;
+
+            // 是否打开
+            if (createResponse.response == 0) {
+                Editor.Message.request('asset-db', 'open-asset', scriptUrl);
+            }
         }
     },
 });

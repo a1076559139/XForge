@@ -44,11 +44,16 @@ exports.default = vue_1.default.extend({
                 this.display = '[错误] 名字不合法\n匹配规则: /^[a-z][a-z0-9-]*[a-z0-9]+$/\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
                 return;
             }
-            this.display = '创建中';
-            this.showLoading = true;
             const rootPath = 'db://assets/app-builtin/app-model';
             const modelName = `${type}.${name}`;
             const scriptUrl = `${rootPath}/${modelName}.ts`;
+            // 创建前确认
+            const createResponse = await Editor.Dialog.info('请确认', { detail: modelName, buttons: ['创建并打开', '仅创建', '取消'], default: 0, cancel: 2 });
+            if (createResponse.response == 2) {
+                return;
+            }
+            this.display = '创建中';
+            this.showLoading = true;
             // 目录如果不存在则创建
             if (!await utils_1.createFolderByUrl(rootPath, { meta: utils_1.getMeta('app-model'), readme: utils_1.getReadme('app-model') })) {
                 this.showLoading = false;
@@ -68,6 +73,10 @@ exports.default = vue_1.default.extend({
             }
             this.showLoading = false;
             this.display = `[成功] 创建成功\n${rootPath}`;
+            // 是否打开
+            if (createResponse.response == 0) {
+                Editor.Message.request('asset-db', 'open-asset', scriptUrl);
+            }
         }
     },
 });

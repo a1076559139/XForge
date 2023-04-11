@@ -124,6 +124,7 @@ function updatePages() {
             PageNames.set(`Page${utils_1.stringCase(folderName)}`, folderName);
         }
     });
+    PageNames.set('通用', 'all');
     return Array.from(PageNames.keys());
 }
 exports.default = vue_1.default.extend({
@@ -180,31 +181,36 @@ exports.default = vue_1.default.extend({
                 this.display = '[错误] 名字不合法\n匹配规则: /^[a-z][a-z0-9-]*[a-z0-9]+$/\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
                 return;
             }
+            if (name === 'all') {
+                this.display = '[错误] 名字不合法\n不能使用all作为名字';
+                return;
+            }
             const is3D = (isPage || isPaper) && this.groupSelectIndex == 1;
+            const ownerName = PageNames.get(owner);
             const uiName = isPaper ?
-                `${utils_1.stringCase(type)}${utils_1.stringCase(PageNames.get(owner))}${utils_1.stringCase(name)}` :
+                `${utils_1.stringCase(type)}${utils_1.stringCase(ownerName)}${utils_1.stringCase(name)}` :
                 `${utils_1.stringCase(type)}${utils_1.stringCase(name)}`;
             const bundleName = isPaper ?
-                `${type}-${PageNames.get(owner)}-${name}` :
+                `${type}-${ownerName}-${name}` :
                 `${type}-${name}`;
             const bundleFolderUrl = 'db://assets/app-bundle';
             const viewFolderUrl = `${bundleFolderUrl}/app-view`;
             const typeFolderUrl = `${viewFolderUrl}/${type}`;
             const uiFolderUrl = isPaper ?
-                `${typeFolderUrl}/${PageNames.get(owner)}/${name}` :
+                `${typeFolderUrl}/${ownerName}/${name}` :
                 `${typeFolderUrl}/${name}`;
             const nativeUrl = `${uiFolderUrl}/native`;
             const resourcesUrl = `${uiFolderUrl}/resources`;
             const expansionUrl = `${nativeUrl}/expansion`;
             const scriptUrl = `${nativeUrl}/${uiName}.ts`;
             const prefabUrl = `${nativeUrl}/${uiName}.prefab`;
+            // 创建前确认
+            const createResponse = await Editor.Dialog.info('请确认', { detail: uiName, buttons: ['创建并打开', '仅创建', '取消'], default: 0, cancel: 2 });
+            if (createResponse.response == 2) {
+                return;
+            }
             this.display = '创建中';
             this.showLoading = true;
-            // if (existsSync(convertUrlToPath(uiFolderUrl))) {
-            //     this.showLoading = false;
-            //     this.display = `[错误] 目录已存在, 请删除\n${uiFolderUrl}`;
-            //     return;
-            // }
             // 创建目录
             if (!await utils_1.createFolderByUrl(uiFolderUrl, { subPaths: ['native', 'resources', 'native/expansion'] })) {
                 this.showLoading = false;
@@ -234,12 +240,16 @@ exports.default = vue_1.default.extend({
             fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(bundleFolderUrl), '.app-bundle.md'), utils_1.getReadme('app-bundle'));
             fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(viewFolderUrl), '.app-view.md'), utils_1.getReadme('app-view'));
             fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(typeFolderUrl), `.${type}.md`), `所有${type}类型UI的根目录`);
-            if (isPaper)
-                fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(`${typeFolderUrl}/${PageNames.get(owner)}`), `.${PageNames.get(owner)}.md`), `归属于Page${utils_1.stringCase(PageNames.get(owner))}`);
-            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(uiFolderUrl), `.${name}.md`), `${uiName}所在文件夹\n1、通过${isPaper ? `在${owner}中配置miniViews属性并调用showMiniViews方法` : `app.manager.ui.show({ name:'${uiName}' })`}的方式加载`);
             fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(nativeUrl), '.native.md'), utils_1.getReadme('view-native'));
             fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(resourcesUrl), '.resources.md'), utils_1.getReadme('view-resources'));
             fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(expansionUrl), '.expansion.md'), utils_1.getReadme('view-expansion'));
+            if (isPaper) {
+                fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(`${typeFolderUrl}/${ownerName}`), `.${ownerName}.md`), ownerName === 'all' ? '归属于全体Page' : `归属于Page${utils_1.stringCase(ownerName)}`);
+                fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(uiFolderUrl), `.${name}.md`), `${uiName}所在文件夹\n1、通过${ownerName === 'all' ? '在任意Page中配置miniViews属性并调用showMiniViews方法' : `在${owner}中配置miniViews属性并调用showMiniViews方法`}的方式加载`);
+            }
+            else {
+                fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(uiFolderUrl), `.${name}.md`), `${uiName}所在文件夹\n1、通过app.manager.ui.show({ name:'${uiName}' })的方式加载`);
+            }
             // 创建script
             if (!fs_1.existsSync(utils_1.convertUrlToPath(scriptUrl))) {
                 const createScriptResult = await Editor.Message.request('asset-db', 'create-asset', scriptUrl, getComScript(uiName)).catch(_ => null);
@@ -264,6 +274,11 @@ exports.default = vue_1.default.extend({
             }
             this.showLoading = false;
             this.display = `[成功] 创建成功\n${uiFolderUrl}`;
+            // 是否打开
+            if (createResponse.response == 0) {
+                Editor.Message.request('asset-db', 'open-asset', prefabUrl);
+                Editor.Message.request('asset-db', 'open-asset', scriptUrl);
+            }
         }
     }
 });

@@ -192,10 +192,10 @@ const keyWords = [
 async function clearExecutor() {
     if (!fs_1.existsSync(executorFilePath))
         return;
-    const viewKeys = { nerver: '' };
-    const miniViewKeys = { nerver: '' };
-    const musicKeys = { nerver: '' };
-    const effecKeys = { nerver: '' };
+    const viewKeys = { never: '' };
+    const miniViewKeys = { never: '' };
+    const musicKeys = { never: '' };
+    const effecKeys = { never: '' };
     let result = '/* eslint-disable */\n' +
         'import { Component } from \'cc\';\n' +
         'import { app } from \'../../app/app\';\n' +
@@ -402,13 +402,13 @@ async function updateExecutor() {
         }
     });
     if (Object.keys(viewKeys).length === 0)
-        viewKeys['nerver'] = '';
+        viewKeys['never'] = '';
     if (Object.keys(miniViewKeys).length === 0)
-        miniViewKeys['nerver'] = '';
+        miniViewKeys['never'] = '';
     if (Object.keys(musicKeys).length === 0)
-        musicKeys['nerver'] = '';
+        musicKeys['never'] = '';
     if (Object.keys(effecKeys).length === 0)
-        effecKeys['nerver'] = '';
+        effecKeys['never'] = '';
     result += 'enum viewNames { \'' + Object.keys(viewKeys).join('\',\'') + '\'}\n';
     result += 'const miniViewNames = ' + JSON.stringify(miniViewKeys) + '\n';
     result += 'enum musicNames { \'' + Object.keys(musicKeys).join('\',\'') + '\'}\n';

@@ -29,6 +29,15 @@ exports.default = vue_1.default.extend({
                 this.display = '[错误] 名字不合法\n匹配规则: /^[a-z][a-z0-9-]*[a-z0-9]+$/\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
                 return;
             }
+            if (name === 'resources') {
+                this.display = '[错误] 名字不合法\n不能使用resources作为名字';
+                return;
+            }
+            // 创建前确认
+            const createResponse = await Editor.Dialog.info('请确认', { detail: name, buttons: ['创建', '取消'], default: 0, cancel: 1 });
+            if (createResponse.response == 1) {
+                return;
+            }
             this.display = '创建中';
             this.showLoading = true;
             if (!await utils_1.createFolderByUrl(folderPath, {
