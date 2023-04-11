@@ -99,7 +99,11 @@ async function main() {
 
     // npm指令
     const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-    if (process.argv[2] === 'add') {
+    if (process.argv[2] === 'update') {
+        const cmd = ['--registry=https://registry.npmjs.org', 'update', '--prefix', packageDir];
+        const code = await spawnCmd(npm, cmd);
+        if (code !== 0) console.error(`[失败]: ${code}`);
+    } else if (process.argv[2] === 'add') {
         const cmd = ['--registry=https://registry.npmjs.org', 'install', '--prefix', packageDir];
         if (process.argv[3]) cmd.push(process.argv[3]);
         const code = await spawnCmd(npm, cmd);

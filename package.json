@@ -16,6 +16,7 @@
     "app:build": "npm run --prefix ./extensions/app build",
     "app:watch": "npm run --prefix ./extensions/app watch",
     "pkg:add": "npm run --prefix ./extensions/pkg add",
-    "pkg:remove": "npm run --prefix ./extensions/pkg remove"
+    "pkg:remove": "npm run --prefix ./extensions/pkg remove",
+    "pkg:update": "npm run --prefix ./extensions/pkg update"
   }
 }

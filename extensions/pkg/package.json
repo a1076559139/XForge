@@ -15,6 +15,7 @@
     },
     "scripts": {
       "add": "node ./index.js add",
-      "remove": "node ./index.js remove"
+      "remove": "node ./index.js remove",
+      "update": "node ./index.js update"
     }
 }
