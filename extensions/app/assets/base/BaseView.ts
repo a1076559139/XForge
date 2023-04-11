@@ -241,10 +241,16 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         return this._base_view_name;
     }
 
+    /**
+     * 基础名字, 如PageHome => Home
+     */
     public get viewBaseName() {
         return this._base_view_name.slice(this.viewTypeName.length);
     }
 
+    /**
+     * 类型名字, 如PageHome => Page
+     */
     public get viewTypeName() {
         if (this._base_view_name.indexOf(ViewType.Paper) === 0) return ViewType.Paper;
         if (this._base_view_name.indexOf(ViewType.Pop) === 0) return ViewType.Pop;
