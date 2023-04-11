@@ -175,7 +175,7 @@ export default class BaseManager extends Component {
         if (projectBundles.indexOf(BundleName) === -1) return onFinish && onFinish();
 
         // 一定会加载成功
-        Core.inst.lib.task.excute((retry) => {
+        Core.inst.lib.task.execute((retry) => {
             assetManager.loadBundle(BundleName, (err, bundle) => {
                 if (err) return retry(0.1);
                 this.bundle = bundle;

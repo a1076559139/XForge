@@ -21,7 +21,7 @@ class TaskItem {
         this.handle = handle;
     }
 
-    public excute(next: (data?: any) => boolean, retry: (timeout?: number) => boolean | 'ASYNC', end: (data?: any) => boolean) {
+    public execute(next: (data?: any) => boolean, retry: (timeout?: number) => boolean | 'ASYNC', end: (data?: any) => boolean) {
         this.handle(next, retry, end);
     }
 }
@@ -123,7 +123,7 @@ class Sync<T extends Array<any>> implements ITask<T> {
         if (index !== this.index) return false;
 
         const taskItem = this.list[index];
-        taskItem && taskItem.excute(
+        taskItem && taskItem.execute(
             (data?: any) => this.next(index, data),
             (timeout = 0) => Number(timeout) > 0 ? (setTimeout(() => this.retry(index), Number(timeout) * 1000), 'ASYNC') : this.retry(index),
             (data?: any) => this.end(data)
@@ -236,7 +236,7 @@ class ASync<T extends Array<any>> implements ITask<T> {
         }
 
         const taskItem = this.list[index];
-        taskItem && taskItem.excute(
+        taskItem && taskItem.execute(
             (data?: any) => this.next(index, data),
             (timeout = 0) => Number(timeout) > 0 ? (setTimeout(() => this.retry(index), Number(timeout) * 1000), 'ASYNC') : this.retry(index),
             (data?: any) => this.end(index, data)
@@ -283,7 +283,7 @@ class Any<T extends Array<any>> implements ITask<T> {
     }
 }
 
-interface IExcuteCallBack {
+interface IExecuteCallBack {
     (retry: (timeout?: number) => void): void
 }
 
@@ -316,18 +316,26 @@ const task = {
     },
 
     /**
-     * 还行单个任务
+     * 执行单个任务
      */
-    excute(fun: IExcuteCallBack, retryMax = -1, retryFinish?: Function) {
+    execute(fun: IExecuteCallBack, retryMax = -1, retryFinish?: Function) {
         fun(function retry(timeout = 0) {
             if (retryMax === 0) return retryFinish && retryFinish();
             retryMax = retryMax > 0 ? retryMax - 1 : retryMax;
             if (timeout > 0) {
-                setTimeout(() => task.excute(fun, retryMax, retryFinish), timeout * 1000);
+                setTimeout(() => task.execute(fun, retryMax, retryFinish), timeout * 1000);
             } else {
-                task.excute(fun, retryMax, retryFinish);
+                task.execute(fun, retryMax, retryFinish);
             }
         });
+    },
+
+    /**
+     * 执行单个任务
+     * @deprecated
+     */
+    excute(fun: IExecuteCallBack, retryMax = -1, retryFinish?: Function) {
+        return this.execute(fun, retryMax, retryFinish);
     }
 };
 

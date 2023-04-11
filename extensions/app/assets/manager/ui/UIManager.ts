@@ -826,7 +826,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
         // 判断ui是否有效
         const showLoadingUuid = this.showLoading();
-        Core.inst.lib.task.excute((retry) => {
+        Core.inst.lib.task.execute((retry) => {
             this.checkUIValid(name, data, (valid) => {
                 // 加载失败
                 if (valid === -1) {
