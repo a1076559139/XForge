@@ -9,7 +9,7 @@ import SoundManager from '../../../extensions/app/assets/manager/sound/SoundMana
 import TimerManager from '../../../extensions/app/assets/manager/timer/TimerManager'
 import UIManager from '../../../extensions/app/assets/manager/ui/UIManager'
 enum viewNames { 'PageGame','PageHome','PopTip'}
-const miniViewNames = {"PaperGameIndex":"PaperGame","PaperHomeIndex":"PaperHome"}
+const miniViewNames = {"PaperAllIndex":"PaperAll","PaperGameIndex":"PaperGame","PaperHomeIndex":"PaperHome"}
 enum musicNames { 'never'}
 enum effecNames { 'never'}
 

@@ -6,7 +6,7 @@ const { ccclass, property } = _decorator;
 @ccclass('PageHome')
 export class PageHome extends BaseView {
     // 子界面
-    protected miniViews: IMiniViewNames = ['PaperHomeIndex'];
+    protected miniViews: IMiniViewNames = ['PaperHomeIndex', 'PaperAllIndex'];
     // 初始化的相关逻辑写在这
     onLoad() { }
 

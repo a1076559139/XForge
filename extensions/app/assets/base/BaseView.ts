@@ -2,7 +2,6 @@ import { Asset, Component, Enum, EventTouch, js, Layers, Node, UITransform, Widg
 import { EDITOR } from 'cc/env';
 import { IMiniViewName, IMiniViewNames, IViewName } from '../../../../assets/app-builtin/app-admin/executor';
 import Core from '../Core';
-import UIManager from '../manager/ui/UIManager';
 import { IBaseControl } from './BaseControl';
 
 const { ccclass, property } = _decorator;
@@ -48,6 +47,15 @@ export interface IShowParamInnerLoad {
 
 export interface IHideParamOnHide<T = any> {
     (result: T): any
+}
+
+export type IViewType = 'Page' | 'Paper' | 'Pop' | 'Top';
+
+export enum ViewType {
+    Page = 'Page',
+    Paper = 'Paper',
+    Pop = 'Pop',
+    Top = 'Top'
 }
 
 interface IMiniOnShow {
@@ -126,17 +134,17 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         tooltip: '是否是单例模式\n1、单例模式: UI只会被创建一次(onShow会被重复触发)\n2、非单例模式: UI会被重复创建',
     })
     protected get singleton(): boolean {
-        if (this._base_view_name?.indexOf('Page') === 0) return true;
-        if (this._base_view_name?.indexOf('Paper') === 0) return true;
+        if (this._base_view_name?.indexOf(ViewType.Page) === 0) return true;
+        if (this._base_view_name?.indexOf(ViewType.Paper) === 0) return true;
         return this._singleton && (<typeof BaseView>this.constructor)._singleton;
     }
     protected set singleton(value) {
         if (!value) {
-            if (this._base_view_name?.indexOf('Page') === 0) {
+            if (this._base_view_name?.indexOf(ViewType.Page) === 0) {
                 this.log('Page只能是单例模式');
                 return;
             }
-            if (this._base_view_name?.indexOf('Paper') === 0) {
+            if (this._base_view_name?.indexOf(ViewType.Paper) === 0) {
                 this.log('Paper只能是单例模式');
                 return;
             }
@@ -175,7 +183,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     })
     protected get shade() {
         if (this.node?.layer !== Layers.Enum.UI_2D) return false;
-        if (this._base_view_name?.indexOf('Page') === 0) return false;
+        if (this._base_view_name?.indexOf(ViewType.Page) === 0) return false;
         return this._shade;
     }
     protected set shade(value) {
@@ -184,7 +192,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
                 this.log('只有UI_2D可以设置底层遮罩');
                 return;
             }
-            if (this._base_view_name?.indexOf('Page') === 0) {
+            if (this._base_view_name?.indexOf(ViewType.Page) === 0) {
                 this.log('Page不可以设置底层遮罩');
                 return;
             }
@@ -233,6 +241,17 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         return this._base_view_name;
     }
 
+    public get viewBaseName() {
+        return this._base_view_name.slice(this.viewTypeName.length);
+    }
+
+    public get viewTypeName() {
+        if (this._base_view_name.indexOf(ViewType.Paper) === 0) return ViewType.Paper;
+        if (this._base_view_name.indexOf(ViewType.Pop) === 0) return ViewType.Pop;
+        if (this._base_view_name.indexOf(ViewType.Top) === 0) return ViewType.Top;
+        return ViewType.Page;
+    }
+
     /**
      * 是否是单例模式
      */
@@ -272,11 +291,11 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     resetInEditor(): any {
         if (EDITOR) {
             const is3D = this.node.layer !== Layers.Enum.UI_2D;
-            if (this.viewName.toLocaleLowerCase().startsWith('page')) {
+            if (this.viewName.indexOf(ViewType.Page)) {
                 this.shade = false;
                 this.blockInput = is3D ? false : true;
                 this.captureFocus = is3D ? false : true;
-            } else if (this.viewName.toLocaleLowerCase().startsWith('paper')) {
+            } else if (this.viewName.indexOf(ViewType.Paper)) {
                 this.shade = false;
                 this.captureFocus = false;
                 this.blockInput = false;
@@ -376,6 +395,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     protected showMiniViews({ data, views, onShow, onHide, onFinish }: { data?: any, views: Array<IMiniViewName | IMiniViewNames>, onShow?: IMiniOnShow, onHide?: IMiniOnHide, onFinish?: IMiniOnFinish }) {
         if (this.miniViews.length === 0) return false;
         if (views.length === 0) return false;
+        if (this.viewTypeName !== ViewType.Page) return false;
 
         const task = Core.inst.lib.task.createSync();
 
@@ -404,6 +424,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         const task = Core.inst.lib.task.createSync();
 
         if (this.miniViews.length === 0) return task;
+        if (this.viewTypeName !== ViewType.Page) return task;
 
         views = views.filter(name => {
             if (this._base_mini_show.has(name)) {
@@ -414,6 +435,11 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
                 this.warn('[showMiniViews]', `${name}不在miniViews中, 已跳过`);
                 return false;
             }
+            if (name.indexOf(this.viewBaseName) !== ViewType.Paper.length && name.indexOf('All') !== ViewType.Paper.length) {
+                this.warn('[showMiniViews]', `${name}不属于当前Page, 已跳过`);
+                return false;
+            }
+
             this._base_mini_show.add(name);
             return true;
         });
@@ -456,7 +482,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
                             if (onHide) onHide(name, result);
                         },
                         onError: (result, code) => {
-                            if (code === UIManager.ErrorCode.LoadError) return true;
+                            if (code === Core.inst.Manager.UI.ErrorCode.LoadError) return true;
                             this._base_mini_show.delete(name);
                             this.warn('[mixin-show]', name, result, '已跳过');
                             next();

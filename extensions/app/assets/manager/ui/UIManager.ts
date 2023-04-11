@@ -2,7 +2,7 @@ import { Asset, AssetManager, Component, error, Event, find, instantiate, isVali
 import { DEBUG } from 'cc/env';
 import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
 import BaseManager from '../../base/BaseManager';
-import BaseView, { IHideParamOnHide, IShowParamAttr, IShowParamOnHide, IShowParamOnShow } from '../../base/BaseView';
+import BaseView, { IHideParamOnHide, IShowParamAttr, IShowParamOnHide, IShowParamOnShow, IViewType, ViewType } from '../../base/BaseView';
 import Core from '../../Core';
 import UIMgrShade from '../../manager/ui/comp/UIMgrShade';
 import UIMgrZOrder from '../../manager/ui/comp/UIMgrZOrder';
@@ -43,8 +43,7 @@ interface IHideParams<T, IHide = any, IHideReturn = any> {
 
 const UIRoot3D = 'Root3D/UserInterface';
 const UIRoot2D = 'Root2D/UserInterface';
-type IUITypes = ('Page' | 'Paper' | 'Pop' | 'Top')[];
-const UITypes: IUITypes = ['Page', 'Paper', 'Pop', 'Top'];
+const ViewTypes = [ViewType.Page, ViewType.Paper, ViewType.Pop, ViewType.Top];
 
 type IPreload = (IViewName | IMiniViewName | Array<IViewName | IMiniViewName>)[];
 type IShade = {
@@ -137,7 +136,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         this.UIRoot2D = find(UIRoot2D);
         this.UIRoot3D = find(UIRoot3D);
 
-        this.initUITouchs();
+        this.initUITouches();
         this.initUITypes();
 
         this.shade = instantiate(this.shadePre);
@@ -148,14 +147,14 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         this.loading.active = false;
     }
 
-    private initUITouchs() {
+    private initUITouches() {
         for (let i = 0; i < BlockEvents.length; i++) {
             this.UIRoot2D.on(BlockEvents[i], this.stopPropagation, this, true);
         }
     }
 
     private initUITypes() {
-        UITypes.forEach((type) => {
+        ViewTypes.forEach((type) => {
             const d3 = new Node(type);
             d3.layer = Layers.Enum.UI_3D;
             d3.addComponent(UIMgrZOrder);
@@ -423,21 +422,14 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     /**
-     * 获取前缀，并首字母转小写
-     * @param {String} uiName 驼峰命名法，前缀小写。例如：PopInfo，前缀为pop
+     * 获取前缀
+     * @param uiName    ui名字
      */
-    private getPrefix(uiName: string): 'page' | 'pop' | 'top';
-    private getPrefix(uiName: string, lowercase: true): 'page' | 'pop' | 'top';
-    private getPrefix(uiName: string, lowercase: false): 'Page' | 'Pop' | 'Top';
-    private getPrefix(uiName: string, lowercase = true): string {
-        for (let index = 0; index < UITypes.length; index++) {
-            const name = UITypes[index];
+    private getPrefix(uiName: string): ViewType {
+        for (let index = 0; index < ViewTypes.length; index++) {
+            const name = ViewTypes[index];
             if (uiName.indexOf(name) === 0) {
-                if (lowercase) {
-                    return name.toLowerCase();
-                } else {
-                    return name;
-                }
+                return name;
             }
         }
         this.error(`[getPrefix] ${uiName}`);
@@ -452,11 +444,11 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 根据UI名字获取其父节点是谁
      */
     private getUIParent(name: string, is2D: boolean): Node {
-        const prefix = this.isMiniView(name) ? 'paper' : this.getPrefix(name);
+        const prefix = this.getPrefix(name);
 
-        for (let index = 0; index < UITypes.length; index++) {
-            const name = UITypes[index];
-            if (name.toLowerCase() === prefix) {
+        for (let index = 0; index < ViewTypes.length; index++) {
+            const name = ViewTypes[index];
+            if (name === prefix) {
                 if (is2D) {
                     return this.UIRoot2D.getChildByName(name);
                 } else {
@@ -473,12 +465,12 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 根据UI名字查询可能的父节点
      */
     private searchUIParents(name: string): Node[] {
-        const prefix = this.isMiniView(name) ? 'paper' : this.getPrefix(name);
+        const prefix = this.getPrefix(name);
 
-        for (let index = 0; index < UITypes.length; index++) {
-            const name = UITypes[index];
-            if (name.toLowerCase() === prefix) {
-                return [this.UIRoot2D.getChildByName(name), this.UIRoot3D.getChildByName(name)];
+        for (let index = 0; index < ViewTypes.length; index++) {
+            const viewType = ViewTypes[index];
+            if (viewType === prefix) {
+                return [this.UIRoot2D.getChildByName(viewType), this.UIRoot3D.getChildByName(viewType)];
             }
         }
 
@@ -490,7 +482,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 是否是子界面
      */
     private isMiniView(name: string): boolean {
-        return name.toLowerCase().indexOf('paper') >= 0;
+        return name.indexOf(ViewType.Paper) === 0;
     }
 
     /**
@@ -1046,7 +1038,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 立即给2DUI的子节点排序
      */
-    public sortUIRoot2D(name: IUITypes[0]) {
+    public sortUIRoot2D(name: IViewType) {
         this.UIRoot2D
             ?.getChildByName(name)
             ?.getComponent(UIMgrZOrder)

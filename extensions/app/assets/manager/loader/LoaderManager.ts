@@ -122,4 +122,29 @@ export default class LoaderManager extends BaseManager {
         const b = assetManager.getBundle(bundle);
         if (b) assetManager.removeBundle(b);
     }
+
+    /**
+     * 加载远程资源
+     * @example
+     * loadRemote({url:'', ext:'.png', onComplete:(){result}})
+     */
+    public loadRemote({ url, ext, onComplete }: { url: string, ext?: string, onComplete?: (result: any) => void }) {
+        if (ext) {
+            assetManager.loadRemote(url, { ext }, (error, res) => {
+                if (error) {
+                    this.error(`loadRemote ${url} fail`);
+                    return onComplete && onComplete(null);
+                }
+                onComplete && onComplete(res);
+            });
+        } else {
+            assetManager.loadRemote(url, (error, res) => {
+                if (error) {
+                    this.error(`loadRemote ${url} fail`);
+                    return onComplete && onComplete(null);
+                }
+                onComplete && onComplete(res);
+            });
+        }
+    }
 }
