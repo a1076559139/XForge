@@ -11,10 +11,12 @@
 ⚠️: 使用vscode推荐安装 Code Spell Checker 插件。<br/>
 
 # 使用
-## 0、初始化
+## 0、初始化项目
 * 在空文件夹下执行```npx --registry=https://registry.npmjs.org @gamex/cc-cli@latest```
-## 1、更新框架
+## 1、更新项目框架
 * 在项目根目录下执行```npm run upgrade```
+## 2、使用内置package
+* 在项目根目录下执行```npm run package```
 
 # 关键点
 ## 0、ESLint
@@ -80,18 +82,17 @@ app.manager.event.targetOff
 ## 5、全局loader
 * 对cc.assetManager的一些简单封装
 ```
-app.manager.loader
+app.manager.loader.load
+app.manager.loader.loadDir
+app.manager.loader.preload
 ```
 
 ## 6、全局库
 ```
-// 任务：同时、顺序、组合、重试
+// 任务: 执行同时执行、顺序执行、组合执行、重试等能力，比Promise更好用
 app.lib.task
-// storage
+// 本地存储: 永久存、按天存、按周存
 app.lib.storage
-// http
-app.lib.http
-// 等等
 ```
 
 ## 7、自定义Manager
@@ -118,9 +119,9 @@ app.data.xxx
 app.config.xxx
 ```
 
-## 10、使用扩展包
+## 10、使用扩展包(package)
 可以使用一些基于npm管理的扩展包
-* 这是内置的扩展包
+* 使用内置的扩展包
 ```
 // 项目根目录下执行
 npm run package
@@ -134,11 +135,13 @@ import {} from 'db://pkg/@gamex/xxx'
 npm run pkg:add @xxx/test
 // 项目根目录下执行移除
 npm run pkg:remove @xxx/test
+// 项目根目录下执行更新
+npm run pkg:update
 
 // 在项目中使用
 import {} from 'db://pkg/@xxx/test'
 ```
-以上添加或删除操作，如果导致编辑器报错，则尝试点击资源管理器右上角的「刷新按钮」，或菜单[开发者->缓存->代码缓存]，报错问题即可解决(CocosCreator资源管理器的BUG)。
+以上添加或删除操作，如果导致`编辑器报错`或`运行时代码`没有更新，则尝试点击资源管理器右上角的「`刷新按钮`」，或`菜单[开发者->缓存->代码缓存]`，报错问题即可解决(CocosCreator资源管理器的BUG)。
 
 ## 11、其它
 * assets/app-appinit为游戏首屏页面，可以渲染loading内容，也可以去初始化一些业务需要的东西
