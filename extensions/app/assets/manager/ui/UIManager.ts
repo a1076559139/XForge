@@ -249,6 +249,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             })
             .start((results) => {
                 if (!results[1]) return complete && complete(false);
+                results[1]?.addRef();
                 this.prefabCache[name] = results[1];
                 return complete && complete(true);
             });
@@ -258,6 +259,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 卸载UI
      */
     private uninstallUI(name: string) {
+        this.prefabCache[name]?.decRef();
         delete this.prefabCache[name];
         const naBundle = this.getNativeBundleName(name);
         const resBundle = this.getResBundleName(name);
@@ -619,7 +621,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     // 解析prefab
-    private analyPrefab(prefab: Prefab) {
+    private parsingPrefab(prefab: Prefab) {
         if (!prefab) return null;
         let node = instantiate(prefab);
         node.active = false;
@@ -679,7 +681,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             // 验证是否是单例(一个单例会有被同时load多次的情况，因为判断一个ui是否是单例，必须要至少实例化一个后才能获取)
             let node = this.getUIInScene(name);
             if (!isValid(node, true) || this.getBaseView(node).isSingleton === false) {
-                node = this.analyPrefab(prefab);
+                node = this.parsingPrefab(prefab);
             }
 
             callback(node);
