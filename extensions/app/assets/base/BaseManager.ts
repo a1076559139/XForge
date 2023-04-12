@@ -1,4 +1,4 @@
-import { AssetManager, assetManager, Component, error, EventTarget, find, instantiate, js, log, Node, Prefab, settings, warn, Widget, _decorator } from 'cc';
+import { AssetManager, assetManager, Component, error, EventTarget, find, instantiate, js, path, Prefab, settings, warn, Widget, _decorator } from 'cc';
 import { DEBUG, EDITOR } from 'cc/env';
 import Core from '../Core';
 
@@ -19,6 +19,47 @@ const uuid = new class UUID {
 };
 
 const BundleName = 'app-manager';
+
+function black(arg1: string, arg2: string) {
+    console.log(
+        `%c ${arg1} %c ${arg2} %c`,
+        'background:#3e4145 ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #3e4145; color: #fff;',
+        'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #3e4145; color: #3e4145;',
+        'background:transparent'
+    );
+}
+function yellow(arg1: string, arg2: string) {
+    console.log(
+        `%c ${arg1} %c ${arg2} %c`,
+        'background:#dea32c ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #dea32c; color: #fff;',
+        'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #dea32c; color: #dea32c;',
+        'background:transparent'
+    );
+}
+function green(arg1: string, arg2: string) {
+    console.log(
+        `%c ${arg1} %c ${arg2} %c`,
+        'background:#00ae9d ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #00ae9d; color: #fff;',
+        'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #00ae9d; color: #00ae9d;',
+        'background:transparent'
+    );
+}
+function orange(arg1: string, arg2: string) {
+    console.log(
+        `%c ${arg1} %c ${arg2} %c`,
+        'background:#ff7f50 ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff7f50; color: #fff;',
+        'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff7f50; color: #ff7f50;',
+        'background:transparent'
+    );
+}
+function red(arg1: string, arg2: string) {
+    console.log(
+        `%c ${arg1} %c ${arg2} %c`,
+        'background:#ff4757 ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff4757; color: #fff;',
+        'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff4757; color: #ff4757;',
+        'background:transparent'
+    );
+}
 
 @ccclass('BaseManager')
 export default class BaseManager extends Component {
@@ -92,13 +133,33 @@ export default class BaseManager extends Component {
     }
 
     protected log(...args: any[]) {
-        console.log(`[${this._base_manager_name}]`, ...args);
+        console.log(
+            `%c ${this._base_manager_name} %c %s %c`,
+            'background:#1e90ff ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #1e90ff; color: #fff;',
+            'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #1e90ff; color: #1e90ff;',
+            ...args,
+            'background:transparent'
+        );
     }
+
     protected warn(...args: any[]) {
-        console.warn(`[${this._base_manager_name}]`, ...args);
+        console.log(
+            `%c ${this._base_manager_name} %c %s %c`,
+            'background:#eccc68 ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #eccc68; color: #fff;',
+            'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #eccc68; color: #eccc68;',
+            ...args,
+            'background:transparent'
+        );
     }
+
     protected error(...args: any[]) {
-        console.error(`[${this._base_manager_name}]`, ...args);
+        console.error(
+            `%c ${this._base_manager_name} %c %s %c`,
+            'background:#ff4757 ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff4757; color: #fff;',
+            'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff4757; color: #ff4757;',
+            ...args,
+            'background:transparent'
+        );
     }
 
     public emit(event: string | number, ...data) {
@@ -146,11 +207,11 @@ export default class BaseManager extends Component {
      * @returns 
      */
     public static stringCaseNegate(str: string) {
-        return str.replace(/[A-Z]/g, (serchStr, startIndex) => {
+        return str.replace(/[A-Z]/g, (searchStr, startIndex) => {
             if (startIndex === 0) {
-                return serchStr.toLocaleLowerCase();
+                return searchStr.toLocaleLowerCase();
             } else {
-                return '-' + serchStr.toLocaleLowerCase();
+                return '-' + searchStr.toLocaleLowerCase();
             }
         });
     }
@@ -238,13 +299,13 @@ export default class BaseManager extends Component {
 
         const onProgress = function (next: Function, manager: BaseManager) {
             if (DEBUG) {
-                const time = window?.performance?.now ? performance.now() : Date.now();
-                log(`[BaseManager] [began] %c${manager.managerName}`, 'color:red');
+                const startTime = window?.performance?.now ? performance.now() : Date.now();
+                black('BaseManager', `[初始化开始] ${manager.managerName}`);
                 return function () {
                     manager.onInited();
                     if (DEBUG) {
-                        log(`[BaseManager] [ended] %c${manager.managerName}`, 'color:green');
-                        log(`%c${manager.managerName}: ${(window?.performance?.now ? performance.now() : Date.now()) - time} ms`, 'color:orange');
+                        const endTime = window?.performance?.now ? performance.now() : Date.now();
+                        green(manager.managerName, `[初始化完成] ${(endTime - startTime).toFixed(6)} ms`);
                     }
                     progress && progress(++completeAsset, totalAsset);
                     next();
@@ -257,28 +318,53 @@ export default class BaseManager extends Component {
             };
         };
 
+        // 用户manager(动态添加)
+        const userMgrList: BaseManager[] = [];
+        // 系统manager(静态内置)
+        const sysMgrList: BaseManager[] = [Core.inst.manager.event, Core.inst.manager.timer, Core.inst.manager.loader, Core.inst.manager.sound, Core.inst.manager.ui] as any as BaseManager[];
+
         // 初始化系统manager
-        const aSync1 = Core.inst.lib.task.createASync();
-        const sysMgr = [Core.inst.manager.event, Core.inst.manager.timer, Core.inst.manager.loader, Core.inst.manager.sound, Core.inst.manager.ui] as any as BaseManager[];
-        sysMgr.forEach(function (manager: BaseManager) {
-            aSync1.add(function (next) {
+        const initSysMgrTask = Core.inst.lib.task.createASync();
+        sysMgrList.forEach(function (manager: BaseManager) {
+            initSysMgrTask.add(function (next) {
                 manager.init(onProgress(next, manager));
             });
         });
 
         // 加载用户manager
-        const aSync2 = Core.inst.lib.task.createASync();
+        const loadUserMgrTask = Core.inst.lib.task.createASync();
         const userManagerRoot = find(UserManagerRoot);
         urls.forEach(function (url) {
-            aSync2.add(function (next, retry) {
+            loadUserMgrTask.add(function (next, retry) {
+                if (DEBUG) {
+                    const managerName = path.basename(url);
+                    const startTime = window?.performance?.now ? performance.now() : Date.now();
+                    yellow('BaseManager', `[下载开始] ${managerName}`);
+                    bundle.load(url, Prefab, function (err, prefab: Prefab) {
+                        if (err || !prefab) {
+                            red('BaseManager', `[initManager] load ${url} fail, retry...`);
+                            retry(0.1);
+                        } else {
+                            const endTime = window?.performance?.now ? performance.now() : Date.now();
+                            orange(managerName, `[下载完成] ${(endTime - startTime).toFixed(6)} ms`);
+                            const node = instantiate(prefab);
+                            node.parent = userManagerRoot;
+                            node.active = true;
+                            userMgrList.push(node.getComponent(BaseManager));
+                            next();
+                        }
+                    });
+                    return;
+                }
                 bundle.load(url, Prefab, function (err, prefab: Prefab) {
                     if (err || !prefab) {
-                        log(`[BaseManager] [initManager] load ${url} fail, retry...`);
+                        red('BaseManager', `[initManager] load ${url} fail, retry...`);
                         retry(0.1);
                     } else {
-                        const node: Node = instantiate(prefab);
-                        node.active = true;
+                        const node = instantiate(prefab);
                         node.parent = userManagerRoot;
+                        node.active = true;
+                        userMgrList.push(node.getComponent(BaseManager));
                         next();
                     }
                 });
@@ -287,34 +373,42 @@ export default class BaseManager extends Component {
 
         Core.inst.lib.task.createAny()
             .add([
-                next => aSync1.start(next),
-                next => aSync2.start(next),
+                next => initSysMgrTask.start(next),
+                next => loadUserMgrTask.start(next),
             ])
             .add(function (next) {
                 Core.emit(Core.EventType.EVENT_SYS_MANAGER_INITED);
+                next();
+            })
+            .add(function (next) {
                 // 初始化用户manager
-                const aSync3 = Core.inst.lib.task.createASync();
-                userManagerRoot.children.forEach(node => {
-                    aSync3.add(function (next) {
-                        const manager = node.getComponent(BaseManager);
+                const initUserMgrTask = Core.inst.lib.task.createASync();
+                userMgrList.forEach(manager => {
+                    initUserMgrTask.add(function (next) {
                         manager.init(onProgress(next, manager));
                     });
                 });
-                aSync3.start(next);
+                initUserMgrTask.start(next);
             })
-            .start(function () {
+            .add(function (next) {
                 Core.emit(Core.EventType.EVENT_USER_MANAGER_INITED);
                 Core.emit(Core.EventType.EVENT_MANAGER_INITED);
-                sysMgr.forEach(function (manager: BaseManager) {
+                next();
+            })
+            .add(function (next) {
+                // 所有manager初始化完成后，触发回调
+                sysMgrList.forEach(function (manager) {
                     manager.onFinished();
                 });
-
-                userManagerRoot.children.forEach(function (node) {
-                    const manager = node.getComponent(BaseManager);
+                userMgrList.forEach(function (manager) {
                     manager.onFinished();
                 });
+                next();
+            })
+            .start(function () {
                 Core.emit(Core.EventType.EVENT_MANAGER_FINISHED);
                 complete && complete(totalAsset);
             });
     }
+
 }

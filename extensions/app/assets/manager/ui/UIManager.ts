@@ -1003,7 +1003,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * @param {*} enabled 
      */
     public setTouchEnabled(enabled: boolean) {
-        this.log('setTouchEnabled', enabled);
+        this.log(`setTouchEnabled ${enabled}`);
         this.touchEnabled = !!enabled;
     }
 

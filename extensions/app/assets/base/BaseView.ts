@@ -670,13 +670,33 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     }
 
     protected log(...args: any[]) {
-        console.log(`[${this._base_view_name}]`, ...args);
+        console.log(
+            `%c ${this._base_view_name} %c %s %c`,
+            'background:#1e90ff ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #1e90ff; color: #fff;',
+            'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #1e90ff; color: #1e90ff;',
+            args.join(' '),
+            'background:transparent'
+        );
     }
+
     protected warn(...args: any[]) {
-        console.warn(`[${this._base_view_name}]`, ...args);
+        console.log(
+            `%c ${this._base_view_name} %c %s %c`,
+            'background:#eccc68 ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #eccc68; color: #fff;',
+            'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #eccc68; color: #eccc68;',
+            args.join(' '),
+            'background:transparent'
+        );
     }
+
     protected error(...args: any[]) {
-        console.error(`[${this._base_view_name}]`, ...args);
+        console.error(
+            `%c ${this._base_view_name} %c %s %c`,
+            'background:#ff4757 ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff4757; color: #fff;',
+            'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff4757; color: #ff4757;',
+            args.join(' '),
+            'background:transparent'
+        );
     }
 
     // 以下为可重写

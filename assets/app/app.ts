@@ -19,7 +19,9 @@ export class App extends Core<IApp> {
 export const app = App.inst;
 
 if (DEBUG) {
+    //@ts-ignore
     window['app'] = app;
+    //@ts-ignore
     window['App'] = App;
 }
 

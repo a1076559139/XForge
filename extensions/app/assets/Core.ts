@@ -1,7 +1,4 @@
 import { Component, EventTarget } from 'cc';
-import http from './lib/http/http';
-import Queue from './lib/queue/queue';
-import Socket from './lib/socket/socket';
 import storage from './lib/storage/storage';
 import task from './lib/task/task';
 import EventManager from './manager/event/EventManager';
@@ -26,7 +23,7 @@ enum EventType {
 type IData = { [key in string]: any };
 type IConfig = { [key in string]: any };
 
-interface IManager {
+interface ITypeofManager {
     Loader: Omit<typeof LoaderManager, keyof Component>,
     Event: Omit<typeof EventManager, keyof Component>,
     Sound: Omit<typeof SoundManager, keyof Component>,
@@ -34,7 +31,7 @@ interface IManager {
     UI: Omit<typeof UIManager, keyof Component>
 }
 
-interface Imanager {
+interface IManager {
     loader: Omit<LoaderManager, keyof Component>,
     event: Omit<EventManager, keyof Component>,
     sound: Omit<SoundManager<any, any>, keyof Component>,
@@ -45,12 +42,12 @@ interface Imanager {
 interface ICore {
     data: IData,
     config: IConfig,
-    manager: Imanager,
-    Manager: IManager
+    manager: IManager,
+    Manager: ITypeofManager
 }
 
 const EventMap = {};
-const Lib = { task, http, queue: Queue, socket: Socket, storage };
+const Lib = { task, storage };
 const Config = {};
 const Data = {};
 const Manager = {};
