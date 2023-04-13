@@ -132,5 +132,8 @@ async function main() {
             fs.writeFileSync(metapath, metaMap[metapath], 'utf-8');
         }
     }
+
+    console.log('⚠️: 如果编辑器报错，请点击资源管理器右上角的刷新按钮');
+    console.log('⚠️: 如果运行时代码没更新，请点击编辑器菜单「开发者->缓存->清除代码缓存」');
 }
 main();
