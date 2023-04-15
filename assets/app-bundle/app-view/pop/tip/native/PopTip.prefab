@@ -430,7 +430,7 @@
       "a": 255
     },
     "_spriteFrame": {
-      "__uuid__": "18d11694-012a-4bac-9a65-6065f7c24da8@f9941",
+      "__uuid__": "0f5fe594-ff84-41f7-9b51-51f895dddf62@f9941",
       "__expectedType__": "cc.SpriteFrame"
     },
     "_type": 0,
@@ -498,10 +498,7 @@
       "b": 124,
       "a": 255
     },
-    "_normalSprite": {
-      "__uuid__": "18d11694-012a-4bac-9a65-6065f7c24da8@f9941",
-      "__expectedType__": "cc.SpriteFrame"
-    },
+    "_normalSprite": null,
     "_hoverSprite": null,
     "_pressedSprite": null,
     "_disabledSprite": null,
@@ -547,7 +544,7 @@
     },
     "hideEvent": 1,
     "_singleton": true,
-    "captureFocus": true,
+    "_captureFocus": true,
     "_shade": true,
     "_blockInput": true,
     "_id": ""

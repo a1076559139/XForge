@@ -1,4 +1,4 @@
-import { Asset, AssetManager, Component, error, Event, find, instantiate, isValid, js, Layers, Node, Prefab, Scene, Settings, settings, UITransform, Widget, _decorator } from 'cc';
+import { Asset, assetManager, AssetManager, Component, error, Event, find, instantiate, isValid, js, Layers, Node, Prefab, Scene, Settings, settings, UITransform, Widget, _decorator } from 'cc';
 import { DEBUG } from 'cc/env';
 import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
 import BaseManager from '../../base/BaseManager';
@@ -248,9 +248,19 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 });
             })
             .start((results) => {
-                if (!results[1]) return complete && complete(false);
-                results[1]?.addRef();
-                this.prefabCache[name] = results[1];
+                const prefab = results[1];
+                if (!prefab) {
+                    return complete && complete(false);
+                }
+                // 添加引用计数
+                prefab.addRef();
+                // @ts-ignore
+                const assetUUID = prefab['uuid'] || prefab['_uuid'];
+                assetManager.dependUtil.getDeps(assetUUID)?.forEach((uuid) => {
+                    assetManager.assets.get(uuid)?.addRef();
+                });
+                // 保存prefab在内存中
+                this.prefabCache[name] = prefab;
                 return complete && complete(true);
             });
     }
@@ -259,14 +269,23 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 卸载UI
      */
     private uninstallUI(name: string) {
-        this.prefabCache[name]?.decRef();
+        const prefab = this.prefabCache[name];
         delete this.prefabCache[name];
+        if (prefab) {
+            // 释放引用计数
+            // @ts-ignore
+            const assetUUID = prefab['uuid'] || prefab['_uuid'];
+            assetManager.dependUtil.getDeps(assetUUID)?.forEach((uuid) => {
+                assetManager.assets.get(uuid)?.decRef();
+            });
+            prefab.decRef();
+        }
         const naBundle = this.getNativeBundleName(name);
         const resBundle = this.getResBundleName(name);
-        Core.inst.manager.loader.releaseAll(resBundle);
-        Core.inst.manager.loader.releaseAll(naBundle);
-        Core.inst.manager.loader.removeBundle(resBundle);
-        Core.inst.manager.loader.removeBundle(naBundle);
+        Core.inst.manager.loader.releaseUnused(resBundle);
+        Core.inst.manager.loader.releaseUnused(naBundle);
+        // Core.inst.manager.loader.removeBundle(resBundle);
+        // Core.inst.manager.loader.removeBundle(naBundle);
     }
 
     /**
