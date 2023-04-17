@@ -1,12 +1,12 @@
 import { AssetManager, AudioClip, Game, game, sys, _decorator } from 'cc';
-import { IEffecName, IMusicName } from '../../../../../assets/app-builtin/app-admin/executor';
+import { IEffectName, IMusicName } from '../../../../../assets/app-builtin/app-admin/executor';
 import BaseManager from '../../base/BaseManager';
 import Core from '../../Core';
 import AudioEngine from './AudioEngine';
 const { ccclass } = _decorator;
 
-interface playMusic<T> { name: T, volum?: number, force?: boolean, onPlay?: Function, onError?: Function }
-interface playEffect<T> { name: T, volum?: number, loop?: boolean, interval?: number, onPlay?: Function, onError?: Function, onEnded?: Function }
+interface playMusic<T> { name: T, volume?: number, force?: boolean, onPlay?: Function, onError?: Function }
+interface playEffect<T> { name: T, volume?: number, loop?: boolean, interval?: number, onPlay?: Function, onError?: Function, onEnded?: Function }
 
 const storage = {
     set(key: string, value: any) {
@@ -30,7 +30,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
     /**静态设置 */
     static setting: {
         /**预加载 */
-        preload?: (IMusicName | IEffecName)[],
+        preload?: (IMusicName | IEffectName)[],
         /**音乐静音缓存key名 */
         musicMuteCacheKey?: string,
         /**音效静音缓存key名 */
@@ -38,18 +38,18 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         /**默认播放的音乐名 */
         defaultMusicName?: IMusicName | '',
         /**默认音乐音量: 0-1 */
-        defaultMusicVolum?: number
+        defaultMusicVolume?: number
     } = {};
 
     private musicMuteCacheKey = 'musicMute';
     private effectMuteCacheKey = 'effectMute';
 
     private defaultMusicName = '';
-    private defaultMusicVolum = 1;
+    private defaultMusicVolume = 1;
 
     private audioCache = {};
     private effectInterval: { [key in string]: number } = {};
-    private playingMusic = { id: -1, name: '', volum: 1 };
+    private playingMusic = { id: -1, name: '', volume: 1 };
 
     protected init(finish: Function) {
         const setting = SoundManager.setting;
@@ -57,7 +57,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         if (setting.musicMuteCacheKey) this.musicMuteCacheKey = setting.musicMuteCacheKey;
         if (setting.effectMuteCacheKey) this.musicMuteCacheKey = setting.effectMuteCacheKey;
         if (setting.defaultMusicName) this.defaultMusicName = setting.defaultMusicName;
-        if (typeof setting.defaultMusicVolum === 'number') this.defaultMusicVolum = setting.defaultMusicVolum;
+        if (typeof setting.defaultMusicVolume === 'number') this.defaultMusicVolume = setting.defaultMusicVolume;
 
         if (this.musicMuteCacheKey) {
             const musicMute = storage.get(this.musicMuteCacheKey) === true;
@@ -170,7 +170,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
      */
     public playDefaultMusic(onPlay?: Function) {
         if (this.defaultMusicName) {
-            this.playMusic({ name: <M>this.defaultMusicName, volum: this.defaultMusicVolum, onPlay });
+            this.playMusic({ name: <M>this.defaultMusicName, volume: this.defaultMusicVolume, onPlay });
         } else {
             this.warn('defaultMusicName 不存在');
         }
@@ -180,7 +180,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
      * 
      * @param {Number} interval 多少秒内不会重复播放
      */
-    public playEffect({ name, volum = 1, loop = false, interval = 0, onEnded, onPlay, onError }: playEffect<E> = { name: <E>'' }) {
+    public playEffect({ name, volume = 1, loop = false, interval = 0, onEnded, onPlay, onError }: playEffect<E> = { name: <E>'' }) {
         // 静音不允许播放
         if (this.isEffectMute) return;
         // 正在播放中，不允许重复播放
@@ -194,7 +194,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
             if (this.effectInterval[name] && Date.now() < this.effectInterval[name]) return;
 
             if (audioClip) {
-                const id = AudioEngine.inst.playEffect(audioClip, volum, loop);
+                const id = AudioEngine.inst.playEffect(audioClip, volume, loop);
 
                 if (onEnded) AudioEngine.inst.setEndedCallback(id, onEnded);
 
@@ -234,12 +234,12 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         return AudioEngine.inst.stopAllEffects();
     }
 
-    public playMusic({ name, volum = 1, force = false, onPlay, onError }: playMusic<M> = { name: <M>'' }) {
+    public playMusic({ name, volume = 1, force = false, onPlay, onError }: playMusic<M> = { name: <M>'' }) {
         if (!name) return onError && onError(0);
 
         // 该音乐正在播放中
         if (!force && this.playingMusic.id !== -1 && this.playingMusic.name === name) {
-            AudioEngine.inst.setMusicVolume(volum);
+            AudioEngine.inst.setMusicVolume(volume);
             return onPlay && onPlay();
         }
 
@@ -249,7 +249,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         // 记录要播放音乐的名字
         this.playingMusic.name = name;
         // 记录要播放音乐的音量
-        this.playingMusic.volum = volum;
+        this.playingMusic.volume = volume;
 
         // 静音
         if (this.isMusicMute) return onError && onError(2);
@@ -268,7 +268,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
                 return;
             }
 
-            this.playingMusic.id = AudioEngine.inst.playMusic(audioClip, volum);
+            this.playingMusic.id = AudioEngine.inst.playMusic(audioClip, volume);
 
             onPlay && onPlay();
         });
@@ -283,7 +283,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
     }
 
     public stopMusic() {
-        this.playingMusic.volum = 1;
+        this.playingMusic.volume = 1;
         this.playingMusic.name = '';
         this.playingMusic.id = -1;
         return AudioEngine.inst.stopMusic();

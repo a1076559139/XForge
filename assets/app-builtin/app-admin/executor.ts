@@ -11,7 +11,7 @@ import UIManager from '../../../extensions/app/assets/manager/ui/UIManager'
 enum viewNames { 'PageGame','PageHome','PopTip'}
 const miniViewNames = {"PaperAllIndex":"PaperAll","PaperGameIndex":"PaperGame","PaperHomeIndex":"PaperHome"}
 enum musicNames { 'never'}
-enum effecNames { 'never'}
+enum effectNames { 'never'}
 
 export type IViewName = keyof typeof viewNames
 export type IViewNames = IViewName[]
@@ -19,15 +19,15 @@ export type IMiniViewName = keyof typeof miniViewNames
 export type IMiniViewNames = IMiniViewName[]
 export type IMusicName = keyof typeof musicNames
 export type IMusicNames = IMusicName[]
-export type IEffecName = keyof typeof effecNames
-export type IEffecNames = IEffecName[]
+export type IEffectName = keyof typeof effectNames
+export type IEffectNames = IEffectName[]
 
 if(!EDITOR||DEV) Object.assign(app.data, {})
 if(!EDITOR||DEV) Object.assign(app.config, {})
 
 export type IApp = {
     Manager: {Event:Omit<typeof EventManager,keyof Component>,Loader:Omit<typeof LoaderManager,keyof Component>,Sound:Omit<typeof SoundManager,keyof Component>,Timer:Omit<typeof TimerManager,keyof Component>,UI:Omit<typeof UIManager,keyof Component>},
-    manager: {event:Omit<EventManager,keyof Component>,loader:Omit<LoaderManager,keyof Component>,sound:Omit<SoundManager<IEffecName,IMusicName>,keyof Component>,timer:Omit<TimerManager,keyof Component>,ui:Omit<UIManager<IViewName,IMiniViewName>,keyof Component>},
+    manager: {event:Omit<EventManager,keyof Component>,loader:Omit<LoaderManager,keyof Component>,sound:Omit<SoundManager<IEffectName,IMusicName>,keyof Component>,timer:Omit<TimerManager,keyof Component>,ui:Omit<UIManager<IViewName,IMiniViewName>,keyof Component>},
     data: {},
     config: {}
 }

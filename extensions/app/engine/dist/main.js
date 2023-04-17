@@ -54,7 +54,7 @@ const viewFolderUrl = bundleFolderUrl + '/' + viewFolderName;
 const viewFolderPath = bundleFolderPath + '/' + viewFolderName;
 const executorFileUrl = adminFolderUrl + '/executor.ts';
 const executorFilePath = adminFolderPath + '/executor.ts';
-function isFolderVaild(info) {
+function isFolderValid(info) {
     if (!info.path)
         return true;
     if (path_1.default.dirname(info.path) !== 'db://assets')
@@ -81,7 +81,7 @@ function isFolderVaild(info) {
 async function deleteInvalidFolders() {
     await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/*' })
         .then(infos => {
-        const deletePaths = infos.filter(info => !isFolderVaild(info)).map(info => info.path);
+        const deletePaths = infos.filter(info => !isFolderValid(info)).map(info => info.path);
         if (deletePaths.length) {
             Editor.Dialog.error(`${deletePaths.join('\r\n')}\r\n只允许使用插件App创建的文件夹`, { title: '非法文件夹', buttons: ['确认'] });
             deletePaths.forEach(deletePath => {
@@ -186,8 +186,8 @@ function isTSDefault(value) {
 }
 const keyWords = [
     'lib', 'manager', 'Manager', 'data', 'config',
-    'IViewName', 'IViewNames', 'IMiniViewName', 'IMiniViewNames', 'IMusicName', 'IMusicNames', 'IEffecName', 'IEffecNames',
-    'miniViewNames', 'viewNamesEnum', 'musicNamesEnum', 'effecNamesEnum'
+    'IViewName', 'IViewNames', 'IMiniViewName', 'IMiniViewNames', 'IMusicName', 'IMusicNames', 'IEffectName', 'IEffectNames',
+    'viewNames', 'miniViewNames', 'musicNames', 'effectNames'
 ];
 async function clearExecutor() {
     if (!fs_1.existsSync(executorFilePath))
@@ -199,19 +199,19 @@ async function clearExecutor() {
     let result = '/* eslint-disable */\n' +
         'import { Component } from \'cc\';\n' +
         'import { app } from \'../../app/app\';\n' +
-        'import { DEV,EDITOR } from \'cc/env\';\n\n';
+        'import { DEV, EDITOR } from \'cc/env\';\n\n';
     result += 'enum viewNames { \'' + Object.keys(viewKeys).join('\',\'') + '\'}\n';
     result += 'const miniViewNames = ' + JSON.stringify(miniViewKeys) + '\n';
     result += 'enum musicNames { \'' + Object.keys(musicKeys).join('\',\'') + '\'}\n';
-    result += 'enum effecNames { \'' + Object.keys(effecKeys).join('\',\'') + '\'}\n\n';
+    result += 'enum effectNames { \'' + Object.keys(effecKeys).join('\',\'') + '\'}\n\n';
     result += 'export type IViewName = keyof typeof viewNames\n';
     result += 'export type IViewNames = IViewName[]\n';
     result += 'export type IMiniViewName = keyof typeof miniViewNames\n';
     result += 'export type IMiniViewNames = IMiniViewName[]\n';
     result += 'export type IMusicName = keyof typeof musicNames\n';
     result += 'export type IMusicNames = IMusicName[]\n';
-    result += 'export type IEffecName = keyof typeof effecNames\n';
-    result += 'export type IEffecNames = IEffecName[]\n\n';
+    result += 'export type IEffectName = keyof typeof effectNames\n';
+    result += 'export type IEffectNames = IEffectName[]\n\n';
     // data
     result += 'if(!EDITOR||DEV) Object.assign(app.data, {})\n';
     // config
@@ -238,13 +238,13 @@ async function updateExecutor() {
     // app-admin文件夹不存在, 创建
     if (!fs_1.existsSync(adminFolderPath))
         await utils_1.createFolderByUrl(adminFolderUrl, { meta: utils_1.getMeta(adminFolderName), readme: utils_1.getReadme(adminFolderName) });
-    const mgrs = [];
-    const datas = [];
-    const confs = [];
+    const mgrList = [];
+    const dataList = [];
+    const confList = [];
     const viewKeys = {};
     const miniViewKeys = {};
     const musicKeys = {};
-    const effecKeys = {};
+    const effectKeys = {};
     // app-control app-manager app-model
     const result1 = await Editor.Message.request('asset-db', 'query-assets', { pattern: builtinFolderUrl + '/{app-control,app-manager/*,app-model}/*.ts' })
         .then(res => {
@@ -273,7 +273,7 @@ async function updateExecutor() {
     const results = result1.slice().concat(result2).concat(result3).concat(result4);
     for (let index = 0; index < results.length; index++) {
         const result = results[index];
-        const fileurl = result.url;
+        const fileUrl = result.url;
         // 文件名.扩展名
         const basename = path_1.default.basename(result.url || '') || '';
         // 扩展名
@@ -296,30 +296,30 @@ async function updateExecutor() {
             if (keyWords.indexOf(varname) >= 0) {
                 console.log(`[跳过此文件] [${filename}] 原因: ${varname}与关键字中(${JSON.stringify(keyWords)})的一个重复`);
             }
-            else if (fileurl.startsWith(managerFolderUrl)) {
+            else if (fileUrl.startsWith(managerFolderUrl)) {
                 // 用户manager
                 if (filename.endsWith('Manager') && dirname.endsWith(utils_1.stringCaseNegate(filename.slice(0, -7)))) {
-                    mgrs.push([filename, dirname, varname, extname]);
+                    mgrList.push([filename, dirname, varname, extname]);
                 }
             }
-            else if (fileurl.startsWith('db://app/manager/')) {
+            else if (fileUrl.startsWith('db://app/manager/')) {
                 // 系统manager
                 if (filename.endsWith('Manager') && dirname.endsWith(filename.slice(0, -7).toLocaleLowerCase())) {
-                    mgrs.push([filename, dirname, varname, extname]);
+                    mgrList.push([filename, dirname, varname, extname]);
                 }
             }
-            else if (fileurl.startsWith(modelFolderUrl)) {
+            else if (fileUrl.startsWith(modelFolderUrl)) {
                 // model
                 if (filename.startsWith('data.')) {
-                    datas.push([filename, dirname, varname, extname]);
+                    dataList.push([filename, dirname, varname, extname]);
                 }
                 else if (filename.startsWith('config.')) {
-                    confs.push([filename, dirname, varname, extname]);
+                    confList.push([filename, dirname, varname, extname]);
                 }
             }
         }
         else if (extname === '.prefab') {
-            if (fileurl.startsWith(viewFolderUrl) && viewRegExp.test(filename)) {
+            if (fileUrl.startsWith(viewFolderUrl) && viewRegExp.test(filename)) {
                 const dirArray = dirname.split('/');
                 const index = dirArray.indexOf(viewFolderName);
                 const viewDirArray = dirArray.slice(index + 1);
@@ -345,15 +345,15 @@ async function updateExecutor() {
                 }
             }
         }
-        else if (fileurl.startsWith(soundFolderUrl)) {
+        else if (fileUrl.startsWith(soundFolderUrl)) {
             const dir = path_1.default.join(dirname.split(soundFolderName + '/').pop(), filename);
             if (dir.startsWith('music')) {
                 // musicKeys
                 musicKeys[dir] = dir;
             }
             else {
-                // effecKeys
-                effecKeys[dir] = dir;
+                // effectKeys
+                effectKeys[dir] = dir;
             }
         }
     }
@@ -382,16 +382,16 @@ async function updateExecutor() {
         });
     };
     // manager
-    handle(mgrs, true);
+    handle(mgrList, true);
     let MgrStr = '';
     let mgrStr = '';
-    mgrs.forEach(function (varname, index, array) {
+    mgrList.forEach(function (varname, index, array) {
         MgrStr += `${varname.slice(0, -7)}:Omit<typeof ${varname},keyof Component>`;
         if (varname === 'UIManager') {
             mgrStr += `${varname.slice(0, -7).toLocaleLowerCase()}:Omit<${varname}<IViewName,IMiniViewName>,keyof Component>`;
         }
         else if (varname === 'SoundManager') {
-            mgrStr += `${varname.slice(0, -7).toLocaleLowerCase()}:Omit<${varname}<IEffecName,IMusicName>,keyof Component>`;
+            mgrStr += `${varname.slice(0, -7).toLocaleLowerCase()}:Omit<${varname}<IEffectName,IMusicName>,keyof Component>`;
         }
         else {
             mgrStr += `${varname.slice(0, -7).toLocaleLowerCase()}:Omit<${varname},keyof Component>`;
@@ -407,31 +407,31 @@ async function updateExecutor() {
         miniViewKeys['never'] = '';
     if (Object.keys(musicKeys).length === 0)
         musicKeys['never'] = '';
-    if (Object.keys(effecKeys).length === 0)
-        effecKeys['never'] = '';
+    if (Object.keys(effectKeys).length === 0)
+        effectKeys['never'] = '';
     result += 'enum viewNames { \'' + Object.keys(viewKeys).join('\',\'') + '\'}\n';
     result += 'const miniViewNames = ' + JSON.stringify(miniViewKeys) + '\n';
     result += 'enum musicNames { \'' + Object.keys(musicKeys).join('\',\'') + '\'}\n';
-    result += 'enum effecNames { \'' + Object.keys(effecKeys).join('\',\'') + '\'}\n\n';
+    result += 'enum effectNames { \'' + Object.keys(effectKeys).join('\',\'') + '\'}\n\n';
     result += 'export type IViewName = keyof typeof viewNames\n';
     result += 'export type IViewNames = IViewName[]\n';
     result += 'export type IMiniViewName = keyof typeof miniViewNames\n';
     result += 'export type IMiniViewNames = IMiniViewName[]\n';
     result += 'export type IMusicName = keyof typeof musicNames\n';
     result += 'export type IMusicNames = IMusicName[]\n';
-    result += 'export type IEffecName = keyof typeof effecNames\n';
-    result += 'export type IEffecNames = IEffecName[]\n\n';
+    result += 'export type IEffectName = keyof typeof effectNames\n';
+    result += 'export type IEffectNames = IEffectName[]\n\n';
     // data
-    handle(datas, false);
-    result += `if(!EDITOR||DEV) Object.assign(app.data, {${datas.map(varname => `${varname.slice(5)}:new ${varname}()`).join(',')}})\n`;
+    handle(dataList, false);
+    result += `if(!EDITOR||DEV) Object.assign(app.data, {${dataList.map(varname => `${varname.slice(5)}:new ${varname}()`).join(',')}})\n`;
     // config
-    handle(confs, false);
-    result += `if(!EDITOR||DEV) Object.assign(app.config, {${confs.map(varname => `${varname.slice(7)}:new ${varname}()`).join(',')}})\n\n`;
+    handle(confList, false);
+    result += `if(!EDITOR||DEV) Object.assign(app.config, {${confList.map(varname => `${varname.slice(7)}:new ${varname}()`).join(',')}})\n\n`;
     result += 'export type IApp = {\n';
     result += `    Manager: {${MgrStr}},\n`;
     result += `    manager: {${mgrStr}},\n`;
-    result += `    data: {${datas.map(varname => `${varname.slice(5)}:${varname}`).join(',')}},\n`;
-    result += `    config: {${confs.map(varname => `${varname.slice(7)}:${varname}`).join(',')}}\n`;
+    result += `    data: {${dataList.map(varname => `${varname.slice(5)}:${varname}`).join(',')}},\n`;
+    result += `    config: {${confList.map(varname => `${varname.slice(7)}:${varname}`).join(',')}}\n`;
     result += '}\n';
     // 修正windows系统中的\为/
     result = result.replace(/\\/g, '/');
@@ -471,7 +471,7 @@ exports.methods = {
         });
     },
     ['asset-db:asset-add'](uuid, info) {
-        if (!isFolderVaild(info)) {
+        if (!isFolderValid(info)) {
             Editor.Dialog.error(`${info.path}\r\n只允许使用插件App创建的文件夹`, { title: '非法文件夹', buttons: ['确认'] });
             Editor.Message.request('asset-db', 'delete-asset', info.path);
             return;
@@ -481,7 +481,7 @@ exports.methods = {
         callUpdateExecutor();
     },
     ['asset-db:asset-change'](uuid, info) {
-        if (!isFolderVaild(info)) {
+        if (!isFolderValid(info)) {
             Editor.Dialog.error(`${info.path}\r\n只允许使用插件App创建的文件夹`, { title: '非法文件夹', buttons: ['确认'] });
             Editor.Message.request('asset-db', 'delete-asset', info.path);
             return;
