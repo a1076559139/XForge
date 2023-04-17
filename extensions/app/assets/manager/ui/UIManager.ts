@@ -1,4 +1,4 @@
-import { Asset, assetManager, AssetManager, Component, error, Event, find, instantiate, isValid, js, Layers, Node, Prefab, Scene, Settings, settings, UITransform, Widget, _decorator } from 'cc';
+import { Asset, AssetManager, Component, error, Event, find, instantiate, isValid, js, Layers, Node, Prefab, Scene, Settings, settings, UITransform, Widget, _decorator } from 'cc';
 import { DEBUG } from 'cc/env';
 import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
 import BaseManager from '../../base/BaseManager';
@@ -254,12 +254,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 }
                 // 添加引用计数
                 prefab.addRef();
-                // @ts-ignore
-                const assetUUID = prefab['uuid'] || prefab['_uuid'];
-                assetManager.dependUtil.getDeps(assetUUID)?.forEach((uuid) => {
-                    assetManager.assets.get(uuid)?.addRef();
-                });
-                // 保存prefab在内存中
                 this.prefabCache[name] = prefab;
                 return complete && complete(true);
             });
@@ -270,22 +264,17 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      */
     private uninstallUI(name: string) {
         const prefab = this.prefabCache[name];
-        delete this.prefabCache[name];
         if (prefab) {
             // 释放引用计数
-            // @ts-ignore
-            const assetUUID = prefab['uuid'] || prefab['_uuid'];
-            assetManager.dependUtil.getDeps(assetUUID)?.forEach((uuid) => {
-                assetManager.assets.get(uuid)?.decRef();
-            });
             prefab.decRef();
+            delete this.prefabCache[name];
         }
-        const naBundle = this.getNativeBundleName(name);
         const resBundle = this.getResBundleName(name);
+        const naBundle = this.getNativeBundleName(name);
         Core.inst.manager.loader.releaseUnused(resBundle);
         Core.inst.manager.loader.releaseUnused(naBundle);
-        // Core.inst.manager.loader.removeBundle(resBundle);
-        // Core.inst.manager.loader.removeBundle(naBundle);
+        Core.inst.manager.loader.removeBundle(resBundle);
+        Core.inst.manager.loader.removeBundle(naBundle);
     }
 
     /**
