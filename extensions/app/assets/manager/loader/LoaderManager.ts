@@ -81,7 +81,14 @@ export default class LoaderManager extends BaseManager {
      */
     public releaseAll(bundle?: string) {
         if (!bundle) bundle = 'resources';
-        assetManager.getBundle(bundle)?.releaseAll();
+        const _bundle = assetManager.getBundle(bundle);
+        if (!_bundle) return;
+        // 只释放自己内部的资源，依赖的资源只减少引用计数
+        _bundle.getDirWithPath('/', Asset).forEach((asset) => {
+            _bundle.release(asset.path, asset.ctor);
+        });
+        // cocos提供的方法会将依赖的资源也卸载(这个设计很奇怪)
+        // _bundle?.releaseAll();
     }
 
     /**

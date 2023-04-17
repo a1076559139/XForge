@@ -271,8 +271,8 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         }
         const resBundle = this.getResBundleName(name);
         const naBundle = this.getNativeBundleName(name);
-        Core.inst.manager.loader.releaseUnused(resBundle);
-        Core.inst.manager.loader.releaseUnused(naBundle);
+        Core.inst.manager.loader.releaseAll(resBundle);
+        Core.inst.manager.loader.releaseAll(naBundle);
         Core.inst.manager.loader.removeBundle(resBundle);
         Core.inst.manager.loader.removeBundle(naBundle);
     }
