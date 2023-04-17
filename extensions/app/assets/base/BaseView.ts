@@ -615,7 +615,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
 
             let result = null;
             try {
-                result = this.onHide(data) || null;
+                result = this.onHide(data);
             } catch (error) {
                 this.error('[onHide]', error);
             }
