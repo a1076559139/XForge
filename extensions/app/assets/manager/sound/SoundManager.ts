@@ -295,7 +295,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         if (!result && this.playingMusic.name) {
             this.playMusic({
                 name: this.playingMusic.name as any,
-                volum: this.playingMusic.volum
+                volume: this.playingMusic.volume
             });
         }
     }
