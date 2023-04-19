@@ -304,6 +304,30 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     /**
+     * 预加载ui内部资源
+     */
+    public preloadRes<T extends typeof Asset>(target: Component, path: string, type: T) {
+        if (typeof target === 'string') {
+            Core.inst.manager.loader.preload({
+                bundle: this.getResBundleName(target),
+                path: path,
+                type: type
+            });
+        } else {
+            const view = this.getBaseView(target.node) || this.getViewInParents(target.node);
+            if (view) {
+                Core.inst.manager.loader.preload({
+                    bundle: this.getResBundleName(view.viewName),
+                    path: path,
+                    type: type
+                });
+            } else {
+                this.error('preloadRes', target.name, path);
+            }
+        }
+    }
+
+    /**
      * 加载ui内部资源
      */
     public loadResDir<T extends typeof Asset>(target: Component, path: string, type: T, callback?: (items: InstanceType<T>[]) => any) {
@@ -325,6 +349,30 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 });
             } else {
                 callback && callback([]);
+            }
+        }
+    }
+
+    /**
+     * 预加载ui内部资源
+     */
+    public preloadResDir<T extends typeof Asset>(target: Component, path: string, type: T) {
+        if (typeof target === 'string') {
+            Core.inst.manager.loader.preloadDir({
+                bundle: this.getResBundleName(target),
+                path: path,
+                type: type
+            });
+        } else {
+            const view = this.getBaseView(target.node) || this.getViewInParents(target.node);
+            if (view) {
+                Core.inst.manager.loader.preloadDir({
+                    bundle: this.getResBundleName(view.viewName),
+                    path: path,
+                    type: type
+                });
+            } else {
+                this.error('preloadResDir', target.name, path);
             }
         }
     }

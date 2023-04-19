@@ -663,10 +663,38 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
      * 加载UI目录下resources里面的资源
      * @param path 相对于resources的路径
      * @param callback 回调
-     * this.load('Bag', Prefab, function(){})
+     * this.loadRes('Bag', Prefab, function(asset){})
      */
-    protected load<T extends typeof Asset>(path: string, type: T, callback?: (result: InstanceType<T>) => any) {
+    protected loadRes<T extends typeof Asset>(path: string, type: T, callback?: (result: InstanceType<T>) => any) {
         Core.inst.manager.ui.loadRes(this, path, type, callback);
+    }
+
+    /**
+     * 预加载UI目录下resources里面的资源
+     * @param path 相对于resources的路径
+     * this.preloadRes('Bag', Prefab)
+     */
+    protected preloadRes<T extends typeof Asset>(path: string, type: T) {
+        Core.inst.manager.ui.preloadRes(this, path, type);
+    }
+
+    /**
+     * 加载UI目录下resources里面的资源
+     * @param path 相对于resources的路径
+     * @param callback 回调
+     * this.loadResDir('Bag', Prefab, function(asset){})
+     */
+    protected loadResDir<T extends typeof Asset>(path: string, type: T, callback?: (result: InstanceType<T>[]) => any) {
+        Core.inst.manager.ui.loadResDir(this, path, type, callback);
+    }
+
+    /**
+     * 预加载UI目录下resources里面的资源
+     * @param path 相对于resources的路径
+     * this.preloadResDir('Bag', Prefab)
+     */
+    protected preloadResDir<T extends typeof Asset>(path: string, type: T) {
+        Core.inst.manager.ui.preloadResDir(this, path, type);
     }
 
     protected log(...args: any[]) {
