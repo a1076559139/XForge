@@ -101,10 +101,15 @@ export default abstract class BaseAppInit extends Component {
                 // 播放默认音乐
                 if (Core.inst.Manager.Sound.setting.defaultMusicName) {
                     const onTouch = function () {
-                        Core.inst.manager.sound.stopMusic();
-                        Core.inst.manager.sound.playDefaultMusic();
+                        if (Core.inst.manager.sound.isMusicPlaying && !Core.inst.manager.sound.isMusicPaused) {
+                            Core.inst.manager.sound.replayMusic(() => {
+                                Core.inst.manager.ui.offUIRoot2D(Node.EventType.TOUCH_START, onTouch, this, true);
+                            });
+                        } else {
+                            Core.inst.manager.ui.offUIRoot2D(Node.EventType.TOUCH_START, onTouch, this, true);
+                        }
                     };
-                    Core.inst.manager.ui.onceUIRoot2D(Node.EventType.TOUCH_START, onTouch, this, true);
+                    Core.inst.manager.ui.onUIRoot2D(Node.EventType.TOUCH_START, onTouch, this, true);
                     Core.inst.manager.sound.playDefaultMusic(() => {
                         Core.inst.manager.ui.offUIRoot2D(Node.EventType.TOUCH_START, onTouch, this, true);
                     });

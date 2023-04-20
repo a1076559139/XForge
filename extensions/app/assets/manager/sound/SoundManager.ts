@@ -49,7 +49,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
 
     private audioCache = {};
     private effectInterval: { [key in string]: number } = {};
-    private playingMusic = { id: -1, name: '', volume: 1 };
+    private playingMusic = { uuid: '', id: -1, name: '', volume: 1, playing: false, paused: false };
 
     protected init(finish: Function) {
         const setting = SoundManager.setting;
@@ -232,7 +232,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
     }
 
     public playMusic({ name, volume = 1, force = false, onPlay, onError }: playMusic<M> = { name: <M>'' }) {
-        if (!name) return onError && onError(0);
+        if (!name) return onError && onError();
 
         // 该音乐正在播放中
         if (!force && this.playingMusic.id !== -1 && this.playingMusic.name === name) {
@@ -243,25 +243,32 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         // 先停止当前音乐
         this.stopMusic();
 
+        // 播放操作uuid
+        const uuid = this.createUUID();
+        this.playingMusic.uuid = uuid;
         // 记录要播放音乐的名字
         this.playingMusic.name = name;
         // 记录要播放音乐的音量
         this.playingMusic.volume = volume;
+        // 记录音乐状态
+        this.playingMusic.playing = true;
+        this.playingMusic.paused = false;
 
         // 静音
-        if (this.isMusicMute) return onError && onError(2);
+        if (this.isMusicMute) return onPlay && onPlay();
 
         // 加载音乐
         this.load(name, (audioClip) => {
             // 不合法
-            if (this.playingMusic.id !== -1) return onError && onError(1);
-            if (this.playingMusic.name !== name) return onError && onError(1);
+            if (this.playingMusic.id !== -1) return onError && onError();
+            if (this.playingMusic.name !== name) return onError && onError();
+            if (this.playingMusic.uuid !== this.playingMusic.uuid) return onError && onError();
             // 静音
-            if (this.isMusicMute) return onError && onError();
+            if (this.isMusicMute) return onPlay && onPlay();
 
             if (!audioClip) {
                 this.error(`playMusic ${name} 不存在或加载失败`);
-                onError && onError(0);
+                onError && onError();
                 return;
             }
 
@@ -269,17 +276,35 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         });
     }
 
+    public replayMusic(onPlay?: Function) {
+        if (!this.playingMusic.playing) return;
+        if (!this.playingMusic.name) return;
+        this.playMusic({
+            name: this.playingMusic.name as any,
+            volume: this.playingMusic.volume,
+            force: true,
+            onPlay
+        });
+    }
+
     public pauseMusic() {
+        if (!this.playingMusic.playing) return false;
+        this.playingMusic.paused = true;
         return AudioEngine.inst.pauseMusic();
     }
 
     public resumeMusic() {
+        if (!this.playingMusic.playing) return false;
+        this.playingMusic.paused = false;
         return AudioEngine.inst.resumeMusic();
     }
 
     public stopMusic() {
+        this.playingMusic.playing = false;
+        this.playingMusic.paused = false;
         this.playingMusic.volume = 1;
         this.playingMusic.name = '';
+        this.playingMusic.uuid = '';
         this.playingMusic.id = -1;
         return AudioEngine.inst.stopMusic();
     }
@@ -293,6 +318,14 @@ export default class SoundManager<E extends string, M extends string> extends Ba
                 volume: this.playingMusic.volume
             });
         }
+    }
+
+    get isMusicPlaying() {
+        return this.playingMusic.playing;
+    }
+
+    get isMusicPaused() {
+        return this.playingMusic.paused;
     }
 
     public get isMusicMute() {
