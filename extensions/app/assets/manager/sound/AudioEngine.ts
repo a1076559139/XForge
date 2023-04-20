@@ -12,7 +12,7 @@ export default class AudioEngine {
 
     /**effect的id从1开始，music的id始终为0 */
     private audioID = 1;
-    private callbackMap: Map<number, Function> = new Map();
+    private endedCallbackMap: Map<number, Function> = new Map();
     private effectMap: Map<number, Audio> = new Map();
     private music: Audio = null;
 
@@ -26,7 +26,7 @@ export default class AudioEngine {
     ////////////////////////////////
     // 音效                        //
     ////////////////////////////////
-    playEffect(audioClip: AudioClip, volum = 1, loop = false) {
+    playEffect(audioClip: AudioClip, volume = 1, loop = false, onStarted: Function = null) {
         if (this.audioID > 100000) this.audioID = 1;
 
         const audioID = this.audioID++;
@@ -35,15 +35,17 @@ export default class AudioEngine {
 
         audio.setLoop(loop)
             .setMute(this.effectMute)
-            .setVolume(volum, this.effectVolumeScale)
+            .setVolume(volume, this.effectVolumeScale)
             .play(audioClip, () => {
                 AudioManager.inst.putAudio(audio);
                 this.effectMap.delete(audioID);
-                const callback = this.callbackMap.get(audioID);
+                const callback = this.endedCallbackMap.get(audioID);
                 if (callback) {
-                    this.callbackMap.delete(audioID);
+                    this.endedCallbackMap.delete(audioID);
                     callback();
                 }
+            }, () => {
+                onStarted && onStarted(audioID);
             });
 
         return audioID;
@@ -98,54 +100,54 @@ export default class AudioEngine {
         return this.effectMute;
     }
 
-    setEffectVolum(id: number, volum: number) {
-        return !!this.effectMap.get(id)?.setVolume(volum);
+    setEffectVolume(id: number, volume: number) {
+        return !!this.effectMap.get(id)?.setVolume(volume);
     }
 
-    setAllEffectsVolum(volum: number) {
-        this.effectVolume = volum;
+    setAllEffectsVolume(volume: number) {
+        this.effectVolume = volume;
         this.effectMap.forEach((audio) => {
-            audio.setVolume(volum);
+            audio.setVolume(volume);
         });
     }
 
-    getEffectVolum(id: number) {
+    getEffectVolume(id: number) {
         return this.effectMap.get(id)?.getVolume() || 0;
     }
 
-    getAllEffectsVolum() {
+    getAllEffectsVolume() {
         return this.effectVolume;
     }
 
-    setEffectVolumScale(id: number, volum: number) {
-        return !!this.effectMap.get(id)?.setVolumeScale(volum);
+    setEffectVolumeScale(id: number, volume: number) {
+        return !!this.effectMap.get(id)?.setVolumeScale(volume);
     }
 
-    setAllEffectsVolumScale(scale: number) {
+    setAllEffectsVolumeScale(scale: number) {
         this.effectVolumeScale = scale;
         this.effectMap.forEach((audio) => {
             audio.setVolumeScale(scale);
         });
     }
 
-    getEffectVolumScale(id: number) {
+    getEffectVolumeScale(id: number) {
         return this.effectMap.get(id)?.getVolumeScale() || 0;
     }
 
-    getAllEffectsVolumScale() {
+    getAllEffectsVolumeScale() {
         return this.effectVolumeScale;
     }
 
     ////////////////////////////////
     // 音乐                        //
     ////////////////////////////////
-    playMusic(audioClip: AudioClip, volum = 1) {
+    playMusic(audioClip: AudioClip, volume = 1, onStarted: Function = null) {
         if (!this.music) this.music = AudioManager.inst.getAudio();
 
         this.music
             .setLoop(true)
-            .setVolume(volum)
-            .play(audioClip);
+            .setVolume(volume)
+            .play(audioClip, null, onStarted);
 
         return 0;
     }
@@ -197,7 +199,7 @@ export default class AudioEngine {
             return !!this.music?.onEnded(callback);
         } else {
             if (this.effectMap.has(audioID)) {
-                this.callbackMap.set(audioID, callback);
+                this.endedCallbackMap.set(audioID, callback);
                 return true;
             }
             return false;
@@ -247,7 +249,7 @@ export default class AudioEngine {
         if (audioID === 0) {
             return this.setMusicVolume(volume);
         } else {
-            return this.setEffectVolum(audioID, volume);
+            return this.setEffectVolume(audioID, volume);
         }
     }
 
@@ -255,7 +257,7 @@ export default class AudioEngine {
         if (audioID === 0) {
             return this.getMusicVolume();
         } else {
-            return this.getEffectVolum(audioID);
+            return this.getEffectVolume(audioID);
         }
     }
 
@@ -263,7 +265,7 @@ export default class AudioEngine {
         if (audioID === 0) {
             return this.setMusicVolumeScale(scale);
         } else {
-            return this.setEffectVolumScale(audioID, scale);
+            return this.setEffectVolumeScale(audioID, scale);
         }
     }
 
@@ -271,7 +273,7 @@ export default class AudioEngine {
         if (audioID === 0) {
             return this.getMusicVolumeScale();
         } else {
-            return this.getEffectVolumScale(audioID);
+            return this.getEffectVolumeScale(audioID);
         }
     }
 }

@@ -194,15 +194,12 @@ export default class SoundManager<E extends string, M extends string> extends Ba
             if (this.effectInterval[name] && Date.now() < this.effectInterval[name]) return;
 
             if (audioClip) {
-                const id = AudioEngine.inst.playEffect(audioClip, volume, loop);
-
+                const id = AudioEngine.inst.playEffect(audioClip, volume, loop, onPlay);
                 if (onEnded) AudioEngine.inst.setEndedCallback(id, onEnded);
 
-                if (interval) {
+                if (interval > 0) {
                     this.effectInterval[name] = Date.now() + interval * 1000;
                 }
-
-                onPlay && onPlay(id);
             } else {
                 this.error(`playEffect ${name} 不存在或加载失败`);
                 onError && onError();
@@ -268,9 +265,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
                 return;
             }
 
-            this.playingMusic.id = AudioEngine.inst.playMusic(audioClip, volume);
-
-            onPlay && onPlay();
+            this.playingMusic.id = AudioEngine.inst.playMusic(audioClip, volume, onPlay);
         });
     }
 

@@ -1,4 +1,4 @@
-import { assetManager, Component, Settings, settings, warn, _decorator } from 'cc';
+import { assetManager, Component, Node, Settings, settings, warn, _decorator } from 'cc';
 import { EDITOR } from 'cc/env';
 import Core from '../Core';
 import BaseManager from './BaseManager';
@@ -6,8 +6,8 @@ const { ccclass } = _decorator;
 
 const AdminBundleName = 'app-admin';
 const ModelBundleName = 'app-model';
-const ControlBundlename = 'app-control';
-const DotReWriteFuns = ['startInit', 'nextInit'];
+const ControlBundleName = 'app-control';
+const DotReWriteFuncs = ['startInit', 'nextInit'];
 
 @ccclass('BaseAppInit')
 export default abstract class BaseAppInit extends Component {
@@ -20,7 +20,7 @@ export default abstract class BaseAppInit extends Component {
     constructor() {
         super();
         if (EDITOR) {
-            DotReWriteFuns.forEach((funName) => {
+            DotReWriteFuncs.forEach((funName) => {
                 if (BaseAppInit.prototype[funName] !== this[funName]) {
                     warn(`[AppInit] 不应该重写父类方法{${funName}}`);
                 }
@@ -45,8 +45,8 @@ export default abstract class BaseAppInit extends Component {
                 },
                 (next, retry) => {
                     // 加载control
-                    if (projectBundles.indexOf(ControlBundlename) === -1) return next();
-                    assetManager.loadBundle(ControlBundlename, (err) => {
+                    if (projectBundles.indexOf(ControlBundleName) === -1) return next();
+                    assetManager.loadBundle(ControlBundleName, (err) => {
                         if (err) return retry(0.1);
                         next();
                     });
@@ -99,7 +99,17 @@ export default abstract class BaseAppInit extends Component {
                 // 初始化完成
                 this.onFinish();
                 // 播放默认音乐
-                Core.inst.manager.sound.playDefaultMusic();
+                if (Core.inst.Manager.Sound.setting.defaultMusicName) {
+                    const onTouch = function () {
+                        Core.inst.manager.sound.stopMusic();
+                        Core.inst.manager.sound.playDefaultMusic();
+                    };
+                    Core.inst.manager.ui.onceUIRoot2D(Node.EventType.TOUCH_START, onTouch, this, true);
+                    Core.inst.manager.sound.playDefaultMusic(() => {
+                        Core.inst.manager.ui.offUIRoot2D(Node.EventType.TOUCH_START, onTouch, this, true);
+                    });
+                }
+
             });
         }
         // 系统部分加载完毕，开始加载用户自定义

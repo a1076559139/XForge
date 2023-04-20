@@ -5,11 +5,13 @@ export default class Audio {
     private volumeScale = 1;
     private mute = false;
     private endedCallback: Function = null;
+    private startedCallback: Function = null;
 
     private audioSource: AudioSource = null;
     constructor(audioSource: AudioSource) {
         this.audioSource = audioSource;
         this.audioSource.node.on(AudioSource.EventType.ENDED, this.onAudioEnded, this);
+        this.audioSource.node.on(AudioSource.EventType.STARTED, this.onAudioStarted, this);
     }
 
     private onAudioEnded() {
@@ -20,9 +22,18 @@ export default class Audio {
         }
     }
 
-    play(clip: AudioClip, onEnded: Function = null) {
+    private onAudioStarted() {
+        if (this.startedCallback) {
+            const startedCallback = this.startedCallback;
+            this.startedCallback = null;
+            startedCallback();
+        }
+    }
+
+    play(clip: AudioClip, onEnded: Function = null, onStarted: Function = null) {
         this.audioSource.clip = clip;
         this.endedCallback = onEnded;
+        this.startedCallback = onStarted;
         this.audioSource.play();
         return this;
     }
