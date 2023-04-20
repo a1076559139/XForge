@@ -321,7 +321,7 @@ export default class BaseManager extends Component {
         // 用户manager(动态添加)
         const userMgrList: BaseManager[] = [];
         // 系统manager(静态内置)
-        const sysMgrList: BaseManager[] = [Core.inst.manager.event, Core.inst.manager.timer, Core.inst.manager.loader, Core.inst.manager.sound, Core.inst.manager.ui] as any as BaseManager[];
+        const sysMgrList: BaseManager[] = [Core.inst.manager.event, Core.inst.manager.timer, Core.inst.manager.loader, Core.inst.manager.ui, Core.inst.manager.sound] as any as BaseManager[];
 
         // 初始化系统manager
         const initSysMgrTask = Core.inst.lib.task.createASync();
