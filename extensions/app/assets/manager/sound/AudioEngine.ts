@@ -142,8 +142,10 @@ export default class AudioEngine {
     // 音乐                        //
     ////////////////////////////////
     playMusic(audioClip: AudioClip, volume = 1, onStarted: Function = null) {
-        if (!this.music) this.music = AudioManager.inst.getAudio();
-
+        if (this.music) {
+            this.music.destroy();
+        }
+        this.music = AudioManager.inst.getAudio();
         this.music
             .setLoop(true)
             .setVolume(volume)

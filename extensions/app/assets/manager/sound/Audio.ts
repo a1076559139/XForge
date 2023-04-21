@@ -112,4 +112,11 @@ export default class Audio {
         }
         return this;
     }
+
+    destroy() {
+        this.clear();
+        this.audioSource.destroy();
+        this.audioSource.node.destroy();
+        this.audioSource = null;
+    }
 }
