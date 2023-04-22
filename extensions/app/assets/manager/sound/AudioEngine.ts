@@ -26,12 +26,13 @@ export default class AudioEngine {
     ////////////////////////////////
     // 音效                        //
     ////////////////////////////////
-    playEffect(audioClip: AudioClip, volume = 1, loop = false, onStarted: Function = null) {
+    playEffect(audioClip: AudioClip, volume = 1, loop = false, onStarted: Function = null, onEnded: Function = null) {
         if (this.audioID > 100000) this.audioID = 1;
 
         const audioID = this.audioID++;
         const audio = AudioManager.inst.getAudio();
         this.effectMap.set(audioID, audio);
+        if (onEnded) this.endedCallbackMap.set(audioID, onEnded);
 
         audio.setLoop(loop)
             .setMute(this.effectMute)

@@ -1,4 +1,4 @@
-import { AudioClip, AudioSource } from 'cc';
+import { AudioClip, AudioSource, Node } from 'cc';
 
 export default class Audio {
     private volume = 1;
@@ -8,10 +8,11 @@ export default class Audio {
     private startedCallback: Function = null;
 
     private audioSource: AudioSource = null;
-    constructor(audioSource: AudioSource) {
-        this.audioSource = audioSource;
-        this.audioSource.node.on(AudioSource.EventType.ENDED, this.onAudioEnded, this);
-        this.audioSource.node.on(AudioSource.EventType.STARTED, this.onAudioStarted, this);
+    constructor() {
+        const node = new Node('audio');
+        this.audioSource = node.addComponent(AudioSource);
+        node.on(AudioSource.EventType.ENDED, this.onAudioEnded, this);
+        node.on(AudioSource.EventType.STARTED, this.onAudioStarted, this);
     }
 
     private onAudioEnded() {
@@ -104,6 +105,7 @@ export default class Audio {
         this.volumeScale = 1;
         this.mute = false;
         this.endedCallback = null;
+        this.startedCallback = null;
         if (this.audioSource) {
             this.audioSource.stop();
             this.audioSource.volume = 1;

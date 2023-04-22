@@ -1,4 +1,3 @@
-import { AudioSource, Node } from 'cc';
 import Audio from './Audio';
 
 export default class AudioManager {
@@ -15,10 +14,7 @@ export default class AudioManager {
         if (this.audioArray.length) {
             return this.audioArray.pop();
         }
-        const node = new Node('audio');
-        const audioSource = node.addComponent(AudioSource);
-        const audio = new Audio(audioSource);
-        return audio;
+        return new Audio();
     }
 
     putAudio(audio: Audio) {

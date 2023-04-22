@@ -1,7 +1,7 @@
-import { AssetManager, AudioClip, Game, game, sys, _decorator } from 'cc';
+import { AssetManager, AudioClip, Game, _decorator, game, sys } from 'cc';
 import { IEffectName, IMusicName } from '../../../../../assets/app-builtin/app-admin/executor';
-import BaseManager from '../../base/BaseManager';
 import Core from '../../Core';
+import BaseManager from '../../base/BaseManager';
 import AudioEngine from './AudioEngine';
 const { ccclass } = _decorator;
 
@@ -194,8 +194,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
             if (this.effectInterval[name] && Date.now() < this.effectInterval[name]) return;
 
             if (audioClip) {
-                const id = AudioEngine.inst.playEffect(audioClip, volume, loop, onPlay);
-                if (onEnded) AudioEngine.inst.setEndedCallback(id, onEnded);
+                AudioEngine.inst.playEffect(audioClip, volume, loop, onPlay, onEnded);
 
                 if (interval > 0) {
                     this.effectInterval[name] = Date.now() + interval * 1000;
