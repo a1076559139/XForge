@@ -248,10 +248,14 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 });
             })
             .start((results) => {
+                if (this.prefabCache[name]) {
+                    return complete && complete(true);
+                }
                 const prefab = results[1];
                 if (!prefab) {
                     return complete && complete(false);
                 }
+                this.log('加载完成 ' + name);
                 // 添加引用计数
                 prefab.addRef();
                 this.prefabCache[name] = prefab;
