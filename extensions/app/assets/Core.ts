@@ -1,4 +1,5 @@
 import { Component, EventTarget } from 'cc';
+import * as debug from './lib/debug/debug';
 import storage from './lib/storage/storage';
 import task from './lib/task/task';
 import EventManager from './manager/event/EventManager';
@@ -47,7 +48,7 @@ interface ICore {
 }
 
 const EventMap = {};
-const Lib = { task, storage };
+const Lib = { task, storage, debug };
 const Config = {};
 const Data = {};
 const Manager = {};
