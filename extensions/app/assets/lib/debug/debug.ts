@@ -1,3 +1,5 @@
+import { DEBUG, DEV } from 'cc/env';
+
 function jsGetSet(obj: unknown, prop: string, getter: Function, setter?: Function) {
     Object.defineProperty(obj, prop, {
         get: getter as any,
@@ -19,6 +21,7 @@ function clear(object: Record<string | number, any>) {
  * @returns 
  */
 export function unobservable(owner: unknown, callback?: Function) {
+    if (DEV || DEBUG) return;
     if (!owner) return;
     function define() {
         function accessor() {
