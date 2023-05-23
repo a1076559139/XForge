@@ -1,7 +1,7 @@
 [
   {
     "__type__": "cc.Prefab",
-    "_name": "UIMgeLoading",
+    "_name": "UIMgrLoading",
     "_objFlags": 0,
     "_native": "",
     "data": {
@@ -13,7 +13,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "UIMgeLoading",
+    "_name": "UIMgrLoading",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": null,
