@@ -6,7 +6,7 @@ import AudioEngine from './AudioEngine';
 const { ccclass } = _decorator;
 
 interface playMusic<T> { name: T, volume?: number, force?: boolean, onPlay?: Function, onError?: Function }
-interface playEffect<T> { name: T, volume?: number, loop?: boolean, interval?: number, onPlay?: Function, onError?: Function, onEnded?: Function }
+interface playEffect<T> { name: T, volume?: number, loop?: boolean, interval?: number, onPlay?: (audioID: number) => any, onError?: Function, onEnded?: Function }
 
 const storage = {
     set(key: string, value: any) {
