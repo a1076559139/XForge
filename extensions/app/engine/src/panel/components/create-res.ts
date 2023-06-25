@@ -1,9 +1,9 @@
 import Vue from 'vue/dist/vue';
-import { createFolderByUrl, getMeta, getReadme, getTemplate, stringCase } from '../../utils';
+import { createFolderByUrl, getResMeta, getResPanel, getResReadme, stringCase } from '../../utils';
 
 const typeNames: ('res-bundle' | 'res-native' | 'resources')[] = ['res-bundle', 'res-native', 'resources'];
 export default Vue.extend({
-    template: getTemplate('create-res'),
+    template: getResPanel('create-res'),
     data() {
         return {
             inputName: '',
@@ -43,12 +43,12 @@ export default Vue.extend({
             this.showLoading = true;
 
             if (!await createFolderByUrl(folderPath, {
-                readme: getReadme(folderName),
-                meta: folderName === 'resources' ? getMeta('resources') : undefined,
+                readme: getResReadme(folderName),
+                meta: folderName === 'resources' ? getResMeta('resources') : undefined,
                 subFolders: [
                     {
                         folder: name,
-                        meta: this.typeSelectIndex === 0 ? getMeta('resources') : undefined
+                        meta: this.typeSelectIndex === 0 ? getResMeta('custom-bundle') : undefined
                     }
                 ]
             })) {

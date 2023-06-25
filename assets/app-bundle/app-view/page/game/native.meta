@@ -1,48 +1,13 @@
 {
-  "ver": "1.1.0",
+  "ver": "1.2.0",
   "importer": "directory",
   "imported": true,
   "uuid": "1e3dd32f-f769-4491-adf4-1ae6e7b8bf62",
   "files": [],
   "subMetas": {},
   "userData": {
-    "compressionType": {
-      "web-desktop": "merge_all_json",
-      "web-mobile": "merge_all_json",
-      "android": "merge_all_json",
-      "ohos": "merge_all_json",
-      "huawei-agc": "merge_all_json",
-      "ios": "merge_all_json",
-      "windows": "merge_all_json",
-      "mac": "merge_all_json",
-      "bytedance-mini-game": "subpackage",
-      "oppo-mini-game": "subpackage",
-      "huawei-quick-game": "subpackage",
-      "cocos-play": "zip",
-      "vivo-mini-game": "subpackage",
-      "xiaomi-quick-game": "subpackage",
-      "baidu-mini-game": "subpackage",
-      "wechatgame": "subpackage"
-    },
-    "isRemoteBundle": {
-      "web-desktop": true,
-      "web-mobile": true,
-      "android": true,
-      "ohos": true,
-      "huawei-agc": true,
-      "ios": true,
-      "windows": true,
-      "mac": true,
-      "bytedance-mini-game": false,
-      "oppo-mini-game": false,
-      "huawei-quick-game": false,
-      "cocos-play": true,
-      "vivo-mini-game": false,
-      "xiaomi-quick-game": false,
-      "baidu-mini-game": false,
-      "wechatgame": false
-    },
     "isBundle": true,
-    "bundleName": "page-game"
+    "bundleName": "page-game",
+    "bundleConfigID": "auto_f7NI9WxFVIO6e8LbJGF72k"
   }
 }

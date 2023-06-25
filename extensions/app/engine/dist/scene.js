@@ -15,7 +15,7 @@ exports.unload = unload;
 // };
 // const result = await Editor.Message.request('scene', 'execute-scene-script', options);
 exports.methods = {
-    async createPrefab(name, file, is3D) {
+    async createPrefab(name, fileUrl, is3D) {
         const { Node, js, Layers } = require('cc');
         const node = new Node(name);
         node.layer = is3D ? Layers.Enum.UI_3D : Layers.Enum.UI_2D;
@@ -29,9 +29,8 @@ exports.methods = {
         }
         const com = node.addComponent(name);
         com.resetInEditor && com.resetInEditor();
-        // @ts-ignore
         const info = cce.Prefab.generatePrefabDataFromNode(node);
         node.destroy();
-        return Editor.Message.request('asset-db', 'create-asset', file, info);
+        return Editor.Message.request('asset-db', 'create-asset', fileUrl, info.prefabData || info);
     },
 };

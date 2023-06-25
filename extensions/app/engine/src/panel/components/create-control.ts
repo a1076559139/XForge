@@ -1,6 +1,6 @@
 import { existsSync } from 'fs';
 import Vue from 'vue/dist/vue';
-import { convertUrlToPath, createFolderByUrl, getMeta, getReadme, getTemplate, stringCase } from '../../utils';
+import { convertUrlToPath, createFolderByUrl, getResMeta, getResPanel, getResReadme, stringCase } from '../../utils';
 
 /**
  * 根据语言获取脚本内容
@@ -21,7 +21,7 @@ function getScript(name: string) {
 }
 
 export default Vue.extend({
-    template: getTemplate('create-control'),
+    template: getResPanel('create-control'),
     data() {
         return {
             inputName: '',
@@ -59,7 +59,7 @@ export default Vue.extend({
             }
 
             // 目录如果不存在则创建
-            if (!await createFolderByUrl(rootPath, { meta: getMeta('app-control'), readme: getReadme('app-control') })) {
+            if (!await createFolderByUrl(rootPath, { meta: getResMeta('app-control'), readme: getResReadme('app-control') })) {
                 this.showLoading = false;
                 this.display = `[错误] 创建目录失败\n${rootPath}`;
                 return;

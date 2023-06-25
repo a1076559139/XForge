@@ -1,18 +1,8 @@
 {
   "userData": {
-    "compressionType": {},
-    "isRemoteBundle": {
-      "wechatgame": true,
-      "bytedance-mini-game": true,
-      "oppo-mini-game": true,
-      "huawei-quick-game": true,
-      "vivo-mini-game": true,
-      "baidu-mini-game": true,
-      "cocos-play": true,
-      "xiaomi-quick-game": true,
-      "web-desktop": true,
-      "web-mobile": true
-    },
-    "isBundle": true
+    "isBundle": true,
+    "bundleConfigID": "default",
+    "bundleName": "resources",
+    "priority": 8
   }
 }

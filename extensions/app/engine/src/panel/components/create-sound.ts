@@ -1,8 +1,8 @@
 import Vue from 'vue/dist/vue';
-import { createFolderByUrl, getMeta, getReadme, getTemplate } from '../../utils';
+import { createFolderByUrl, getResMeta, getResPanel, getResReadme } from '../../utils';
 
 export default Vue.extend({
-    template: getTemplate('create-sound'),
+    template: getResPanel('create-sound'),
     data() {
         return {
             display: '',
@@ -24,12 +24,12 @@ export default Vue.extend({
             const rootPath = 'db://assets/app-bundle/app-sound';
 
             if (!await createFolderByUrl(rootPath, {
-                meta: getMeta('app-sound'),
-                readme: getReadme('app-sound'),
+                meta: getResMeta('app-sound'),
+                readme: getResReadme('app-sound'),
                 subFolders: [
                     {
                         folder: this.typeSelectIndex === 0 ? 'music' : 'effect',
-                        readme: getReadme(this.typeSelectIndex === 0 ? 'sound-music' : 'sound-effect')
+                        readme: getResReadme(this.typeSelectIndex === 0 ? 'sound-music' : 'sound-effect')
                     }
                 ]
             })) {

@@ -1,18 +1,24 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { basename, join } from 'path';
 
-export function getReadme(name: 'resources' | 'app' | 'app-appinit' | 'app-scene' | 'app-builtin' | 'app-bundle' | 'app-view' | 'app-admin' | 'app-control' | 'app-manager' | 'app-model' | 'app-sound' | 'sound-effect' | 'sound-music' | 'view-expansion' | 'view-native' | 'res-bundle' | 'res-native' | 'view-resources') {
+export function getResJson(name: 'builder'): { userData: object } {
+    const Assets = join(__dirname, '../res/json');
+    const str = readFileSync(join(Assets, `${name}.json`), 'utf-8');
+    return str ? JSON.parse(str) : null;
+}
+
+export function getResReadme(name: 'resources' | 'app' | 'app-appinit' | 'app-scene' | 'app-builtin' | 'app-bundle' | 'app-view' | 'app-admin' | 'app-control' | 'app-manager' | 'app-model' | 'app-sound' | 'sound-effect' | 'sound-music' | 'view-expansion' | 'view-native' | 'res-bundle' | 'res-native' | 'view-resources') {
     const Assets = join(__dirname, '../res/readme');
     return readFileSync(join(Assets, `${name}.md`), 'utf-8');
 }
 
-export function getMeta(name: 'resources' | 'app-admin' | 'app-control' | 'app-manager' | 'app-model' | 'app-sound' | 'view-native' | 'view-resources'): { userData: object } {
+export function getResMeta(name: 'resources' | 'custom-bundle' | 'app-admin' | 'app-control' | 'app-manager' | 'app-model' | 'app-sound' | 'view-native' | 'view-resources'): { userData: object } {
     const Assets = join(__dirname, '../res/meta');
     const str = readFileSync(join(Assets, `${name}.meta`), 'utf-8');
     return str ? JSON.parse(str) : null;
 }
 
-export function getTemplate(name: string) {
+export function getResPanel(name: string) {
     const Assets = join(__dirname, '../res/panel');
     return readFileSync(join(Assets, `components/${name}.html`), 'utf-8');
 }
@@ -41,11 +47,11 @@ export function stringCase(str: string, lower = false) {
  * @returns 
  */
 export function stringCaseNegate(str: string) {
-    return str.replace(/[A-Z]/g, (serchStr, startIndex) => {
+    return str.replace(/[A-Z]/g, (searchStr, startIndex) => {
         if (startIndex === 0) {
-            return serchStr.toLocaleLowerCase();
+            return searchStr.toLocaleLowerCase();
         } else {
-            return '-' + serchStr.toLocaleLowerCase();
+            return '-' + searchStr.toLocaleLowerCase();
         }
     });
 }
@@ -60,6 +66,13 @@ export function convertUrlToPath(url: string) {
         url = Editor.Utils.Path.join(Editor.Project.path, 'extensions/app/assets', url.slice(8));
     }
     return url;
+}
+
+/**
+ * 获取程序路径
+ */
+export function getProjectPath() {
+    return Editor.Project.path;
 }
 
 /**

@@ -13,7 +13,7 @@ export function unload() { }
 // };
 // const result = await Editor.Message.request('scene', 'execute-scene-script', options);
 export const methods = {
-    async createPrefab(name: string, file: string, is3D: boolean) {
+    async createPrefab(name: string, fileUrl: string, is3D: boolean) {
         const { Node, js, Layers } = require('cc');
 
         const node = new Node(name);
@@ -31,10 +31,9 @@ export const methods = {
         const com = node.addComponent(name);
         com.resetInEditor && com.resetInEditor();
 
-        // @ts-ignore
-        const info = cce.Prefab.generatePrefabDataFromNode(node);
+        const info = cce.Prefab.generatePrefabDataFromNode(node) as any;
         node.destroy();
 
-        return Editor.Message.request('asset-db', 'create-asset', file, info);
+        return Editor.Message.request('asset-db', 'create-asset', fileUrl, info.prefabData || info);
     },
 };

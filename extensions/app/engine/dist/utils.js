@@ -1,24 +1,30 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.delayFileExistsByUrl = exports.createFolderByUrl = exports.convertUrlToPath = exports.stringCaseNegate = exports.stringCase = exports.getTemplate = exports.getMeta = exports.getReadme = void 0;
+exports.delayFileExistsByUrl = exports.createFolderByUrl = exports.getProjectPath = exports.convertUrlToPath = exports.stringCaseNegate = exports.stringCase = exports.getResPanel = exports.getResMeta = exports.getResReadme = exports.getResJson = void 0;
 const fs_1 = require("fs");
 const path_1 = require("path");
-function getReadme(name) {
+function getResJson(name) {
+    const Assets = path_1.join(__dirname, '../res/json');
+    const str = fs_1.readFileSync(path_1.join(Assets, `${name}.json`), 'utf-8');
+    return str ? JSON.parse(str) : null;
+}
+exports.getResJson = getResJson;
+function getResReadme(name) {
     const Assets = path_1.join(__dirname, '../res/readme');
     return fs_1.readFileSync(path_1.join(Assets, `${name}.md`), 'utf-8');
 }
-exports.getReadme = getReadme;
-function getMeta(name) {
+exports.getResReadme = getResReadme;
+function getResMeta(name) {
     const Assets = path_1.join(__dirname, '../res/meta');
     const str = fs_1.readFileSync(path_1.join(Assets, `${name}.meta`), 'utf-8');
     return str ? JSON.parse(str) : null;
 }
-exports.getMeta = getMeta;
-function getTemplate(name) {
+exports.getResMeta = getResMeta;
+function getResPanel(name) {
     const Assets = path_1.join(__dirname, '../res/panel');
     return fs_1.readFileSync(path_1.join(Assets, `components/${name}.html`), 'utf-8');
 }
-exports.getTemplate = getTemplate;
+exports.getResPanel = getResPanel;
 /**
  * 将串式命名转成驼峰命名
  * @param str 串式字符串
@@ -42,12 +48,12 @@ exports.stringCase = stringCase;
  * @returns
  */
 function stringCaseNegate(str) {
-    return str.replace(/[A-Z]/g, (serchStr, startIndex) => {
+    return str.replace(/[A-Z]/g, (searchStr, startIndex) => {
         if (startIndex === 0) {
-            return serchStr.toLocaleLowerCase();
+            return searchStr.toLocaleLowerCase();
         }
         else {
-            return '-' + serchStr.toLocaleLowerCase();
+            return '-' + searchStr.toLocaleLowerCase();
         }
     });
 }
@@ -65,6 +71,13 @@ function convertUrlToPath(url) {
     return url;
 }
 exports.convertUrlToPath = convertUrlToPath;
+/**
+ * 获取程序路径
+ */
+function getProjectPath() {
+    return Editor.Project.path;
+}
+exports.getProjectPath = getProjectPath;
 /**
  * 根据db下的路径创建目录(不是文件)
  * 如果已存在不会重复创建

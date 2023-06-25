@@ -22,10 +22,10 @@
 
 // path.join不能正确处理'db://'结构，会把'//'变成'/'
 
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 import { AssetInfo } from '../@types/packages/asset-db/@types/public';
-import { convertUrlToPath, createFolderByUrl, getMeta, getReadme, stringCase, stringCaseNegate } from './utils';
+import { convertUrlToPath, createFolderByUrl, getProjectPath, getResJson, getResMeta, getResReadme, stringCase, stringCaseNegate } from './utils';
 
 const adminFolderName = 'app-admin';
 const controlFolderName = 'app-control';
@@ -240,9 +240,9 @@ async function clearExecutor() {
 
 async function updateExecutor() {
     // app-builtin文件夹不存在, 创建
-    if (!existsSync(builtinFolderPath)) await createFolderByUrl(builtinFolderUrl, { readme: getReadme(builtinFolderName) });
+    if (!existsSync(builtinFolderPath)) await createFolderByUrl(builtinFolderUrl, { readme: getResReadme(builtinFolderName) });
     // app-admin文件夹不存在, 创建
-    if (!existsSync(adminFolderPath)) await createFolderByUrl(adminFolderUrl, { meta: getMeta(adminFolderName), readme: getReadme(adminFolderName) });
+    if (!existsSync(adminFolderPath)) await createFolderByUrl(adminFolderUrl, { meta: getResMeta(adminFolderName), readme: getResReadme(adminFolderName) });
 
     const mgrList: any[] = [];
     const dataList: any[] = [];
@@ -464,11 +464,42 @@ function callUpdateExecutor(clear = false) {
     }
 }
 
+function updateBuilder() {
+    const builder = getResJson('builder');
+
+    const sourcePath = path.join(getProjectPath(), 'settings/v2/packages/builder.json');
+    const str = readFileSync(sourcePath, 'utf-8');
+    const source = JSON.parse(str);
+
+    let changed = false;
+    const handle = (data: object, out: object) => {
+        for (const key in data) {
+            if (!Object.prototype.hasOwnProperty.call(data, key)) {
+                continue;
+            }
+            if (!out[key]) {
+                changed = true;
+                out[key] = data[key];
+                continue;
+            }
+            if (data[key] && typeof data[key] === 'object' && out[key] && typeof out[key] === 'object') {
+                handle(data[key], out[key]);
+            }
+        }
+    };
+
+    handle(builder, source);
+    writeFileSync(sourcePath, JSON.stringify(source, null, '  '), { encoding: 'utf-8' });
+    return changed;
+}
+
 export const methods: { [key: string]: (...any: any) => any } = {
     ['open-panel']() {
         Editor.Panel.open('app.open-panel');
     },
     ['update-executor']() {
+        // 点击更新
+        updateBuilder();
         callUpdateExecutor();
     },
     ['asset-db:ready']() {
@@ -505,6 +536,7 @@ export const methods: { [key: string]: (...any: any) => any } = {
  * @zh 扩展加载完成后触发的钩子
  */
 export function load() {
+    updateBuilder();
     Editor.Message.request('asset-db', 'query-ready')
         .then(ready => {
             if (!ready) return;

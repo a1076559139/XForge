@@ -1,24 +1,5 @@
 {
-    "compressionType": {},
-    "isRemoteBundle": {
-        "web-desktop": true,
-        "web-mobile": true,
-        "android": true,
-        "ohos": true,
-        "huawei-agc": true,
-        "ios": true,
-        "windows": true,
-        "mac": true,
-        "bytedance-mini-game": true,
-        "oppo-mini-game": true,
-        "huawei-quick-game": true,
-        "cocos-play": true,
-        "vivo-mini-game": true,
-        "xiaomi-quick-game": true,
-        "baidu-mini-game": true,
-        "wechatgame": true
-    },
-    "priority": 8,
     "isBundle": true,
-    "bundleName": ""
+    "bundleConfigID": "auto_11aBEBWDxI/6ryvKvFthEo",
+    "priority": 8
 }

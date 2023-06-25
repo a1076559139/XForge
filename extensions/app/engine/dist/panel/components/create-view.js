@@ -34,72 +34,10 @@ function getComScript(name = 'NewClass') {
         '}';
 }
 function getNaMetaUserData(name = 'new-class') {
-    return {
-        'compressionType': {
-            'web-desktop': 'merge_all_json',
-            'web-mobile': 'merge_all_json',
-            'android': 'merge_all_json',
-            'ohos': 'merge_all_json',
-            'huawei-agc': 'merge_all_json',
-            'ios': 'merge_all_json',
-            'windows': 'merge_all_json',
-            'mac': 'merge_all_json',
-            'bytedance-mini-game': 'subpackage',
-            'oppo-mini-game': 'subpackage',
-            'huawei-quick-game': 'subpackage',
-            'cocos-play': 'zip',
-            'vivo-mini-game': 'subpackage',
-            'xiaomi-quick-game': 'subpackage',
-            'baidu-mini-game': 'subpackage',
-            'wechatgame': 'subpackage'
-        },
-        'isRemoteBundle': {
-            'web-desktop': true,
-            'web-mobile': true,
-            'android': true,
-            'ohos': true,
-            'huawei-agc': true,
-            'ios': true,
-            'windows': true,
-            'mac': true,
-            'bytedance-mini-game': false,
-            'oppo-mini-game': false,
-            'huawei-quick-game': false,
-            'cocos-play': true,
-            'vivo-mini-game': false,
-            'xiaomi-quick-game': false,
-            'baidu-mini-game': false,
-            'wechatgame': false
-        },
-        'isBundle': true,
-        'bundleName': `${name}`
-    };
+    return Object.assign(Object.assign({}, utils_1.getResMeta('view-native')), { 'bundleName': `${name}` });
 }
 function getResMetaUserData(name = 'new-class') {
-    return {
-        'compressionType': {},
-        'isRemoteBundle': {
-            'web-desktop': true,
-            'web-mobile': true,
-            'android': true,
-            'ohos': true,
-            'huawei-agc': true,
-            'ios': true,
-            'windows': true,
-            'mac': true,
-            'bytedance-mini-game': true,
-            'oppo-mini-game': true,
-            'huawei-quick-game': true,
-            'cocos-play': true,
-            'vivo-mini-game': true,
-            'xiaomi-quick-game': true,
-            'baidu-mini-game': true,
-            'wechatgame': true
-        },
-        'priority': 8,
-        'isBundle': true,
-        'bundleName': `${name}-res`
-    };
+    return Object.assign(Object.assign({}, utils_1.getResMeta('view-resources')), { 'bundleName': `${name}-res` });
 }
 /**
  * UI类型(小写)
@@ -128,7 +66,7 @@ function updatePages() {
     return Array.from(PageNames.keys());
 }
 exports.default = vue_1.default.extend({
-    template: utils_1.getTemplate('create-view'),
+    template: utils_1.getResPanel('create-view'),
     data() {
         return {
             showLoading: false,
@@ -237,12 +175,12 @@ exports.default = vue_1.default.extend({
             }
             queryResMeta.userData = getResMetaUserData(bundleName);
             await Editor.Message.request('asset-db', 'save-asset-meta', resourcesUrl, JSON.stringify(queryResMeta)).catch(_ => null);
-            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(bundleFolderUrl), '.app-bundle.md'), utils_1.getReadme('app-bundle'));
-            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(viewFolderUrl), '.app-view.md'), utils_1.getReadme('app-view'));
+            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(bundleFolderUrl), '.app-bundle.md'), utils_1.getResReadme('app-bundle'));
+            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(viewFolderUrl), '.app-view.md'), utils_1.getResReadme('app-view'));
             fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(typeFolderUrl), `.${type}.md`), `所有${type}类型UI的根目录`);
-            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(nativeUrl), '.native.md'), utils_1.getReadme('view-native'));
-            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(resourcesUrl), '.resources.md'), utils_1.getReadme('view-resources'));
-            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(expansionUrl), '.expansion.md'), utils_1.getReadme('view-expansion'));
+            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(nativeUrl), '.native.md'), utils_1.getResReadme('view-native'));
+            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(resourcesUrl), '.resources.md'), utils_1.getResReadme('view-resources'));
+            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(expansionUrl), '.expansion.md'), utils_1.getResReadme('view-expansion'));
             if (isPaper) {
                 fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(`${typeFolderUrl}/${ownerName}`), `.${ownerName}.md`), ownerName === 'all' ? '归属于全体Page' : `归属于Page${utils_1.stringCase(ownerName)}`);
                 fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(uiFolderUrl), `.${name}.md`), `${uiName}所在文件夹\n1、通过${ownerName === 'all' ? '在任意Page中配置miniViews属性并调用showMiniViews方法' : `在${owner}中配置miniViews属性并调用showMiniViews方法`}的方式加载`);

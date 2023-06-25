@@ -29,7 +29,7 @@ function getScript(name) {
         '}';
 }
 exports.default = vue_1.default.extend({
-    template: utils_1.getTemplate('create-manager'),
+    template: utils_1.getResPanel('create-manager'),
     data() {
         return {
             inputName: '',
@@ -64,8 +64,8 @@ exports.default = vue_1.default.extend({
             }
             // 目录如果不存在则创建
             if (!await utils_1.createFolderByUrl(rootPath, {
-                meta: utils_1.getMeta('app-manager'),
-                readme: utils_1.getReadme('app-manager'),
+                meta: utils_1.getResMeta('app-manager'),
+                readme: utils_1.getResReadme('app-manager'),
                 subFolders: [
                     {
                         folder: folderName,

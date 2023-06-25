@@ -1,9 +1,9 @@
 {
     "package_version": 2,
     "name": "app",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "author": "张鹏",
-    "editor": ">=3.6.0",
+    "editor": ">=3.8.0",
     "description": "i18n:app.description",
     "main": "./engine/dist/main.js",
     "contributions": {

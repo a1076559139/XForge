@@ -1,6 +1,6 @@
 import { existsSync } from 'fs';
 import Vue from 'vue/dist/vue';
-import { convertUrlToPath, createFolderByUrl, getMeta, getReadme, getTemplate, stringCase } from '../../utils';
+import { convertUrlToPath, createFolderByUrl, getResMeta, getResPanel, getResReadme, stringCase } from '../../utils';
 
 /**
  * 根据语言获取脚本内容
@@ -26,7 +26,7 @@ function getScript(name: string) {
 }
 
 export default Vue.extend({
-    template: getTemplate('create-manager'),
+    template: getResPanel('create-manager'),
     data() {
         return {
             inputName: '',
@@ -68,8 +68,8 @@ export default Vue.extend({
 
             // 目录如果不存在则创建
             if (!await createFolderByUrl(rootPath, {
-                meta: getMeta('app-manager'),
-                readme: getReadme('app-manager'),
+                meta: getResMeta('app-manager'),
+                readme: getResReadme('app-manager'),
                 subFolders: [
                     {
                         folder: folderName,

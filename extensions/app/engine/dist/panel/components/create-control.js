@@ -24,7 +24,7 @@ function getScript(name) {
         '}';
 }
 exports.default = vue_1.default.extend({
-    template: utils_1.getTemplate('create-control'),
+    template: utils_1.getResPanel('create-control'),
     data() {
         return {
             inputName: '',
@@ -55,7 +55,7 @@ exports.default = vue_1.default.extend({
                 return;
             }
             // 目录如果不存在则创建
-            if (!await utils_1.createFolderByUrl(rootPath, { meta: utils_1.getMeta('app-control'), readme: utils_1.getReadme('app-control') })) {
+            if (!await utils_1.createFolderByUrl(rootPath, { meta: utils_1.getResMeta('app-control'), readme: utils_1.getResReadme('app-control') })) {
                 this.showLoading = false;
                 this.display = `[错误] 创建目录失败\n${rootPath}`;
                 return;

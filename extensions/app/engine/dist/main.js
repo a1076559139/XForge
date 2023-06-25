@@ -234,10 +234,10 @@ async function clearExecutor() {
 async function updateExecutor() {
     // app-builtin文件夹不存在, 创建
     if (!fs_1.existsSync(builtinFolderPath))
-        await utils_1.createFolderByUrl(builtinFolderUrl, { readme: utils_1.getReadme(builtinFolderName) });
+        await utils_1.createFolderByUrl(builtinFolderUrl, { readme: utils_1.getResReadme(builtinFolderName) });
     // app-admin文件夹不存在, 创建
     if (!fs_1.existsSync(adminFolderPath))
-        await utils_1.createFolderByUrl(adminFolderUrl, { meta: utils_1.getMeta(adminFolderName), readme: utils_1.getReadme(adminFolderName) });
+        await utils_1.createFolderByUrl(adminFolderUrl, { meta: utils_1.getResMeta(adminFolderName), readme: utils_1.getResReadme(adminFolderName) });
     const mgrList = [];
     const dataList = [];
     const confList = [];
@@ -458,11 +458,38 @@ function callUpdateExecutor(clear = false) {
         }, 500);
     }
 }
+function updateBuilder() {
+    const builder = utils_1.getResJson('builder');
+    const sourcePath = path_1.default.join(utils_1.getProjectPath(), 'settings/v2/packages/builder.json');
+    const str = fs_1.readFileSync(sourcePath, 'utf-8');
+    const source = JSON.parse(str);
+    let changed = false;
+    const handle = (data, out) => {
+        for (const key in data) {
+            if (!Object.prototype.hasOwnProperty.call(data, key)) {
+                continue;
+            }
+            if (!out[key]) {
+                changed = true;
+                out[key] = data[key];
+                continue;
+            }
+            if (data[key] && typeof data[key] === 'object' && out[key] && typeof out[key] === 'object') {
+                handle(data[key], out[key]);
+            }
+        }
+    };
+    handle(builder, source);
+    fs_1.writeFileSync(sourcePath, JSON.stringify(source, null, '  '), { encoding: 'utf-8' });
+    return changed;
+}
 exports.methods = {
     ['open-panel']() {
         Editor.Panel.open('app.open-panel');
     },
     ['update-executor']() {
+        // 点击更新
+        updateBuilder();
         callUpdateExecutor();
     },
     ['asset-db:ready']() {
@@ -501,6 +528,7 @@ exports.methods = {
  * @zh 扩展加载完成后触发的钩子
  */
 function load() {
+    updateBuilder();
     Editor.Message.request('asset-db', 'query-ready')
         .then(ready => {
         if (!ready)

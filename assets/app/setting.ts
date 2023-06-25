@@ -2,9 +2,9 @@ import SoundManager from '../../extensions/app/assets/manager/sound/SoundManager
 import UIManager from '../../extensions/app/assets/manager/ui/UIManager';
 
 // 预加载的UI(符合app.lib.task.createAny规则)
-UIManager.setting.preload = ['PageHome', 'PaperHomeIndex'];
+UIManager.setting.preload = ['PageGame'];
 // 默认UI, 会在首屏流程后自动show
-UIManager.setting.defaultUI = 'PageHome';
+UIManager.setting.defaultUI = 'PageGame';
 
 // 预加载的音频(按数组顺序依次预加载)
 SoundManager.setting.preload = [];

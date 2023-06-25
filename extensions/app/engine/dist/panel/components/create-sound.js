@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vue_1 = __importDefault(require("vue/dist/vue"));
 const utils_1 = require("../../utils");
 exports.default = vue_1.default.extend({
-    template: utils_1.getTemplate('create-sound'),
+    template: utils_1.getResPanel('create-sound'),
     data() {
         return {
             display: '',
@@ -24,12 +24,12 @@ exports.default = vue_1.default.extend({
             this.showLoading = true;
             const rootPath = 'db://assets/app-bundle/app-sound';
             if (!await utils_1.createFolderByUrl(rootPath, {
-                meta: utils_1.getMeta('app-sound'),
-                readme: utils_1.getReadme('app-sound'),
+                meta: utils_1.getResMeta('app-sound'),
+                readme: utils_1.getResReadme('app-sound'),
                 subFolders: [
                     {
                         folder: this.typeSelectIndex === 0 ? 'music' : 'effect',
-                        readme: utils_1.getReadme(this.typeSelectIndex === 0 ? 'sound-music' : 'sound-effect')
+                        readme: utils_1.getResReadme(this.typeSelectIndex === 0 ? 'sound-music' : 'sound-effect')
                     }
                 ]
             })) {

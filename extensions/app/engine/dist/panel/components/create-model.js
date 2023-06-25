@@ -23,7 +23,7 @@ function getScript(type, className) {
     }
 }
 exports.default = vue_1.default.extend({
-    template: utils_1.getTemplate('create-model'),
+    template: utils_1.getResPanel('create-model'),
     data() {
         return {
             inputName: '',
@@ -55,7 +55,7 @@ exports.default = vue_1.default.extend({
             this.display = '创建中';
             this.showLoading = true;
             // 目录如果不存在则创建
-            if (!await utils_1.createFolderByUrl(rootPath, { meta: utils_1.getMeta('app-model'), readme: utils_1.getReadme('app-model') })) {
+            if (!await utils_1.createFolderByUrl(rootPath, { meta: utils_1.getResMeta('app-model'), readme: utils_1.getResReadme('app-model') })) {
                 this.showLoading = false;
                 this.display = `[错误] 创建目录失败\n${rootPath}`;
                 return;

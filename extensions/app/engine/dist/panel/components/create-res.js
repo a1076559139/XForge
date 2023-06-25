@@ -7,7 +7,7 @@ const vue_1 = __importDefault(require("vue/dist/vue"));
 const utils_1 = require("../../utils");
 const typeNames = ['res-bundle', 'res-native', 'resources'];
 exports.default = vue_1.default.extend({
-    template: utils_1.getTemplate('create-res'),
+    template: utils_1.getResPanel('create-res'),
     data() {
         return {
             inputName: '',
@@ -41,12 +41,12 @@ exports.default = vue_1.default.extend({
             this.display = '创建中';
             this.showLoading = true;
             if (!await utils_1.createFolderByUrl(folderPath, {
-                readme: utils_1.getReadme(folderName),
-                meta: folderName === 'resources' ? utils_1.getMeta('resources') : undefined,
+                readme: utils_1.getResReadme(folderName),
+                meta: folderName === 'resources' ? utils_1.getResMeta('resources') : undefined,
                 subFolders: [
                     {
                         folder: name,
-                        meta: this.typeSelectIndex === 0 ? utils_1.getMeta('resources') : undefined
+                        meta: this.typeSelectIndex === 0 ? utils_1.getResMeta('custom-bundle') : undefined
                     }
                 ]
             })) {
