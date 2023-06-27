@@ -471,14 +471,18 @@ function updateBuilder() {
     const str = readFileSync(sourcePath, 'utf-8');
     const source = JSON.parse(str);
 
-    let changed = false;
+    const overwriteKeys = builder.bundleConfig['custom'] ? Object.keys(builder.bundleConfig['custom']) : [];
+
     const handle = (data: object, out: object) => {
         for (const key in data) {
             if (!Object.prototype.hasOwnProperty.call(data, key)) {
                 continue;
             }
             if (!out[key]) {
-                changed = true;
+                out[key] = data[key];
+                continue;
+            }
+            if (overwriteKeys.indexOf(key) >= 0) {
                 out[key] = data[key];
                 continue;
             }
@@ -490,7 +494,6 @@ function updateBuilder() {
 
     handle(builder, source);
     writeFileSync(sourcePath, JSON.stringify(source, null, '  '), { encoding: 'utf-8' });
-    return changed;
 }
 
 export const methods: { [key: string]: (...any: any) => any } = {

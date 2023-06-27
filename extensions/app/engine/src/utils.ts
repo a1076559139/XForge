@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { basename, join } from 'path';
 
-export function getResJson(name: 'builder'): { userData: object } {
+export function getResJson(name: 'builder'): { bundleConfig: object, textureCompressConfig: object } {
     const Assets = join(__dirname, '../res/json');
     const str = readFileSync(join(Assets, `${name}.json`), 'utf-8');
     return str ? JSON.parse(str) : null;
