@@ -1,5 +1,5 @@
 # 介绍
-> 框架设计之初主要考虑H5环境(捎带着小游戏环境)，最终的目的是希望：<br/>
+> 框架设计之初主要考虑H5与小游戏环境，最终的目的是希望：<br/>
 > 1、更好的多人协同开发体验。<br/>
 > 2、尽可能统一的开发规范(尽量避免口头约束)。<br/>
 > 3、更小的首屏/首包体积。<br/>
@@ -12,7 +12,7 @@
 
 # 使用
 ## 0、初始化项目
-* 在空文件夹下执行```npx --registry=https://registry.npmjs.org @gamex/cc-cli@latest```
+* 在空文件夹下执行```npx @gamex/cc-cli@latest```或```npx --registry=https://registry.npmjs.org @gamex/cc-cli@latest```
 ## 1、更新项目框架
 * 在项目根目录下执行```npm run upgrade```
 ## 2、使用内置package
