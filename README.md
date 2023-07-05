@@ -1,3 +1,5 @@
+gitee: https://gitee.com/cocos2d-zp/cococs-creator-frame-3d
+
 # 介绍
 > 框架设计之初主要考虑H5与小游戏环境，最终的目的是希望：<br/>
 > 1、更好的多人协同开发体验。<br/>
