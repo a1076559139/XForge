@@ -18,7 +18,7 @@ function getComScript(name = 'NewClass') {
         'const { ccclass, property } = _decorator;\r\n' +
         '@ccclass(\'' + name + '\')\r\n' +
         'export class ' + name + ' extends BaseView {\r\n' +
-        '    // 子界面列表，数组顺序为子界面排列顺序\r\n' +
+        `    ${isPage ? '// 子界面列表，数组顺序为子界面排列顺序\r\n' : ''}` +
         `    ${isPage ? 'protected miniViews: IMiniViewNames = [];\r\n' : ''}` +
         '    // 初始化的相关逻辑写在这\r\n' +
         '    onLoad(){}\r\n\r\n' +
