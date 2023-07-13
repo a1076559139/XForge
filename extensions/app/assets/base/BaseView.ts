@@ -297,11 +297,11 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     resetInEditor(): any {
         if (EDITOR) {
             const is3D = this.node.layer !== Layers.Enum.UI_2D;
-            if (this.viewName.indexOf(ViewType.Page)) {
+            if (this.viewName.indexOf(ViewType.Page) >= 0) {
                 this.shade = false;
                 this.blockInput = is3D ? false : true;
                 this.captureFocus = is3D ? false : true;
-            } else if (this.viewName.indexOf(ViewType.Paper)) {
+            } else if (this.viewName.indexOf(ViewType.Paper) >= 0) {
                 this.shade = false;
                 this.captureFocus = false;
                 this.blockInput = false;
