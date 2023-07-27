@@ -22,7 +22,7 @@
 
 // path.join不能正确处理'db://'结构，会把'//'变成'/'
 
-import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'fs';
 import path from 'path';
 import { AssetInfo } from '../@types/packages/asset-db/@types/public';
 import { convertUrlToPath, createFolderByUrl, getProjectPath, getResJson, getResMeta, getResReadme, stringCase, stringCaseNegate } from './utils';
@@ -35,6 +35,8 @@ const soundFolderName = 'app-sound';
 const viewFolderName = 'app-view';
 const builtinFolderName = 'app-builtin';
 const bundleFolderName = 'app-bundle';
+
+const pkgFolderUrl = 'db://pkg/';
 
 const builtinFolderUrl = 'db://assets/' + builtinFolderName;
 const builtinFolderPath = convertUrlToPath(builtinFolderUrl);
@@ -193,7 +195,7 @@ async function clearExecutor() {
     const viewKeys = { never: '' };
     const miniViewKeys = { never: '' };
     const musicKeys = { never: '' };
-    const effecKeys = { never: '' };
+    const effectKeys = { never: '' };
 
     let result = '/* eslint-disable */\n' +
         'import { Component } from \'cc\';\n' +
@@ -203,7 +205,7 @@ async function clearExecutor() {
     result += 'enum viewNames { \'' + Object.keys(viewKeys).join('\',\'') + '\'}\n';
     result += 'const miniViewNames = ' + JSON.stringify(miniViewKeys) + '\n';
     result += 'enum musicNames { \'' + Object.keys(musicKeys).join('\',\'') + '\'}\n';
-    result += 'enum effectNames { \'' + Object.keys(effecKeys).join('\',\'') + '\'}\n\n';
+    result += 'enum effectNames { \'' + Object.keys(effectKeys).join('\',\'') + '\'}\n\n';
 
     result += 'export type IViewName = keyof typeof viewNames\n';
     result += 'export type IViewNames = IViewName[]\n';
@@ -362,10 +364,36 @@ async function updateExecutor() {
         }
     }
 
+    const pkgs: string[] = [];
+    const pkgAssetsPath = convertUrlToPath(pkgFolderUrl);
+    if(existsSync(pkgAssetsPath)){
+        readdirSync(pkgAssetsPath).forEach(function (item) {
+            const item_path = path.join(pkgAssetsPath, item);
+            const item_stat = statSync(item_path);
+            if (!item_stat.isDirectory()) return;
+            const item_name = path.basename(item_path);
+            if (item_name.startsWith('@')) {
+                readdirSync(item_path).forEach(function (sub) {
+                    const sub_path = path.join(item_path, sub);
+                    const sub_stat = statSync(sub_path);
+                    if (!sub_stat.isDirectory()) return;
+                    const sub_name = path.basename(sub_path);
+                    pkgs.push(item_name + '/' + sub_name);
+                });
+            } else {
+                pkgs.push(item_name);
+            }
+        });
+    }
+
     let result = '/* eslint-disable */\n' +
         'import { Component } from \'cc\';\n' +
         'import { app } from \'../../app/app\';\n' +
         'import { DEV,EDITOR } from \'cc/env\';\n\n';
+
+    pkgs.forEach(name => {
+        result += `import 'db://pkg/${name}'\n`;
+    });
 
     const handle = function handle(arr: any[], module: boolean) {
         arr.forEach(function (value, index, array) {

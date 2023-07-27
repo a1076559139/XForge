@@ -36,6 +36,7 @@ const soundFolderName = 'app-sound';
 const viewFolderName = 'app-view';
 const builtinFolderName = 'app-builtin';
 const bundleFolderName = 'app-bundle';
+const pkgFolderUrl = 'db://pkg/';
 const builtinFolderUrl = 'db://assets/' + builtinFolderName;
 const builtinFolderPath = utils_1.convertUrlToPath(builtinFolderUrl);
 const bundleFolderUrl = 'db://assets/' + bundleFolderName;
@@ -195,7 +196,7 @@ async function clearExecutor() {
     const viewKeys = { never: '' };
     const miniViewKeys = { never: '' };
     const musicKeys = { never: '' };
-    const effecKeys = { never: '' };
+    const effectKeys = { never: '' };
     let result = '/* eslint-disable */\n' +
         'import { Component } from \'cc\';\n' +
         'import { app } from \'../../app/app\';\n' +
@@ -203,7 +204,7 @@ async function clearExecutor() {
     result += 'enum viewNames { \'' + Object.keys(viewKeys).join('\',\'') + '\'}\n';
     result += 'const miniViewNames = ' + JSON.stringify(miniViewKeys) + '\n';
     result += 'enum musicNames { \'' + Object.keys(musicKeys).join('\',\'') + '\'}\n';
-    result += 'enum effectNames { \'' + Object.keys(effecKeys).join('\',\'') + '\'}\n\n';
+    result += 'enum effectNames { \'' + Object.keys(effectKeys).join('\',\'') + '\'}\n\n';
     result += 'export type IViewName = keyof typeof viewNames\n';
     result += 'export type IViewNames = IViewName[]\n';
     result += 'export type IMiniViewName = keyof typeof miniViewNames\n';
@@ -357,10 +358,37 @@ async function updateExecutor() {
             }
         }
     }
+    const pkgs = [];
+    const pkgAssetsPath = utils_1.convertUrlToPath(pkgFolderUrl);
+    if (fs_1.existsSync(pkgAssetsPath)) {
+        fs_1.readdirSync(pkgAssetsPath).forEach(function (item) {
+            const item_path = path_1.default.join(pkgAssetsPath, item);
+            const item_stat = fs_1.statSync(item_path);
+            if (!item_stat.isDirectory())
+                return;
+            const item_name = path_1.default.basename(item_path);
+            if (item_name.startsWith('@')) {
+                fs_1.readdirSync(item_path).forEach(function (sub) {
+                    const sub_path = path_1.default.join(item_path, sub);
+                    const sub_stat = fs_1.statSync(sub_path);
+                    if (!sub_stat.isDirectory())
+                        return;
+                    const sub_name = path_1.default.basename(sub_path);
+                    pkgs.push(item_name + '/' + sub_name);
+                });
+            }
+            else {
+                pkgs.push(item_name);
+            }
+        });
+    }
     let result = '/* eslint-disable */\n' +
         'import { Component } from \'cc\';\n' +
         'import { app } from \'../../app/app\';\n' +
         'import { DEV,EDITOR } from \'cc/env\';\n\n';
+    pkgs.forEach(name => {
+        result += `import 'db://pkg/${name}'\n`;
+    });
     const handle = function handle(arr, module) {
         arr.forEach(function (value, index, array) {
             // storage

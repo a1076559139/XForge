@@ -8,7 +8,7 @@
     "contributions": {
         "asset-db": {
             "mount": {
-                "path": "./package/node_modules",
+                "path": "./assets",
                 "readonly": true
             }
         }

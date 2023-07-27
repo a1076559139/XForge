@@ -79,13 +79,43 @@ function deleteDirectory(dir) {
     fs.rmdirSync(dir);
 }
 
+/**
+ * 拷贝源目录下的文件到目标目录下(过滤掉所有.git文件或目录)
+ * @param {string} src  源
+ * @param {string} dest 目标
+ */
+function copyDirectory(src, dest) {
+    if (fs.existsSync(src) == false) {
+        return false;
+    }
+
+    if (fs.existsSync(dest) == false) {
+        fs.mkdirSync(dest);
+    }
+
+    // 拷贝新的内容进去
+    let dirs = fs.readdirSync(src);
+    dirs.forEach(function (item) {
+        if (item === '.git') return;
+        if (item === '.package-lock.json') return;
+        let item_path = path.join(src, item);
+        let temp = fs.statSync(item_path);
+        if (temp.isFile() || temp.isSymbolicLink()) { // 是文件
+            fs.copyFileSync(item_path, path.join(dest, item));
+        } else if (temp.isDirectory()) { // 是目录
+            copyDirectory(item_path, path.join(dest, item));
+        }
+    });
+}
+
+const assetsDir = path.join(__dirname, 'assets');
 const packageDir = path.join(__dirname, 'package');
-const moduleDir = path.join(packageDir, 'node_modules');
+const modulesDir = path.join(packageDir, 'node_modules');
 
 async function main() {
     // 存储meta信息
     const metaMap = {};
-    eachFiles(moduleDir, (item_path, isDirectory) => {
+    eachFiles(assetsDir, (item_path, isDirectory) => {
         if (isDirectory) {
             if (!path.basename(item_path).startsWith('@')) return;
             getFiles(item_path).forEach((item_path2) => {
@@ -107,7 +137,18 @@ async function main() {
         const cmd = ['--registry=https://registry.npmjs.org', 'install', '--prefix', packageDir];
         if (process.argv[3]) cmd.push(process.argv[3]);
         const code = await spawnCmd(npm, cmd);
-        if (code !== 0) console.error(`[失败]: ${code}`);
+        if (code !== 0) {
+            console.error(`[失败]: ${code}`);
+        } else {
+            // 直接更新executor.ts
+            const executorPath = path.join(__dirname, '../../assets/app-builtin/app-admin/executor.ts');
+            if (fs.existsSync(executorPath)) {
+                const str = fs.readFileSync(executorPath, 'utf-8');
+                if (str.search(new RegExp(`import\\s+['"]db://pkg/${process.argv[3]}['"]`)) === -1) {
+                    fs.writeFileSync(executorPath, str + `\nimport 'db://pkg/${process.argv[3]}'`, 'utf-8');
+                }
+            }
+        }
     } else if (process.argv[2] === 'remove') {
         const cmd = ['--registry=https://registry.npmjs.org', 'uninstall', '--prefix', packageDir];
         if (!process.argv[3]) return console.error('[失败]: 输入要卸载的名字');
@@ -115,21 +156,32 @@ async function main() {
         const code = await spawnCmd(npm, cmd);
         if (code !== 0) {
             console.error(`[失败]: ${code}`);
-        } else if (fs.existsSync(path.join(moduleDir, process.argv[3].trim()))) {
-            // 如果文件夹未删除成功 则 强制删除
-            deleteDirectory(path.join(moduleDir, process.argv[3].trim()));
+        } else {
+            if (fs.existsSync(path.join(modulesDir, process.argv[3].trim()))) {
+                // 如果文件夹未删除成功 则 强制删除
+                deleteDirectory(path.join(modulesDir, process.argv[3].trim()));
+            }
+            // 直接更新executor.ts避免返回编辑器报错
+            const executorPath = path.join(__dirname, '../../assets/app-builtin/app-admin/executor.ts');
+            if (fs.existsSync(executorPath)) {
+                const str = fs.readFileSync(executorPath, 'utf-8');
+                fs.writeFileSync(executorPath, str.replace(new RegExp(`import\\s+['"]db://pkg/${process.argv[3]}['"]`), ''), 'utf-8');
+            }
         }
     } else {
         return console.error('[未知指令]');
     }
 
+    deleteDirectory(assetsDir);
+    copyDirectory(modulesDir, assetsDir);
+
     // 还原meta，或删除无用meta
-    for (const metapath in metaMap) {
-        if (!fs.existsSync(metapath.slice(0, -5))) {
-            if (!fs.existsSync(metapath)) continue;
-            fs.unlinkSync(metapath);
+    for (const metaPath in metaMap) {
+        if (!fs.existsSync(metaPath.slice(0, -5))) {
+            if (!fs.existsSync(metaPath)) continue;
+            fs.unlinkSync(metaPath);
         } else {
-            fs.writeFileSync(metapath, metaMap[metapath], 'utf-8');
+            fs.writeFileSync(metaPath, metaMap[metaPath], 'utf-8');
         }
     }
 

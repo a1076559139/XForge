@@ -68,6 +68,9 @@ function convertUrlToPath(url) {
     else if (url.startsWith('db://app')) {
         url = Editor.Utils.Path.join(Editor.Project.path, 'extensions/app/assets', url.slice(8));
     }
+    else if (url.startsWith('db://pkg')) {
+        url = Editor.Utils.Path.join(Editor.Project.path, 'extensions/pkg/assets', url.slice(8));
+    }
     return url;
 }
 exports.convertUrlToPath = convertUrlToPath;
