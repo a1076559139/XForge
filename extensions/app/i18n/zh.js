@@ -1,8 +1,8 @@
 'use strict';
 module.exports = {
     description: '框架核心',
-    create:'创建',
-    update: '更新',
+    create: '创建',
+    update: '刷新',
     menuMain: 'App',
     menuCreateView: '创建UI',
     menuCreateManager: '创建Manager',
