@@ -2,12 +2,12 @@
   "ver": "1.2.0",
   "importer": "directory",
   "imported": true,
-  "uuid": "1e3dd32f-f769-4491-adf4-1ae6e7b8bf62",
+  "uuid": "a0e2c2cc-8f16-4ccd-8270-8dbed3e887e5",
   "files": [],
   "subMetas": {},
   "userData": {
     "isBundle": true,
-    "bundleName": "page-game",
-    "bundleConfigID": "auto_f7NI9WxFVIO6e8LbJGF72k"
+    "bundleConfigID": "auto_f7NI9WxFVIO6e8LbJGF72k",
+    "bundleName": "page-home"
   }
 }

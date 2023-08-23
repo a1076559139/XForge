@@ -101,7 +101,7 @@ function isExecutor(info: AssetInfo, strict = true) {
         if (info.path.endsWith('Manager') && (info.type === 'cc.Script' || info.type === 'cc.Prefab')) return true;
         if ((info.name.startsWith('data.') || info.name.startsWith('config.')) && info.type === 'cc.Script') return true;
         if ((info.name.startsWith('Page') || info.name.startsWith('Paper') || info.name.startsWith('Pop') || info.name.startsWith('Top'))
-            && (info.type === 'cc.Script' || info.type === 'cc.Prefab')) return true;
+            && (info.type === 'cc.Script' || info.type === 'cc.Prefab' || info.type === 'cc.Scene' || info.type === 'cc.SceneAsset')) return true;
         if (info.type === 'cc.AudioClip') return true;
 
         return false;
@@ -126,7 +126,7 @@ function isExecutor(info: AssetInfo, strict = true) {
     }
     if (info.path.startsWith(viewFolderUrl)) {
         return (info.name.startsWith('Page') || info.name.startsWith('Paper') || info.name.startsWith('Pop') || info.name.startsWith('Top'))
-            && (info.type === 'cc.Script' || info.type === 'cc.Prefab');
+            && (info.type === 'cc.Script' || info.type === 'cc.Prefab' || info.type === 'cc.Scene' || info.type === 'cc.SceneAsset');
     }
     if (info.path.startsWith(soundFolderUrl)) {
         return info.type === 'cc.AudioClip';
@@ -250,7 +250,7 @@ async function updateExecutor() {
     const dataList: any[] = [];
     const confList: any[] = [];
 
-    const viewKeys: { [name in string]: string } = {};
+    const viewKeys: { [name in string]: boolean } = {};
     const miniViewKeys: { [name in string]: string } = {};
     const musicKeys: { [name in string]: string } = {};
     const effectKeys: { [name in string]: string } = {};
@@ -268,7 +268,7 @@ async function updateExecutor() {
         })
         .catch(() => []);
     // app-view
-    const result3: AssetInfo[] = await Editor.Message.request('asset-db', 'query-assets', { pattern: viewFolderUrl + '/{page,pop,top,paper/*}/*/native/*.prefab' })
+    const result3: AssetInfo[] = await Editor.Message.request('asset-db', 'query-assets', { pattern: viewFolderUrl + '/{page,pop,top,paper/*}/*/native/*.{prefab,scene}' })
         .then(res => {
             return res.sort((a, b) => compareStr(a.name, b.name));
         })
@@ -326,7 +326,7 @@ async function updateExecutor() {
                     confList.push([filename, dirname, varname, extname]);
                 }
             }
-        } else if (extname === '.prefab') {
+        } else if (extname === '.prefab' || extname === '.scene') {
             if (fileUrl.startsWith(viewFolderUrl) && viewRegExp.test(filename)) {
                 const dirArray = dirname.split('/');
                 const index = dirArray.indexOf(viewFolderName);
@@ -336,15 +336,16 @@ async function updateExecutor() {
                 if (['page', 'paper', 'pop', 'top'].indexOf(viewDirArray[0].toLowerCase()) >= 0) {
                     // 主界面
                     if (filename === `${stringCase(viewDirArray[0], false)}${stringCase(viewDirArray[1], false)}`) {
-                        viewKeys[filename] = filename;
+                        viewKeys[filename] = extname === '.scene';
                     }
                     // 子界面
                     else if (filename === `${stringCase(viewDirArray[0], false)}${stringCase(viewDirArray[1], false)}${stringCase(viewDirArray[2], false)}`) {
                         miniViewKeys[filename] = `${stringCase(viewDirArray[0], false)}${stringCase(viewDirArray[1], false)}`;
                     }
                 } else {
+                    // 主界面
                     if (filename === `${stringCase(viewDirArray[1], false)}${stringCase(viewDirArray[2], false)}`) {
-                        viewKeys[filename] = filename;
+                        viewKeys[filename] = extname === '.scene';
                     }
                     // 子界面
                     else if (filename === `${stringCase(viewDirArray[1], false)}${stringCase(viewDirArray[2], false)}${stringCase(viewDirArray[3], false)}`) {
@@ -366,7 +367,7 @@ async function updateExecutor() {
 
     const pkgs: string[] = [];
     const pkgAssetsPath = convertUrlToPath(pkgFolderUrl);
-    if(existsSync(pkgAssetsPath)){
+    if (existsSync(pkgAssetsPath)) {
         readdirSync(pkgAssetsPath).forEach(function (item) {
             const item_path = path.join(pkgAssetsPath, item);
             const item_stat = statSync(item_path);
@@ -432,7 +433,7 @@ async function updateExecutor() {
             mgrStr += ',';
         }
     });
-    if (Object.keys(viewKeys).length === 0) viewKeys['never'] = '';
+    if (Object.keys(viewKeys).length === 0) viewKeys['never'] = false;
     if (Object.keys(miniViewKeys).length === 0) miniViewKeys['never'] = '';
     if (Object.keys(musicKeys).length === 0) musicKeys['never'] = '';
     if (Object.keys(effectKeys).length === 0) effectKeys['never'] = '';
@@ -450,6 +451,9 @@ async function updateExecutor() {
     result += 'export type IMusicNames = IMusicName[]\n';
     result += 'export type IEffectName = keyof typeof effectNames\n';
     result += 'export type IEffectNames = IEffectName[]\n\n';
+
+    // scene
+    result += `if(!EDITOR||DEV) Array.prototype.push.apply(app.scene, ${JSON.stringify(Object.keys(viewKeys).filter(key => viewKeys[key]))})\n`;
 
     // data
     handle(dataList, false);

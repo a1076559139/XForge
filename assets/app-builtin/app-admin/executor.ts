@@ -8,8 +8,8 @@ import LoaderManager from '../../../extensions/app/assets/manager/loader/LoaderM
 import SoundManager from '../../../extensions/app/assets/manager/sound/SoundManager'
 import TimerManager from '../../../extensions/app/assets/manager/timer/TimerManager'
 import UIManager from '../../../extensions/app/assets/manager/ui/UIManager'
-enum viewNames { 'PageGame'}
-const miniViewNames = {"never":""}
+enum viewNames { 'PageHome','PageTest'}
+const miniViewNames = {"PaperHomeIndex":"PaperHome"}
 enum musicNames { 'never'}
 enum effectNames { 'never'}
 
@@ -22,6 +22,7 @@ export type IMusicNames = IMusicName[]
 export type IEffectName = keyof typeof effectNames
 export type IEffectNames = IEffectName[]
 
+if(!EDITOR||DEV) Array.prototype.push.apply(app.scene, ["PageTest"])
 if(!EDITOR||DEV) Object.assign(app.data, {})
 if(!EDITOR||DEV) Object.assign(app.config, {})
 

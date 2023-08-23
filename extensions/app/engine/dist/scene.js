@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.methods = exports.unload = exports.load = void 0;
 const path_1 = require("path");
-module.paths.push(path_1.join(Editor.App.path, 'node_modules'));
+module.paths.push((0, path_1.join)(Editor.App.path, 'node_modules'));
 function load() { }
 exports.load = load;
 function unload() { }
@@ -15,22 +15,46 @@ exports.unload = unload;
 // };
 // const result = await Editor.Message.request('scene', 'execute-scene-script', options);
 exports.methods = {
-    async createPrefab(name, fileUrl, is3D) {
+    async createPrefab(fileName, fileUrl) {
         const { Node, js, Layers } = require('cc');
-        const node = new Node(name);
-        node.layer = is3D ? Layers.Enum.UI_3D : Layers.Enum.UI_2D;
+        const node = new Node(fileName);
+        node.layer = Layers.Enum.UI_2D;
         while (true) {
-            const result = js.getClassByName(name);
+            const result = js.getClassByName(fileName);
             if (result)
                 break;
             await new Promise((next) => {
                 setTimeout(next, 100);
             });
         }
-        const com = node.addComponent(name);
+        const com = node.addComponent(fileName);
         com.resetInEditor && com.resetInEditor();
         const info = cce.Prefab.generatePrefabDataFromNode(node);
         node.destroy();
         return Editor.Message.request('asset-db', 'create-asset', fileUrl, info.prefabData || info);
+    },
+    async createScene(fileName, fileUrl) {
+        const { SceneAsset, Scene, Node, js, Layers } = require('cc');
+        while (true) {
+            const result = js.getClassByName(fileName);
+            if (result)
+                break;
+            await new Promise((next) => {
+                setTimeout(next, 100);
+            });
+        }
+        const scene = new Scene(fileName);
+        const node = new Node(fileName);
+        node.parent = scene;
+        node.layer = Layers.Enum.UI_3D;
+        const com = node.addComponent(fileName);
+        com.resetInEditor && com.resetInEditor();
+        const sceneAsset = new SceneAsset();
+        sceneAsset.scene = scene;
+        const info = EditorExtends.serialize(sceneAsset);
+        node.destroy();
+        scene.destroy();
+        sceneAsset.destroy();
+        return Editor.Message.request('asset-db', 'create-asset', fileUrl, info);
     },
 };

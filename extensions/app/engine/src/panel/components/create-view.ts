@@ -21,11 +21,11 @@ function getComScript(name = 'NewClass') {
         `    ${isPage ? '// 子界面列表，数组顺序为子界面排列顺序\r\n' : ''}` +
         `    ${isPage ? 'protected miniViews: IMiniViewNames = [];\r\n' : ''}` +
         '    // 初始化的相关逻辑写在这\r\n' +
-        '    onLoad(){}\r\n\r\n' +
+        '    onLoad() {}\r\n\r\n' +
         '    // 界面打开时的相关逻辑写在这(onShow可被多次调用-它与onHide不成对)\r\n' +
-        `    ${isPage ? 'onShow(params: any){ this.showMiniViews({ views: this.miniViews }) }\r\n\r\n' : 'onShow(params: any){}\r\n\r\n'}` +
+        `    ${isPage ? 'onShow(params: any) { this.showMiniViews({ views: this.miniViews }); }\r\n\r\n' : 'onShow(params: any) {}\r\n\r\n'}` +
         '    // 界面关闭时的相关逻辑写在这(已经关闭的界面不会触发onHide)\r\n' +
-        '    onHide(result: undefined){\r\n' +
+        '    onHide(result: undefined) {\r\n' +
         '        // app.manager.ui.show<' + name + '>({name: \'' + name + '\', onHide:(result) => { 接收到return的数据，并且有类型提示 }})\r\n' +
         '        return result;\r\n' +
         '    }\r\n' +
@@ -106,7 +106,7 @@ export default Vue.extend({
         onChangeTypeSelect(index: string) {
             this.typeSelectIndex = Number(index);
 
-            if (index == '0' || index == '1') {
+            if (index == '0') {
                 this.showSelectGroup = true;
             } else {
                 this.showSelectGroup = false;
@@ -143,7 +143,7 @@ export default Vue.extend({
                 return;
             }
 
-            const is3D = (isPage || isPaper) && this.groupSelectIndex == 1;
+            const is3D = isPage && this.groupSelectIndex == 1;
             const ownerName = PageNames.get(owner);
             const uiName = isPaper ?
                 `${stringCase(type)}${stringCase(ownerName)}${stringCase(name)}` :
@@ -163,6 +163,7 @@ export default Vue.extend({
             const expansionUrl = `${nativeUrl}/expansion`;
             const scriptUrl = `${nativeUrl}/${uiName}.ts`;
             const prefabUrl = `${nativeUrl}/${uiName}.prefab`;
+            const sceneUrl = `${nativeUrl}/${uiName}.scene`;
 
             // 创建前确认
             const createResponse = await Editor.Dialog.info('请确认', { detail: uiName, buttons: ['创建并打开', '仅创建', '取消'], default: 0, cancel: 2 });
@@ -225,17 +226,30 @@ export default Vue.extend({
                 }
             }
 
-            // 创建prefab
+            // 创建view
             if (!existsSync(convertUrlToPath(prefabUrl))) {
-                const createPrefabResult = await Editor.Message.request('scene', 'execute-scene-script', {
-                    name: 'app',
-                    method: 'createPrefab',
-                    args: [uiName, prefabUrl, is3D]
-                }).catch(_ => null);
-                if (!createPrefabResult) {
-                    this.showLoading = false;
-                    this.display = `[错误] 创建预制体失败\n${prefabUrl}`;
-                    return;
+                if (is3D) {
+                    const createSceneResult = await Editor.Message.request('scene', 'execute-scene-script', {
+                        name: 'app',
+                        method: 'createScene',
+                        args: [uiName, sceneUrl]
+                    }).catch(_ => null);
+                    if (!createSceneResult) {
+                        this.showLoading = false;
+                        this.display = `[错误] 创建场景失败\n${sceneUrl}`;
+                        return;
+                    }
+                } else {
+                    const createPrefabResult = await Editor.Message.request('scene', 'execute-scene-script', {
+                        name: 'app',
+                        method: 'createPrefab',
+                        args: [uiName, prefabUrl]
+                    }).catch(_ => null);
+                    if (!createPrefabResult) {
+                        this.showLoading = false;
+                        this.display = `[错误] 创建预制体失败\n${prefabUrl}`;
+                        return;
+                    }
                 }
             }
 
@@ -244,7 +258,11 @@ export default Vue.extend({
 
             // 是否打开
             if (createResponse.response == 0) {
-                Editor.Message.request('asset-db', 'open-asset', prefabUrl);
+                if (is3D) {
+                    Editor.Message.request('asset-db', 'open-asset', sceneUrl);
+                } else {
+                    Editor.Message.request('asset-db', 'open-asset', prefabUrl);
+                }
                 Editor.Message.request('asset-db', 'open-asset', scriptUrl);
             }
         }

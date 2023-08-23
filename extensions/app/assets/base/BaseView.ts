@@ -1,4 +1,4 @@
-import { Asset, Component, Enum, EventTouch, js, Layers, Node, UITransform, Widget, _decorator } from 'cc';
+import { Asset, Component, Enum, EventTouch, Layers, Node, UITransform, Widget, _decorator, js } from 'cc';
 import { EDITOR } from 'cc/env';
 import { IMiniViewName, IMiniViewNames, IViewName } from '../../../../assets/app-builtin/app-admin/executor';
 import Core from '../Core';
@@ -123,8 +123,11 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         group: Group,
         type: HideEvent,
         tooltip: '何种模式隐藏节点\n1、destroy: 销毁UI并释放对应的所有资源\n2、active: 缓存UI并加速下次的打开速度',
+        visible() {
+            return this.node?.layer === Layers.Enum.UI_2D;
+        }
     })
-    protected hideEvent = HideEvent.destroy;
+    private hideEvent = HideEvent.destroy;
 
     @property
     private _singleton = true;
@@ -132,6 +135,9 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     @property({
         group: Group,
         tooltip: '是否是单例模式\n1、单例模式: UI只会被创建一次(onShow会被重复触发)\n2、非单例模式: UI会被重复创建',
+        visible() {
+            return this.node?.layer === Layers.Enum.UI_2D;
+        }
     })
     protected get singleton(): boolean {
         if (this._base_view_name?.indexOf(ViewType.Page) === 0) return true;
@@ -162,7 +168,8 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         }
     })
     protected get captureFocus() {
-        return this.node?.layer === Layers.Enum.UI_2D ? this._captureFocus : false;
+        if (this.node?.layer !== Layers.Enum.UI_2D) return false;
+        return this._captureFocus;
     }
     protected set captureFocus(value) {
         if (value && this.node?.layer !== Layers.Enum.UI_2D) {
@@ -418,7 +425,9 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
             }
         }
 
-        task.start(onFinish);
+        task.start(onFinish && function () {
+            onFinish();
+        });
 
         return true;
     }

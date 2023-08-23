@@ -21,6 +21,7 @@ enum EventType {
     EVENT_MANAGER_FINISHED = 'EVENT_MANAGER_FINISHED'
 }
 
+type IScene = string[];
 type IData = { [key in string]: any };
 type IConfig = { [key in string]: any };
 
@@ -42,6 +43,7 @@ interface IManager {
 
 interface ICore {
     data: IData,
+    scene: IScene,
     config: IConfig,
     manager: IManager,
     Manager: ITypeofManager
@@ -49,6 +51,7 @@ interface ICore {
 
 const EventMap = {};
 const Lib = { task, storage, debug };
+const Scene = [];
 const Config = {};
 const Data = {};
 const Manager = {};
@@ -64,12 +67,14 @@ export default class Core<T extends ICore> {
     }
 
     lib = Lib;
+    scene: T['scene'] = null;
     config: T['config'] = null;
     data: T['data'] = null;
     Manager: T['Manager'] = null;
     manager: T['manager'] = null;
 
     constructor() {
+        this.scene = Scene;
         this.config = Config;
         this.data = Data;
         this.Manager = Manager as any;

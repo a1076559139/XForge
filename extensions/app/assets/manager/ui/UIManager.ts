@@ -1,9 +1,9 @@
-import { Asset, AssetManager, Component, error, Event, find, instantiate, isValid, js, Layers, Node, Prefab, Scene, Settings, settings, UITransform, Widget, _decorator } from 'cc';
+import { Asset, AssetManager, Component, Event, Layers, Node, Prefab, Scene, Settings, UITransform, Widget, _decorator, director, error, find, instantiate, isValid, js, settings } from 'cc';
 import { DEBUG } from 'cc/env';
 import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
+import Core from '../../Core';
 import BaseManager from '../../base/BaseManager';
 import BaseView, { IHideParamOnHide, IShowParamAttr, IShowParamOnHide, IShowParamOnShow, IViewType, ViewType } from '../../base/BaseView';
-import Core from '../../Core';
 import UIMgrShade from '../../manager/ui/comp/UIMgrShade';
 import UIMgrZOrder from '../../manager/ui/comp/UIMgrZOrder';
 
@@ -92,6 +92,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     // 预制体缓存
     private prefabCache: { [name in string]: Prefab } = {};
+    private sceneCache: { [name in string]: true } = {};
 
     // 全局触摸有效
     private touchEnabled: boolean = true;
@@ -216,11 +217,25 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     /**
+     * UI是否是scene
+     */
+    private isScene(name: string) {
+        return Core.inst.scene.indexOf(name) >= 0;
+    }
+
+    /**
      * 安装UI
      */
     private installUI(name: string, complete?: (result: boolean) => any, progress?: (finish: number, total: number, item: AssetManager.RequestItem) => void) {
-        if (this.prefabCache[name]) {
-            return complete && this.scheduleOnce(() => complete(true));
+        const isScene = this.isScene(name);
+        if (isScene) {
+            if (this.sceneCache[name]) {
+                return complete && this.scheduleOnce(() => complete(true));
+            }
+        } else {
+            if (this.prefabCache[name]) {
+                return complete && this.scheduleOnce(() => complete(true));
+            }
         }
         const task = Core.inst.lib.task.createAny<[[AssetManager.Bundle, AssetManager.Bundle], Prefab]>()
             .add([
@@ -238,28 +253,39 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 }
             ])
             .add((next) => {
+                // 失败
                 if (!task.results[0] || !task.results[0][1]) return next(null);
-                Core.inst.manager.loader.load({
-                    bundle: this.getNativeBundleName(name),
-                    path: this.getUIPath(name),
-                    type: Prefab,
-                    onProgress: progress,
-                    onComplete: next
-                });
+
+                if (isScene) {
+                    director.preloadScene(name, progress, next);
+                } else {
+                    Core.inst.manager.loader.load({
+                        bundle: this.getNativeBundleName(name),
+                        path: this.getUIPath(name),
+                        type: Prefab,
+                        onProgress: progress,
+                        onComplete: next
+                    });
+                }
             })
             .start((results) => {
-                if (this.prefabCache[name]) {
+                if (isScene) {
+                    this.sceneCache[name] = true;
+                    return complete && complete(true);
+                } else {
+                    if (this.prefabCache[name]) {
+                        return complete && complete(true);
+                    }
+                    const prefab = results[1];
+                    if (!prefab) {
+                        return complete && complete(false);
+                    }
+                    this.log('加载完成 ' + name);
+                    // 添加引用计数
+                    prefab.addRef();
+                    this.prefabCache[name] = prefab;
                     return complete && complete(true);
                 }
-                const prefab = results[1];
-                if (!prefab) {
-                    return complete && complete(false);
-                }
-                this.log('加载完成 ' + name);
-                // 添加引用计数
-                prefab.addRef();
-                this.prefabCache[name] = prefab;
-                return complete && complete(true);
             });
     }
 
