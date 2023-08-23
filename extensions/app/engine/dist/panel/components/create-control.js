@@ -24,7 +24,7 @@ function getScript(name) {
         '}';
 }
 exports.default = vue_1.default.extend({
-    template: (0, utils_1.getResPanel)('create-control'),
+    template: utils_1.getResPanel('create-control'),
     data() {
         return {
             inputName: '',
@@ -40,7 +40,7 @@ exports.default = vue_1.default.extend({
                 return;
             }
             const rootPath = 'db://assets/app-builtin/app-control';
-            const controlName = `${(0, utils_1.stringCase)(name)}Control`;
+            const controlName = `${utils_1.stringCase(name)}Control`;
             const scriptUrl = `${rootPath}/${controlName}.ts`;
             // 创建前确认
             const createResponse = await Editor.Dialog.info('请确认', { detail: controlName, buttons: ['创建并打开', '仅创建', '取消'], default: 0, cancel: 2 });
@@ -49,13 +49,13 @@ exports.default = vue_1.default.extend({
             }
             this.display = '创建中';
             this.showLoading = true;
-            if ((0, fs_1.existsSync)((0, utils_1.convertUrlToPath)(scriptUrl))) {
+            if (fs_1.existsSync(utils_1.convertUrlToPath(scriptUrl))) {
                 this.showLoading = false;
                 this.display = `[错误] 文件已存在, 请删除\n${scriptUrl}`;
                 return;
             }
             // 目录如果不存在则创建
-            if (!await (0, utils_1.createFolderByUrl)(rootPath, { meta: (0, utils_1.getResMeta)('app-control'), readme: (0, utils_1.getResReadme)('app-control') })) {
+            if (!await utils_1.createFolderByUrl(rootPath, { meta: utils_1.getResMeta('app-control'), readme: utils_1.getResReadme('app-control') })) {
                 this.showLoading = false;
                 this.display = `[错误] 创建目录失败\n${rootPath}`;
                 return;

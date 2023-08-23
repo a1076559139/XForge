@@ -13,11 +13,11 @@ export function unload() { }
 // };
 // const result = await Editor.Message.request('scene', 'execute-scene-script', options);
 export const methods = {
-    async createPrefab(fileName: string, fileUrl: string) {
+    async createPrefab(fileName: string, fileUrl: string, is3D = false) {
         const { Node, js, Layers } = require('cc');
 
         const node = new Node(fileName);
-        node.layer = Layers.Enum.UI_2D;
+        node.layer = is3D ? Layers.Enum.UI_3D : Layers.Enum.UI_2D;
 
         while (true) {
             const result = js.getClassByName(fileName);
@@ -52,7 +52,7 @@ export const methods = {
 
         const node = new Node(fileName);
         node.parent = scene;
-        node.layer = Layers.Enum.UI_3D;
+        node.layer = Layers.Enum.DEFAULT;
 
         const com = node.addComponent(fileName);
         com.resetInEditor && com.resetInEditor();

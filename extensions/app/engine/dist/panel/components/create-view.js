@@ -20,8 +20,8 @@ function getComScript(name = 'NewClass') {
         'const { ccclass, property } = _decorator;\r\n' +
         '@ccclass(\'' + name + '\')\r\n' +
         'export class ' + name + ' extends BaseView {\r\n' +
-        `    ${isPage ? '// 子界面列表，数组顺序为子界面排列顺序\r\n' : ''}` +
-        `    ${isPage ? 'protected miniViews: IMiniViewNames = [];\r\n' : ''}` +
+        `    ${isPage ? '// 子界面列表，数组顺序为子界面排列顺序\r\n' : '\r\n'}` +
+        `    ${isPage ? 'protected miniViews: IMiniViewNames = [];\r\n' : '\r\n'}` +
         '    // 初始化的相关逻辑写在这\r\n' +
         '    onLoad() {}\r\n\r\n' +
         '    // 界面打开时的相关逻辑写在这(onShow可被多次调用-它与onHide不成对)\r\n' +
@@ -34,10 +34,10 @@ function getComScript(name = 'NewClass') {
         '}';
 }
 function getNaMetaUserData(name = 'new-class') {
-    return Object.assign(Object.assign({}, (0, utils_1.getResMeta)('view-native')), { 'bundleName': `${name}` });
+    return Object.assign(Object.assign({}, utils_1.getResMeta('view-native')), { 'bundleName': `${name}` });
 }
 function getResMetaUserData(name = 'new-class') {
-    return Object.assign(Object.assign({}, (0, utils_1.getResMeta)('view-resources')), { 'bundleName': `${name}-res` });
+    return Object.assign(Object.assign({}, utils_1.getResMeta('view-resources')), { 'bundleName': `${name}-res` });
 }
 /**
  * UI类型(小写)
@@ -50,23 +50,23 @@ const PageNames = new Map();
 function updatePages() {
     PageNames.clear();
     // page目录
-    const pageRootPath = (0, path_1.join)(Editor.Project.path, 'assets/app-bundle/app-view/page');
+    const pageRootPath = path_1.join(Editor.Project.path, 'assets/app-bundle/app-view/page');
     // 读取page目录下所有文件
-    const folderNames = (0, fs_1.existsSync)(pageRootPath) ? (0, fs_1.readdirSync)(pageRootPath) : [];
+    const folderNames = fs_1.existsSync(pageRootPath) ? fs_1.readdirSync(pageRootPath) : [];
     // 大驼峰命名的UI名
     folderNames.forEach((folderName) => {
         // folderName为串式命名法
-        const pagePath = (0, path_1.join)(pageRootPath, folderName);
-        const isDirectory = (0, fs_1.statSync)(pagePath).isDirectory();
+        const pagePath = path_1.join(pageRootPath, folderName);
+        const isDirectory = fs_1.statSync(pagePath).isDirectory();
         if (isDirectory) {
-            PageNames.set(`Page${(0, utils_1.stringCase)(folderName)}`, folderName);
+            PageNames.set(`Page${utils_1.stringCase(folderName)}`, folderName);
         }
     });
     PageNames.set('通用', 'all');
     return Array.from(PageNames.keys());
 }
 exports.default = vue_1.default.extend({
-    template: (0, utils_1.getResPanel)('create-view'),
+    template: utils_1.getResPanel('create-view'),
     data() {
         return {
             showLoading: false,
@@ -88,7 +88,7 @@ exports.default = vue_1.default.extend({
         },
         onChangeTypeSelect(index) {
             this.typeSelectIndex = Number(index);
-            if (index == '0') {
+            if (index == '0' || index == '1') {
                 this.showSelectGroup = true;
             }
             else {
@@ -123,11 +123,11 @@ exports.default = vue_1.default.extend({
                 this.display = '[错误] 名字不合法\n不能使用all作为名字';
                 return;
             }
-            const is3D = isPage && this.groupSelectIndex == 1;
+            const is3D = (isPage || isPaper) && this.groupSelectIndex == 1;
             const ownerName = PageNames.get(owner);
             const uiName = isPaper ?
-                `${(0, utils_1.stringCase)(type)}${(0, utils_1.stringCase)(ownerName)}${(0, utils_1.stringCase)(name)}` :
-                `${(0, utils_1.stringCase)(type)}${(0, utils_1.stringCase)(name)}`;
+                `${utils_1.stringCase(type)}${utils_1.stringCase(ownerName)}${utils_1.stringCase(name)}` :
+                `${utils_1.stringCase(type)}${utils_1.stringCase(name)}`;
             const bundleName = isPaper ?
                 `${type}-${ownerName}-${name}` :
                 `${type}-${name}`;
@@ -143,6 +143,7 @@ exports.default = vue_1.default.extend({
             const scriptUrl = `${nativeUrl}/${uiName}.ts`;
             const prefabUrl = `${nativeUrl}/${uiName}.prefab`;
             const sceneUrl = `${nativeUrl}/${uiName}.scene`;
+            const singleColorUrl = `${resourcesUrl}/singleColor.png`;
             // 创建前确认
             const createResponse = await Editor.Dialog.info('请确认', { detail: uiName, buttons: ['创建并打开', '仅创建', '取消'], default: 0, cancel: 2 });
             if (createResponse.response == 2) {
@@ -151,13 +152,13 @@ exports.default = vue_1.default.extend({
             this.display = '创建中';
             this.showLoading = true;
             // 创建目录
-            if (!await (0, utils_1.createFolderByUrl)(uiFolderUrl, { subPaths: ['native', 'resources', 'native/expansion'] })) {
+            if (!await utils_1.createFolderByUrl(uiFolderUrl, { subPaths: ['native', 'resources', 'native/expansion'] })) {
                 this.showLoading = false;
                 this.display = `[错误] 创建目录失败\n${uiFolderUrl}`;
                 return;
             }
             // 设置native分包
-            await (0, utils_1.delayFileExistsByUrl)(`${nativeUrl}.meta`);
+            await utils_1.delayFileExistsByUrl(`${nativeUrl}.meta`);
             const queryNativeMeta = await Editor.Message.request('asset-db', 'query-asset-meta', nativeUrl).catch(_ => null);
             if (!queryNativeMeta) {
                 this.showLoading = false;
@@ -167,7 +168,7 @@ exports.default = vue_1.default.extend({
             queryNativeMeta.userData = getNaMetaUserData(bundleName);
             await Editor.Message.request('asset-db', 'save-asset-meta', nativeUrl, JSON.stringify(queryNativeMeta)).catch(_ => null);
             // 设置resources分包
-            await (0, utils_1.delayFileExistsByUrl)(`${resourcesUrl}.meta`);
+            await utils_1.delayFileExistsByUrl(`${resourcesUrl}.meta`);
             const queryResMeta = await Editor.Message.request('asset-db', 'query-asset-meta', resourcesUrl).catch(_ => null);
             if (!queryResMeta) {
                 this.showLoading = false;
@@ -176,21 +177,21 @@ exports.default = vue_1.default.extend({
             }
             queryResMeta.userData = getResMetaUserData(bundleName);
             await Editor.Message.request('asset-db', 'save-asset-meta', resourcesUrl, JSON.stringify(queryResMeta)).catch(_ => null);
-            (0, fs_1.writeFileSync)((0, path_1.join)((0, utils_1.convertUrlToPath)(bundleFolderUrl), '.app-bundle.md'), (0, utils_1.getResReadme)('app-bundle'));
-            (0, fs_1.writeFileSync)((0, path_1.join)((0, utils_1.convertUrlToPath)(viewFolderUrl), '.app-view.md'), (0, utils_1.getResReadme)('app-view'));
-            (0, fs_1.writeFileSync)((0, path_1.join)((0, utils_1.convertUrlToPath)(typeFolderUrl), `.${type}.md`), `所有${type}类型UI的根目录`);
-            (0, fs_1.writeFileSync)((0, path_1.join)((0, utils_1.convertUrlToPath)(nativeUrl), '.native.md'), (0, utils_1.getResReadme)('view-native'));
-            (0, fs_1.writeFileSync)((0, path_1.join)((0, utils_1.convertUrlToPath)(resourcesUrl), '.resources.md'), (0, utils_1.getResReadme)('view-resources'));
-            (0, fs_1.writeFileSync)((0, path_1.join)((0, utils_1.convertUrlToPath)(expansionUrl), '.expansion.md'), (0, utils_1.getResReadme)('view-expansion'));
+            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(bundleFolderUrl), '.app-bundle.md'), utils_1.getResReadme('app-bundle'));
+            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(viewFolderUrl), '.app-view.md'), utils_1.getResReadme('app-view'));
+            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(typeFolderUrl), `.${type}.md`), `所有${type}类型UI的根目录`);
+            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(nativeUrl), '.native.md'), utils_1.getResReadme('view-native'));
+            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(resourcesUrl), '.resources.md'), utils_1.getResReadme('view-resources'));
+            fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(expansionUrl), '.expansion.md'), utils_1.getResReadme('view-expansion'));
             if (isPaper) {
-                (0, fs_1.writeFileSync)((0, path_1.join)((0, utils_1.convertUrlToPath)(`${typeFolderUrl}/${ownerName}`), `.${ownerName}.md`), ownerName === 'all' ? '归属于全体Page' : `归属于Page${(0, utils_1.stringCase)(ownerName)}`);
-                (0, fs_1.writeFileSync)((0, path_1.join)((0, utils_1.convertUrlToPath)(uiFolderUrl), `.${name}.md`), `${uiName}所在文件夹\n1、通过${ownerName === 'all' ? '在任意Page中配置miniViews属性并调用showMiniViews方法' : `在${owner}中配置miniViews属性并调用showMiniViews方法`}的方式加载`);
+                fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(`${typeFolderUrl}/${ownerName}`), `.${ownerName}.md`), ownerName === 'all' ? '归属于全体Page' : `归属于Page${utils_1.stringCase(ownerName)}`);
+                fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(uiFolderUrl), `.${name}.md`), `${uiName}所在文件夹\n1、通过${ownerName === 'all' ? '在任意Page中配置miniViews属性并调用showMiniViews方法' : `在${owner}中配置miniViews属性并调用showMiniViews方法`}的方式加载`);
             }
             else {
-                (0, fs_1.writeFileSync)((0, path_1.join)((0, utils_1.convertUrlToPath)(uiFolderUrl), `.${name}.md`), `${uiName}所在文件夹\n1、通过app.manager.ui.show({ name:'${uiName}' })的方式加载`);
+                fs_1.writeFileSync(path_1.join(utils_1.convertUrlToPath(uiFolderUrl), `.${name}.md`), `${uiName}所在文件夹\n1、通过app.manager.ui.show({ name:'${uiName}' })的方式加载`);
             }
             // 创建script
-            if (!(0, fs_1.existsSync)((0, utils_1.convertUrlToPath)(scriptUrl))) {
+            if (!fs_1.existsSync(utils_1.convertUrlToPath(scriptUrl))) {
                 const createScriptResult = await Editor.Message.request('asset-db', 'create-asset', scriptUrl, getComScript(uiName)).catch(_ => null);
                 if (!createScriptResult) {
                     this.showLoading = false;
@@ -199,8 +200,8 @@ exports.default = vue_1.default.extend({
                 }
             }
             // 创建view
-            if (!(0, fs_1.existsSync)((0, utils_1.convertUrlToPath)(prefabUrl))) {
-                if (is3D) {
+            if (!fs_1.existsSync(utils_1.convertUrlToPath(prefabUrl))) {
+                if (is3D && isPage) {
                     const createSceneResult = await Editor.Message.request('scene', 'execute-scene-script', {
                         name: 'app',
                         method: 'createScene',
@@ -216,7 +217,7 @@ exports.default = vue_1.default.extend({
                     const createPrefabResult = await Editor.Message.request('scene', 'execute-scene-script', {
                         name: 'app',
                         method: 'createPrefab',
-                        args: [uiName, prefabUrl]
+                        args: [uiName, prefabUrl, is3D]
                     }).catch(_ => null);
                     if (!createPrefabResult) {
                         this.showLoading = false;
@@ -237,6 +238,9 @@ exports.default = vue_1.default.extend({
                 }
                 Editor.Message.request('asset-db', 'open-asset', scriptUrl);
             }
+            const base64 = 'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAABIeJ9nAAAAA1BMVEX///+nxBvIAAAACklEQVQI12MAAgAABAABINItbwAAAABJRU5ErkJggg==';
+            fs_1.writeFileSync(utils_1.convertUrlToPath(singleColorUrl), new Buffer(base64, 'base64'));
+            Editor.Message.request('asset-db', 'refresh-asset', singleColorUrl).catch(_ => null);
         }
     }
 });

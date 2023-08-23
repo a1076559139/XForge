@@ -18,6 +18,15 @@
         "complete": false,
         "form": "https://creator-api.cocos.com/api/form/show?sid=a7f723de483ae5bcb0a416b7371b0e9c"
       }
+    },
+    "build-web-mobile": {
+      "id": "build-web-mobile",
+      "label": "build-web-mobile",
+      "enable": false,
+      "build-web-mobile": {
+        "complete": false,
+        "form": "https://creator-api.cocos.com/api/form/show?"
+      }
     }
   }
 }

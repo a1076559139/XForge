@@ -18,8 +18,8 @@ function getComScript(name = 'NewClass') {
         'const { ccclass, property } = _decorator;\r\n' +
         '@ccclass(\'' + name + '\')\r\n' +
         'export class ' + name + ' extends BaseView {\r\n' +
-        `    ${isPage ? '// 子界面列表，数组顺序为子界面排列顺序\r\n' : ''}` +
-        `    ${isPage ? 'protected miniViews: IMiniViewNames = [];\r\n' : ''}` +
+        `    ${isPage ? '// 子界面列表，数组顺序为子界面排列顺序\r\n' : '\r\n'}` +
+        `    ${isPage ? 'protected miniViews: IMiniViewNames = [];\r\n' : '\r\n'}` +
         '    // 初始化的相关逻辑写在这\r\n' +
         '    onLoad() {}\r\n\r\n' +
         '    // 界面打开时的相关逻辑写在这(onShow可被多次调用-它与onHide不成对)\r\n' +
@@ -106,7 +106,7 @@ export default Vue.extend({
         onChangeTypeSelect(index: string) {
             this.typeSelectIndex = Number(index);
 
-            if (index == '0') {
+            if (index == '0' || index == '1') {
                 this.showSelectGroup = true;
             } else {
                 this.showSelectGroup = false;
@@ -143,7 +143,7 @@ export default Vue.extend({
                 return;
             }
 
-            const is3D = isPage && this.groupSelectIndex == 1;
+            const is3D = (isPage || isPaper) && this.groupSelectIndex == 1;
             const ownerName = PageNames.get(owner);
             const uiName = isPaper ?
                 `${stringCase(type)}${stringCase(ownerName)}${stringCase(name)}` :
@@ -164,6 +164,7 @@ export default Vue.extend({
             const scriptUrl = `${nativeUrl}/${uiName}.ts`;
             const prefabUrl = `${nativeUrl}/${uiName}.prefab`;
             const sceneUrl = `${nativeUrl}/${uiName}.scene`;
+            const singleColorUrl = `${resourcesUrl}/singleColor.png`;
 
             // 创建前确认
             const createResponse = await Editor.Dialog.info('请确认', { detail: uiName, buttons: ['创建并打开', '仅创建', '取消'], default: 0, cancel: 2 });
@@ -209,6 +210,7 @@ export default Vue.extend({
             writeFileSync(join(convertUrlToPath(nativeUrl), '.native.md'), getResReadme('view-native'));
             writeFileSync(join(convertUrlToPath(resourcesUrl), '.resources.md'), getResReadme('view-resources'));
             writeFileSync(join(convertUrlToPath(expansionUrl), '.expansion.md'), getResReadme('view-expansion'));
+
             if (isPaper) {
                 writeFileSync(join(convertUrlToPath(`${typeFolderUrl}/${ownerName}`), `.${ownerName}.md`), ownerName === 'all' ? '归属于全体Page' : `归属于Page${stringCase(ownerName)}`);
                 writeFileSync(join(convertUrlToPath(uiFolderUrl), `.${name}.md`), `${uiName}所在文件夹\n1、通过${ownerName === 'all' ? '在任意Page中配置miniViews属性并调用showMiniViews方法' : `在${owner}中配置miniViews属性并调用showMiniViews方法`}的方式加载`);
@@ -228,7 +230,7 @@ export default Vue.extend({
 
             // 创建view
             if (!existsSync(convertUrlToPath(prefabUrl))) {
-                if (is3D) {
+                if (is3D && isPage) {
                     const createSceneResult = await Editor.Message.request('scene', 'execute-scene-script', {
                         name: 'app',
                         method: 'createScene',
@@ -243,7 +245,7 @@ export default Vue.extend({
                     const createPrefabResult = await Editor.Message.request('scene', 'execute-scene-script', {
                         name: 'app',
                         method: 'createPrefab',
-                        args: [uiName, prefabUrl]
+                        args: [uiName, prefabUrl, is3D]
                     }).catch(_ => null);
                     if (!createPrefabResult) {
                         this.showLoading = false;
@@ -265,6 +267,10 @@ export default Vue.extend({
                 }
                 Editor.Message.request('asset-db', 'open-asset', scriptUrl);
             }
+
+            const base64 = 'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAABIeJ9nAAAAA1BMVEX///+nxBvIAAAACklEQVQI12MAAgAABAABINItbwAAAABJRU5ErkJggg==';
+            writeFileSync(convertUrlToPath(singleColorUrl), new Buffer(base64, 'base64'));
+            Editor.Message.request('asset-db', 'refresh-asset', singleColorUrl).catch(_ => null);
         }
     }
 });

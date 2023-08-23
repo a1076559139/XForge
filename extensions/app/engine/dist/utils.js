@@ -4,25 +4,25 @@ exports.delayFileExistsByUrl = exports.createFolderByUrl = exports.getProjectPat
 const fs_1 = require("fs");
 const path_1 = require("path");
 function getResJson(name) {
-    const Assets = (0, path_1.join)(__dirname, '../res/json');
-    const str = (0, fs_1.readFileSync)((0, path_1.join)(Assets, `${name}.json`), 'utf-8');
+    const Assets = path_1.join(__dirname, '../res/json');
+    const str = fs_1.readFileSync(path_1.join(Assets, `${name}.json`), 'utf-8');
     return str ? JSON.parse(str) : null;
 }
 exports.getResJson = getResJson;
 function getResReadme(name) {
-    const Assets = (0, path_1.join)(__dirname, '../res/readme');
-    return (0, fs_1.readFileSync)((0, path_1.join)(Assets, `${name}.md`), 'utf-8');
+    const Assets = path_1.join(__dirname, '../res/readme');
+    return fs_1.readFileSync(path_1.join(Assets, `${name}.md`), 'utf-8');
 }
 exports.getResReadme = getResReadme;
 function getResMeta(name) {
-    const Assets = (0, path_1.join)(__dirname, '../res/meta');
-    const str = (0, fs_1.readFileSync)((0, path_1.join)(Assets, `${name}.meta`), 'utf-8');
+    const Assets = path_1.join(__dirname, '../res/meta');
+    const str = fs_1.readFileSync(path_1.join(Assets, `${name}.meta`), 'utf-8');
     return str ? JSON.parse(str) : null;
 }
 exports.getResMeta = getResMeta;
 function getResPanel(name) {
-    const Assets = (0, path_1.join)(__dirname, '../res/panel');
-    return (0, fs_1.readFileSync)((0, path_1.join)(Assets, `components/${name}.html`), 'utf-8');
+    const Assets = path_1.join(__dirname, '../res/panel');
+    return fs_1.readFileSync(path_1.join(Assets, `components/${name}.html`), 'utf-8');
 }
 exports.getResPanel = getResPanel;
 /**
@@ -97,7 +97,7 @@ async function createFolderByUrl(url, opts) {
     // 创建主目录
     for (let index = 0; index < pathArr.length; index++) {
         pathHead += '/' + pathArr[index];
-        if (!(0, fs_1.existsSync)(convertUrlToPath(pathHead))) {
+        if (!fs_1.existsSync(convertUrlToPath(pathHead))) {
             const result = await Editor.Message.request('asset-db', 'create-asset', pathHead, null).catch(_ => null);
             if (!result)
                 return false;
@@ -116,13 +116,13 @@ async function createFolderByUrl(url, opts) {
     }
     // 主目录readme
     if (opts === null || opts === void 0 ? void 0 : opts.readme) {
-        (0, fs_1.writeFileSync)((0, path_1.join)(convertUrlToPath(url), `.${(0, path_1.basename)(url)}.md`), opts.readme);
+        fs_1.writeFileSync(path_1.join(convertUrlToPath(url), `.${path_1.basename(url)}.md`), opts.readme);
     }
     // 创建子目录
     if (opts === null || opts === void 0 ? void 0 : opts.subPaths) {
         for (let index = 0; index < opts.subPaths.length; index++) {
             const subPath = `${pathHead}/${opts.subPaths[index]}`;
-            if (!(0, fs_1.existsSync)(convertUrlToPath(subPath))) {
+            if (!fs_1.existsSync(convertUrlToPath(subPath))) {
                 const result = await Editor.Message.request('asset-db', 'create-asset', subPath, null).catch(_ => null);
                 if (!result)
                     return false;
@@ -134,7 +134,7 @@ async function createFolderByUrl(url, opts) {
             const subOpts = opts.subFolders[index];
             const subUrl = `${pathHead}/${subOpts.folder}`;
             // 判断是否存在
-            if (!(0, fs_1.existsSync)(convertUrlToPath(subUrl))) {
+            if (!fs_1.existsSync(convertUrlToPath(subUrl))) {
                 const result = await Editor.Message.request('asset-db', 'create-asset', subUrl, null).catch(_ => null);
                 if (!result)
                     return false;
@@ -152,7 +152,7 @@ async function createFolderByUrl(url, opts) {
             }
             // readme
             if (subOpts.readme) {
-                (0, fs_1.writeFileSync)((0, path_1.join)(convertUrlToPath(subUrl), `.${(0, path_1.basename)(subUrl)}.md`), subOpts.readme);
+                fs_1.writeFileSync(path_1.join(convertUrlToPath(subUrl), `.${path_1.basename(subUrl)}.md`), subOpts.readme);
             }
         }
     }
@@ -167,7 +167,7 @@ function delayFileExistsByUrl(url) {
     let timer = null;
     return new Promise((next) => {
         timer = setInterval(() => {
-            if ((0, fs_1.existsSync)(path)) {
+            if (fs_1.existsSync(path)) {
                 if (timer)
                     clearInterval(timer);
                 timer = null;

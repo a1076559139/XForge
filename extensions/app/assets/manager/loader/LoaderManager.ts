@@ -1,4 +1,4 @@
-import { Asset, AssetManager, assetManager, _decorator } from 'cc';
+import { Asset, AssetManager, SceneAsset, _decorator, assetManager } from 'cc';
 import BaseManager from '../../base/BaseManager';
 const { ccclass } = _decorator;
 
@@ -38,8 +38,13 @@ export default class LoaderManager extends BaseManager {
      * 预加载
      * @param {string} bundle 默认为resources
      */
-    public preload(params: { path: string, bundle?: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (item: AssetManager.RequestItem) => void }) {
+    public preload(params: { path: string, bundle?: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (item: AssetManager.RequestItem[]) => void }) {
         this.handle('preload', params);
+        if (SceneAsset === params.type as typeof Asset) {
+            this.handle('preloadScene', { path: params.path, bundle: params.bundle, onProgress: params.onProgress, onComplete: params.onComplete });
+        } else {
+            this.handle('preload', params);
+        }
     }
 
     /**
@@ -55,7 +60,11 @@ export default class LoaderManager extends BaseManager {
      * @param {string} bundle 默认为resources
      */
     public load<T extends typeof Asset>(params: { path: string, bundle?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (item: InstanceType<T>) => void }) {
-        this.handle('load', params);
+        if (SceneAsset === params.type as typeof Asset) {
+            this.handle('loadScene', { path: params.path, bundle: params.bundle, onProgress: params.onProgress, onComplete: params.onComplete });
+        } else {
+            this.handle('load', params);
+        }
     }
 
     /**
@@ -97,6 +106,7 @@ export default class LoaderManager extends BaseManager {
      */
     public releaseUnused(bundle?: string) {
         if (!bundle) bundle = 'resources';
+        //@ts-ignore
         assetManager.getBundle(bundle)?.releaseUnusedAssets();
     }
 

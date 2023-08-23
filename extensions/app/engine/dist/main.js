@@ -38,9 +38,9 @@ const builtinFolderName = 'app-builtin';
 const bundleFolderName = 'app-bundle';
 const pkgFolderUrl = 'db://pkg/';
 const builtinFolderUrl = 'db://assets/' + builtinFolderName;
-const builtinFolderPath = (0, utils_1.convertUrlToPath)(builtinFolderUrl);
+const builtinFolderPath = utils_1.convertUrlToPath(builtinFolderUrl);
 const bundleFolderUrl = 'db://assets/' + bundleFolderName;
-const bundleFolderPath = (0, utils_1.convertUrlToPath)(bundleFolderUrl);
+const bundleFolderPath = utils_1.convertUrlToPath(bundleFolderUrl);
 const adminFolderUrl = builtinFolderUrl + '/' + adminFolderName;
 const adminFolderPath = builtinFolderPath + '/' + adminFolderName;
 const controlFolderUrl = builtinFolderUrl + '/' + controlFolderName;
@@ -100,7 +100,7 @@ function isExecutor(info, strict = true) {
         if ((info.name.startsWith('data.') || info.name.startsWith('config.')) && info.type === 'cc.Script')
             return true;
         if ((info.name.startsWith('Page') || info.name.startsWith('Paper') || info.name.startsWith('Pop') || info.name.startsWith('Top'))
-            && (info.type === 'cc.Script' || info.type === 'cc.Prefab' || info.type === 'cc.Scene'))
+            && (info.type === 'cc.Script' || info.type === 'cc.Prefab' || info.type === 'cc.Scene' || info.type === 'cc.SceneAsset'))
             return true;
         if (info.type === 'cc.AudioClip')
             return true;
@@ -131,7 +131,7 @@ function isExecutor(info, strict = true) {
     }
     if (info.path.startsWith(viewFolderUrl)) {
         return (info.name.startsWith('Page') || info.name.startsWith('Paper') || info.name.startsWith('Pop') || info.name.startsWith('Top'))
-            && (info.type === 'cc.Script' || info.type === 'cc.Prefab' || info.type === 'cc.Scene');
+            && (info.type === 'cc.Script' || info.type === 'cc.Prefab' || info.type === 'cc.Scene' || info.type === 'cc.SceneAsset');
     }
     if (info.path.startsWith(soundFolderUrl)) {
         return info.type === 'cc.AudioClip';
@@ -165,8 +165,8 @@ function compareStr(str1, str2) {
 const viewSelect = ['Page', 'Paper', 'Pop', 'Top'];
 const viewRegExp = RegExp(`^(${viewSelect.join('|')})`);
 function readFileSyncByPath(url) {
-    const filepath = (0, utils_1.convertUrlToPath)(url);
-    return (0, fs_1.existsSync)(filepath) ? (0, fs_1.readFileSync)(filepath, 'utf8') : '';
+    const filepath = utils_1.convertUrlToPath(url);
+    return fs_1.existsSync(filepath) ? fs_1.readFileSync(filepath, 'utf8') : '';
 }
 function isTSDefault(value) {
     const extname = value[3];
@@ -181,8 +181,8 @@ function isTSDefault(value) {
     // }
     // return false;
     // storage,db://assets/app/lib/storage,storage,ts
-    const filepath = path_1.default.join((0, utils_1.convertUrlToPath)(value[1]), filename + '.ts');
-    const js = (0, fs_1.readFileSync)(filepath, 'utf8');
+    const filepath = path_1.default.join(utils_1.convertUrlToPath(value[1]), filename + '.ts');
+    const js = fs_1.readFileSync(filepath, 'utf8');
     return js.search(/export\s+default/) >= 0;
 }
 const keyWords = [
@@ -191,7 +191,7 @@ const keyWords = [
     'viewNames', 'miniViewNames', 'musicNames', 'effectNames'
 ];
 async function clearExecutor() {
-    if (!(0, fs_1.existsSync)(executorFilePath))
+    if (!fs_1.existsSync(executorFilePath))
         return;
     const viewKeys = { never: '' };
     const miniViewKeys = { never: '' };
@@ -234,11 +234,11 @@ async function clearExecutor() {
 }
 async function updateExecutor() {
     // app-builtin文件夹不存在, 创建
-    if (!(0, fs_1.existsSync)(builtinFolderPath))
-        await (0, utils_1.createFolderByUrl)(builtinFolderUrl, { readme: (0, utils_1.getResReadme)(builtinFolderName) });
+    if (!fs_1.existsSync(builtinFolderPath))
+        await utils_1.createFolderByUrl(builtinFolderUrl, { readme: utils_1.getResReadme(builtinFolderName) });
     // app-admin文件夹不存在, 创建
-    if (!(0, fs_1.existsSync)(adminFolderPath))
-        await (0, utils_1.createFolderByUrl)(adminFolderUrl, { meta: (0, utils_1.getResMeta)(adminFolderName), readme: (0, utils_1.getResReadme)(adminFolderName) });
+    if (!fs_1.existsSync(adminFolderPath))
+        await utils_1.createFolderByUrl(adminFolderUrl, { meta: utils_1.getResMeta(adminFolderName), readme: utils_1.getResReadme(adminFolderName) });
     const mgrList = [];
     const dataList = [];
     const confList = [];
@@ -299,7 +299,7 @@ async function updateExecutor() {
             }
             else if (fileUrl.startsWith(managerFolderUrl)) {
                 // 用户manager
-                if (filename.endsWith('Manager') && dirname.endsWith((0, utils_1.stringCaseNegate)(filename.slice(0, -7)))) {
+                if (filename.endsWith('Manager') && dirname.endsWith(utils_1.stringCaseNegate(filename.slice(0, -7)))) {
                     mgrList.push([filename, dirname, varname, extname]);
                 }
             }
@@ -327,22 +327,22 @@ async function updateExecutor() {
                 // viewKeys
                 if (['page', 'paper', 'pop', 'top'].indexOf(viewDirArray[0].toLowerCase()) >= 0) {
                     // 主界面
-                    if (filename === `${(0, utils_1.stringCase)(viewDirArray[0], false)}${(0, utils_1.stringCase)(viewDirArray[1], false)}`) {
+                    if (filename === `${utils_1.stringCase(viewDirArray[0], false)}${utils_1.stringCase(viewDirArray[1], false)}`) {
                         viewKeys[filename] = extname === '.scene';
                     }
                     // 子界面
-                    else if (filename === `${(0, utils_1.stringCase)(viewDirArray[0], false)}${(0, utils_1.stringCase)(viewDirArray[1], false)}${(0, utils_1.stringCase)(viewDirArray[2], false)}`) {
-                        miniViewKeys[filename] = `${(0, utils_1.stringCase)(viewDirArray[0], false)}${(0, utils_1.stringCase)(viewDirArray[1], false)}`;
+                    else if (filename === `${utils_1.stringCase(viewDirArray[0], false)}${utils_1.stringCase(viewDirArray[1], false)}${utils_1.stringCase(viewDirArray[2], false)}`) {
+                        miniViewKeys[filename] = `${utils_1.stringCase(viewDirArray[0], false)}${utils_1.stringCase(viewDirArray[1], false)}`;
                     }
                 }
                 else {
                     // 主界面
-                    if (filename === `${(0, utils_1.stringCase)(viewDirArray[1], false)}${(0, utils_1.stringCase)(viewDirArray[2], false)}`) {
+                    if (filename === `${utils_1.stringCase(viewDirArray[1], false)}${utils_1.stringCase(viewDirArray[2], false)}`) {
                         viewKeys[filename] = extname === '.scene';
                     }
                     // 子界面
-                    else if (filename === `${(0, utils_1.stringCase)(viewDirArray[1], false)}${(0, utils_1.stringCase)(viewDirArray[2], false)}${(0, utils_1.stringCase)(viewDirArray[3], false)}`) {
-                        miniViewKeys[filename] = `${(0, utils_1.stringCase)(viewDirArray[0], false)}${(0, utils_1.stringCase)(viewDirArray[1], false)}`;
+                    else if (filename === `${utils_1.stringCase(viewDirArray[1], false)}${utils_1.stringCase(viewDirArray[2], false)}${utils_1.stringCase(viewDirArray[3], false)}`) {
+                        miniViewKeys[filename] = `${utils_1.stringCase(viewDirArray[0], false)}${utils_1.stringCase(viewDirArray[1], false)}`;
                     }
                 }
             }
@@ -360,18 +360,18 @@ async function updateExecutor() {
         }
     }
     const pkgs = [];
-    const pkgAssetsPath = (0, utils_1.convertUrlToPath)(pkgFolderUrl);
-    if ((0, fs_1.existsSync)(pkgAssetsPath)) {
-        (0, fs_1.readdirSync)(pkgAssetsPath).forEach(function (item) {
+    const pkgAssetsPath = utils_1.convertUrlToPath(pkgFolderUrl);
+    if (fs_1.existsSync(pkgAssetsPath)) {
+        fs_1.readdirSync(pkgAssetsPath).forEach(function (item) {
             const item_path = path_1.default.join(pkgAssetsPath, item);
-            const item_stat = (0, fs_1.statSync)(item_path);
+            const item_stat = fs_1.statSync(item_path);
             if (!item_stat.isDirectory())
                 return;
             const item_name = path_1.default.basename(item_path);
             if (item_name.startsWith('@')) {
-                (0, fs_1.readdirSync)(item_path).forEach(function (sub) {
+                fs_1.readdirSync(item_path).forEach(function (sub) {
                     const sub_path = path_1.default.join(item_path, sub);
-                    const sub_stat = (0, fs_1.statSync)(sub_path);
+                    const sub_stat = fs_1.statSync(sub_path);
                     if (!sub_stat.isDirectory())
                         return;
                     const sub_name = path_1.default.basename(sub_path);
@@ -399,13 +399,13 @@ async function updateExecutor() {
             // storage
             const varname = value[2];
             if (isTSDefault(value)) {
-                result += `import ${varname} from '${path_1.default.join(path_1.default.relative(adminFolderPath, (0, utils_1.convertUrlToPath)(dirname)), filename)}'\n`;
+                result += `import ${varname} from '${path_1.default.join(path_1.default.relative(adminFolderPath, utils_1.convertUrlToPath(dirname)), filename)}'\n`;
             }
             else if (module) {
-                result += `import {${varname}} from '${path_1.default.join(path_1.default.relative(adminFolderPath, (0, utils_1.convertUrlToPath)(dirname)), filename)}'\n`;
+                result += `import {${varname}} from '${path_1.default.join(path_1.default.relative(adminFolderPath, utils_1.convertUrlToPath(dirname)), filename)}'\n`;
             }
             else {
-                result += `import * as ${varname} from '${path_1.default.join(path_1.default.relative(adminFolderPath, (0, utils_1.convertUrlToPath)(dirname)), filename)}'\n`;
+                result += `import * as ${varname} from '${path_1.default.join(path_1.default.relative(adminFolderPath, utils_1.convertUrlToPath(dirname)), filename)}'\n`;
             }
             array[index] = varname;
         });
@@ -490,9 +490,9 @@ function callUpdateExecutor(clear = false) {
     }
 }
 function updateBuilder() {
-    const builder = (0, utils_1.getResJson)('builder');
-    const sourcePath = path_1.default.join((0, utils_1.getProjectPath)(), 'settings/v2/packages/builder.json');
-    const str = (0, fs_1.readFileSync)(sourcePath, 'utf-8');
+    const builder = utils_1.getResJson('builder');
+    const sourcePath = path_1.default.join(utils_1.getProjectPath(), 'settings/v2/packages/builder.json');
+    const str = fs_1.readFileSync(sourcePath, 'utf-8');
     const source = JSON.parse(str);
     const overwriteKeys = builder.bundleConfig['custom'] ? Object.keys(builder.bundleConfig['custom']) : [];
     const handle = (data, out) => {
@@ -514,7 +514,7 @@ function updateBuilder() {
         }
     };
     handle(builder, source);
-    (0, fs_1.writeFileSync)(sourcePath, JSON.stringify(source, null, '  '), { encoding: 'utf-8' });
+    fs_1.writeFileSync(sourcePath, JSON.stringify(source, null, '  '), { encoding: 'utf-8' });
 }
 exports.methods = {
     ['open-panel']() {

@@ -1,4 +1,4 @@
-import { Asset, AssetManager, Component, Event, Layers, Node, Prefab, Scene, Settings, UITransform, Widget, _decorator, director, error, find, instantiate, isValid, js, settings } from 'cc';
+import { Asset, AssetManager, Component, Event, Layers, Node, Prefab, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, error, find, instantiate, isValid, js, settings } from 'cc';
 import { DEBUG } from 'cc/env';
 import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
 import Core from '../../Core';
@@ -41,8 +41,11 @@ interface IHideParams<T, IHide = any, IHideReturn = any> {
     onHide?: IHideParamOnHide<IHideReturn>
 }
 
-const UIRoot3D = 'Root3D/UserInterface';
-const UIRoot2D = 'Root2D/UserInterface';
+const UIScene = 'UIRoot';
+const Root3DPath = 'Root3D';
+const Root2DPath = 'Root2D';
+const UIRoot3DPath = 'Root3D/UserInterface';
+const UIRoot2DPath = 'Root2D/UserInterface';
 const ViewTypes = [ViewType.Page, ViewType.Paper, ViewType.Pop, ViewType.Top];
 
 type IPreload = (IViewName | IMiniViewName | Array<IViewName | IMiniViewName>)[];
@@ -87,12 +90,13 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     private defaultUI: UIName = null;
     private defaultData: string = '';
 
+
     private currPage: BaseView = null;
     private currFocus: BaseView = null;
 
     // 预制体缓存
     private prefabCache: { [name in string]: Prefab } = {};
-    private sceneCache: { [name in string]: true } = {};
+    private sceneCache: { [name in string]: SceneAsset } = {};
 
     // 全局触摸有效
     private touchEnabled: boolean = true;
@@ -134,8 +138,11 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     protected onLoad() {
-        this.UIRoot2D = find(UIRoot2D);
-        this.UIRoot3D = find(UIRoot3D);
+        director.addPersistRootNode(find(Root3DPath));
+        director.addPersistRootNode(find(Root2DPath));
+
+        this.UIRoot2D = find(UIRoot2DPath);
+        this.UIRoot3D = find(UIRoot3DPath);
 
         this.initUITouches();
         this.initUITypes();
@@ -226,66 +233,47 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 安装UI
      */
-    private installUI(name: string, complete?: (result: boolean) => any, progress?: (finish: number, total: number, item: AssetManager.RequestItem) => void) {
+    private installUI(name: string, complete?: (result: Prefab | SceneAsset) => any, progress?: (finish: number, total: number, item: AssetManager.RequestItem) => void) {
         const isScene = this.isScene(name);
         if (isScene) {
             if (this.sceneCache[name]) {
-                return complete && this.scheduleOnce(() => complete(true));
+                return complete && this.scheduleOnce(() => complete(this.sceneCache[name]));
             }
         } else {
             if (this.prefabCache[name]) {
-                return complete && this.scheduleOnce(() => complete(true));
+                return complete && this.scheduleOnce(() => complete(this.prefabCache[name]));
             }
         }
-        const task = Core.inst.lib.task.createAny<[[AssetManager.Bundle, AssetManager.Bundle], Prefab]>()
-            .add([
-                (next) => {
-                    Core.inst.manager.loader.loadBundle({
-                        bundle: this.getNativeBundleName(name),
-                        onComplete: next
-                    });
-                },
-                (next) => {
-                    Core.inst.manager.loader.loadBundle({
-                        bundle: this.getResBundleName(name),
-                        onComplete: next
-                    });
-                }
-            ])
+        const task = Core.inst.lib.task.createSync<[[AssetManager.Bundle, AssetManager.Bundle], Prefab | SceneAsset]>()
+            .add(next => {
+                this.loadUIBundle(name, next)
+            })
             .add((next) => {
                 // 失败
                 if (!task.results[0] || !task.results[0][1]) return next(null);
 
-                if (isScene) {
-                    director.preloadScene(name, progress, next);
-                } else {
-                    Core.inst.manager.loader.load({
-                        bundle: this.getNativeBundleName(name),
-                        path: this.getUIPath(name),
-                        type: Prefab,
-                        onProgress: progress,
-                        onComplete: next
-                    });
-                }
+                Core.inst.manager.loader.load({
+                    bundle: this.getNativeBundleName(name),
+                    path: this.getUIPath(name),
+                    type: isScene ? SceneAsset : Prefab,
+                    onProgress: progress,
+                    onComplete: next
+                });
             })
             .start((results) => {
-                if (isScene) {
-                    this.sceneCache[name] = true;
-                    return complete && complete(true);
-                } else {
-                    if (this.prefabCache[name]) {
-                        return complete && complete(true);
-                    }
-                    const prefab = results[1];
-                    if (!prefab) {
-                        return complete && complete(false);
-                    }
-                    this.log('加载完成 ' + name);
-                    // 添加引用计数
-                    prefab.addRef();
-                    this.prefabCache[name] = prefab;
-                    return complete && complete(true);
+                const cache = isScene ? this.sceneCache : this.prefabCache;
+                if (cache[name]) {
+                    return complete && complete(cache[name]);
                 }
+                const asset = results[1];
+                if (!asset) {
+                    return complete && complete(null);
+                }
+                this.log('加载完成 ' + name);
+                // 添加引用计数
+                asset.addRef();
+                cache[name] = asset;
+                return complete && complete(asset);
             });
     }
 
@@ -293,11 +281,14 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 卸载UI
      */
     private uninstallUI(name: string) {
-        const prefab = this.prefabCache[name];
-        if (prefab) {
+        const isScene = this.isScene(name);
+        const cache = isScene ? this.sceneCache : this.prefabCache;
+
+        const asset = cache[name];
+        if (asset) {
             // 释放引用计数
-            prefab.decRef();
-            delete this.prefabCache[name];
+            asset.decRef();
+            delete cache[name];
         }
         const resBundle = this.getResBundleName(name);
         const naBundle = this.getNativeBundleName(name);
@@ -411,8 +402,8 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 加载UI
      */
     public load(name: UIName | MiniName): void;
-    public load(name: UIName | MiniName, complete: (result: any) => any): void;
-    public load(name: UIName | MiniName, progress: (finish: number, total: number, item: AssetManager.RequestItem) => void, complete: (result: any) => any): void;
+    public load(name: UIName | MiniName, complete: (result: Prefab | SceneAsset) => any): void;
+    public load(name: UIName | MiniName, progress: (finish: number, total: number, item: AssetManager.RequestItem) => void, complete: (result: Prefab | SceneAsset) => any): void;
     public load(name: UIName | MiniName, ...args: Function[]): void {
         const progress = (args[1] && args[0]) as (finish: number, total: number, item: AssetManager.RequestItem) => void;
         const complete = (args[1] || args[0]) as (result: any) => any;
@@ -428,7 +419,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         // 异步加载
         this.installUI(name, (result) => {
             if (!result) return complete && complete(null);
-            return complete && complete(this.prefabCache[name]);
+            return complete && complete(result);
         }, progress);
     }
 
@@ -510,6 +501,26 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     /**
+     * 加载UI前置Bundle
+     */
+    private loadUIBundle(name: string, onFinish: (result: [AssetManager.Bundle, AssetManager.Bundle]) => any) {
+        Core.inst.lib.task.createASync<[AssetManager.Bundle, AssetManager.Bundle]>()
+            .add((next) => {
+                Core.inst.manager.loader.loadBundle({
+                    bundle: this.getNativeBundleName(name),
+                    onComplete: next
+                });
+            })
+            .add((next) => {
+                Core.inst.manager.loader.loadBundle({
+                    bundle: this.getResBundleName(name),
+                    onComplete: next
+                });
+            })
+            .start(onFinish)
+    }
+
+    /**
      * 获取前缀
      * @param uiName    ui名字
      */
@@ -569,8 +580,15 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 是否是子界面
      */
-    private isMiniView(name: string): boolean {
+    private isPaper(name: string): boolean {
         return name.indexOf(ViewType.Paper) === 0;
+    }
+
+    /**
+     * 是否是页面
+     */
+    private isPage(name: string): boolean {
+        return name.indexOf(ViewType.Page) === 0;
     }
 
     /**
@@ -720,14 +738,17 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         return node;
     }
 
-    private createUILoadingUUID(name: UIName) {
+    private createUILoadingUuid(name: UIName) {
         const uuid = this.addTouchMask();
-        if (!this.uiLoadingMap.has(name)) this.uiLoadingMap.set(name, []);
-        this.uiLoadingMap.get(name).push(uuid);
+        if (!this.uiLoadingMap.has(name)) {
+            this.uiLoadingMap.set(name, [uuid]);
+        } else {
+            this.uiLoadingMap.get(name).push(uuid);
+        }
         return uuid;
     }
 
-    private checkUILoadingUUID(name: UIName, uuid: string) {
+    private removeUILoadingUuid(name: UIName, uuid: string) {
         this.removeTouchMask(uuid);
         if (!this.uiLoadingMap.has(name)) return false;
         const index = this.uiLoadingMap.get(name).indexOf(uuid);
@@ -736,42 +757,53 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         return true;
     }
 
-    // 获取UI节点
-    private getUI(name: UIName, callback: (node: Node) => any) {
+    // 创建UI
+    private createUI(name: UIName, callback: (asset: Node) => any) {
         if (!name) {
-            return callback && this.scheduleOnce(() => callback(null));
+            const maskUUID = this.addTouchMask();
+            return this.scheduleOnce(() => {
+                this.removeTouchMask(maskUUID);
+                callback(null);
+            });
         }
 
         // 生成一个UI加载的UUID
-        const uiLoadingUuid = this.createUILoadingUUID(name);
+        const loadingUuid = this.createUILoadingUuid(name);
 
         // 判断是否已经存在节点并且是单例模式
         const node = this.getUIInScene(name);
         if (isValid(node, true) && this.getBaseView(node).isSingleton === true) {
-            const maskUUID = this.addTouchMask();
             return this.scheduleOnce(() => {
-                this.removeTouchMask(maskUUID);
                 // 验证本次加载是否有效
-                if (this.checkUILoadingUUID(name, uiLoadingUuid) === false) return;
+                if (this.removeUILoadingUuid(name, loadingUuid) === false) return;
                 if (isValid(node, true)) { callback(node); }
-                else { this.getUI(name, callback); }
+                else { this.createUI(name, callback); }
             });
         }
 
         // 加载prefab
         const showLoadingUuid = this.showLoading();
-        this.load(name, (prefab: Prefab) => {
+        this.load(name, (asset) => {
             // 验证本次加载是否有效
-            if (this.checkUILoadingUUID(name, uiLoadingUuid) === false) return this.hideLoading(showLoadingUuid);
+            if (this.removeUILoadingUuid(name, loadingUuid) === false)
+                return this.hideLoading(showLoadingUuid);
 
             // 验证是否是单例(一个单例会有被同时load多次的情况，因为判断一个ui是否是单例，必须要至少实例化一个后才能获取)
-            let node = this.getUIInScene(name);
+            const node = this.getUIInScene(name);
             if (!isValid(node, true) || this.getBaseView(node).isSingleton === false) {
-                node = this.parsingPrefab(prefab);
+                if (asset instanceof SceneAsset) {
+                    director.runScene(asset, null, (_, scene) => {
+                        callback(scene.getComponentInChildren(name).node);
+                        this.hideLoading(showLoadingUuid);
+                    })
+                } else {
+                    callback(this.parsingPrefab(asset));
+                    this.hideLoading(showLoadingUuid);
+                }
+            } else {
+                callback(node);
+                this.hideLoading(showLoadingUuid);
             }
-
-            callback(node);
-            this.hideLoading(showLoadingUuid);
         });
     }
 
@@ -870,20 +902,23 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         // 加入队列中
         if (queue) return this.putInShowQueue({ name, data, queue, onShow, onHide, onError, top, attr });
 
+        // 是否是场景
+        const isScene = this.isScene(name);
+
         this.log(`[show] ${name}`);
-        const show = () => this.getUI(name, (node) => {
+        const show = () => this.createUI(name, (node) => {
             if (!node) {
                 this.error(`[show] ${name} 不存在或加载失败`);
                 // 「没有指定onError」或「onError返回true」会自动发起重试
                 if (onError && onError(`${name} 不存在或加载失败`, UIManager.ErrorCode.LoadError) !== true) {
                     return;
                 }
-                this.scheduleOnce(show, 0.1);
-                this.showLoading(0.1);
+                this.scheduleOnce(show, 1);
+                this.showLoading(1);
                 return;
             }
 
-            top && node.setSiblingIndex(-1);
+            !isScene && top && node.setSiblingIndex(-1);
 
             const com = this.getBaseView(node);
             this.uiShowingMap.set(com, name);
@@ -902,11 +937,16 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                     if (error) {
                         this.uiShowingMap.delete(com);
                         onError && onError(error, UIManager.ErrorCode.LogicError);
-                    } else if (name.indexOf('Page') >= 0) {
+                    } else if (this.isPage(name)) {
                         if (isValid(this.currPage, true) && this.currPage !== com && this.currPage.isShow) {
                             this.currPage.constructor.prototype.hide.call(this.currPage, { name, com });
                         }
                         this.currPage = com;
+                        if (!isScene && director.getScene().name !== UIScene) {
+                            const scene = new Scene(UIScene);
+                            scene.autoReleaseAssets = true;
+                            director.runSceneImmediate(scene);
+                        }
                     }
                 }
             );
@@ -923,7 +963,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                     if (onError && onError(`${name} 不存在或加载失败`, UIManager.ErrorCode.LoadError) !== true) {
                         return this.hideLoading(showLoadingUuid);
                     }
-                    return retry(0.1);
+                    return retry(1);
                 }
 
                 // ui无效
@@ -1036,14 +1076,14 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     public hideAll({ data, exclude }: { data?: any, exclude?: UIName[] } = {}): void {
         // 展示中的
         this.uiShowingMap.forEach((name, com) => {
-            if (this.isMiniView(name)) return;
+            if (this.isPaper(name)) return;
             if (exclude && exclude.indexOf(name) !== -1) return;
             if (com === this.currPage) return;
             com.constructor.prototype.hide.call(com, data);
         });
         // 加载中的
         this.uiLoadingMap.forEach((value, name) => {
-            if (this.isMiniView(name)) return;
+            if (this.isPaper(name)) return;
             if (exclude && exclude.indexOf(name) !== -1) return;
             value.length = 0;
         });

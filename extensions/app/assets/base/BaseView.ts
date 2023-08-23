@@ -119,12 +119,36 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     private _base_mini_show: Set<IMiniViewName> = new Set();
     private _base_mini_showing: Set<IMiniViewName> = new Set();
 
+    protected isPage() {
+        return this._base_view_name?.indexOf(ViewType.Page) === 0;
+    }
+
+    protected isPaper() {
+        return this._base_view_name?.indexOf(ViewType.Paper) === 0;
+    }
+
+    protected isPop() {
+        return this._base_view_name?.indexOf(ViewType.Pop) === 0;
+    }
+
+    protected isTop() {
+        return this._base_view_name?.indexOf(ViewType.Top) === 0;
+    }
+
+    protected is2D() {
+        return this.node?.layer === Layers.Enum.UI_2D;
+    }
+
+    protected is3D() {
+        return !this.is2D();
+    }
+
     @property({
         group: Group,
         type: HideEvent,
         tooltip: '何种模式隐藏节点\n1、destroy: 销毁UI并释放对应的所有资源\n2、active: 缓存UI并加速下次的打开速度',
-        visible() {
-            return this.node?.layer === Layers.Enum.UI_2D;
+        visible(this: BaseView) {
+            return this.is2D() || !this.isPage();
         }
     })
     private hideEvent = HideEvent.destroy;
@@ -135,22 +159,22 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     @property({
         group: Group,
         tooltip: '是否是单例模式\n1、单例模式: UI只会被创建一次(onShow会被重复触发)\n2、非单例模式: UI会被重复创建',
-        visible() {
-            return this.node?.layer === Layers.Enum.UI_2D;
+        visible(this: BaseView) {
+            return this.is2D() || !this.isPage();
         }
     })
     protected get singleton(): boolean {
-        if (this._base_view_name?.indexOf(ViewType.Page) === 0) return true;
-        if (this._base_view_name?.indexOf(ViewType.Paper) === 0) return true;
+        if (this.isPage()) return true;
+        if (this.isPaper()) return true;
         return this._singleton && (<typeof BaseView>this.constructor)._singleton;
     }
     protected set singleton(value) {
         if (!value) {
-            if (this._base_view_name?.indexOf(ViewType.Page) === 0) {
+            if (this.isPage()) {
                 this.log('Page只能是单例模式');
                 return;
             }
-            if (this._base_view_name?.indexOf(ViewType.Paper) === 0) {
+            if (this.isPaper()) {
                 this.log('Paper只能是单例模式');
                 return;
             }
@@ -163,8 +187,8 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     @property({
         group: Group,
         tooltip: '是否捕获焦点<响应onLostFocus和onFocus>\n1、非UI_2D分组下会失效\n2、当一个捕获焦点的UI处于最上层并展示时\n下层的UI永远不会响应focus事件',
-        visible() {
-            return this.node?.layer === Layers.Enum.UI_2D;
+        visible(this: BaseView) {
+            return this.is2D();
         }
     })
     protected get captureFocus() {
@@ -184,13 +208,13 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     @property({
         group: Group,
         tooltip: '是否需要底层遮罩\n1、非UI_2D分组下会失效\n2、为Page类型时会失效',
-        visible() {
-            return this.node?.layer === Layers.Enum.UI_2D;
+        visible(this: BaseView) {
+            return this.is2D();
         }
     })
     protected get shade() {
         if (this.node?.layer !== Layers.Enum.UI_2D) return false;
-        if (this._base_view_name?.indexOf(ViewType.Page) === 0) return false;
+        if (this.isPage()) return false;
         return this._shade;
     }
     protected set shade(value) {
@@ -199,7 +223,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
                 this.log('只有UI_2D可以设置底层遮罩');
                 return;
             }
-            if (this._base_view_name?.indexOf(ViewType.Page) === 0) {
+            if (this.isPage()) {
                 this.log('Page不可以设置底层遮罩');
                 return;
             }
@@ -218,8 +242,8 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     @property({
         group: Group,
         tooltip: '是否阻断输入\n1、非UI_2D分组下会失效',
-        visible() {
-            return this.node?.layer === Layers.Enum.UI_2D;
+        visible(this: BaseView) {
+            return this.is2D();
         }
     })
     protected get blockInput() {

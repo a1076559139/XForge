@@ -2,13 +2,13 @@
   "ver": "1.2.0",
   "importer": "directory",
   "imported": true,
-  "uuid": "7bd9ddba-2653-44ea-b8da-81e39e2f02bf",
+  "uuid": "350ecba7-54ea-4164-8aa4-c9068d84dc83",
   "files": [],
   "subMetas": {},
   "userData": {
     "isBundle": true,
     "bundleConfigID": "auto_11aBEBWDxI/6ryvKvFthEo",
     "priority": 8,
-    "bundleName": "page-test-res"
+    "bundleName": "paper-game-index-res"
   }
 }

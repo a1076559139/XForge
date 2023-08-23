@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.methods = exports.unload = exports.load = void 0;
 const path_1 = require("path");
-module.paths.push((0, path_1.join)(Editor.App.path, 'node_modules'));
+module.paths.push(path_1.join(Editor.App.path, 'node_modules'));
 function load() { }
 exports.load = load;
 function unload() { }
@@ -15,10 +15,10 @@ exports.unload = unload;
 // };
 // const result = await Editor.Message.request('scene', 'execute-scene-script', options);
 exports.methods = {
-    async createPrefab(fileName, fileUrl) {
+    async createPrefab(fileName, fileUrl, is3D = false) {
         const { Node, js, Layers } = require('cc');
         const node = new Node(fileName);
-        node.layer = Layers.Enum.UI_2D;
+        node.layer = is3D ? Layers.Enum.UI_3D : Layers.Enum.UI_2D;
         while (true) {
             const result = js.getClassByName(fileName);
             if (result)
@@ -46,7 +46,7 @@ exports.methods = {
         const scene = new Scene(fileName);
         const node = new Node(fileName);
         node.parent = scene;
-        node.layer = Layers.Enum.UI_3D;
+        node.layer = Layers.Enum.DEFAULT;
         const com = node.addComponent(fileName);
         com.resetInEditor && com.resetInEditor();
         const sceneAsset = new SceneAsset();

@@ -1,4 +1,4 @@
-import { assetManager, Component, Node, Settings, settings, warn, _decorator } from 'cc';
+import { Component, Node, Settings, _decorator, assetManager, settings, warn } from 'cc';
 import { EDITOR } from 'cc/env';
 import Core from '../Core';
 import BaseManager from './BaseManager';
