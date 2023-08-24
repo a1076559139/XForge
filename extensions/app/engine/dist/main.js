@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 /**
  * @en Registration method for the main process of Extension
  * @zh 为扩展的主进程的注册方法
@@ -20,14 +20,14 @@
  *
  */
 var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+    return (mod && mod.__esModule) ? mod : { 'default': mod };
 };
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, '__esModule', { value: true });
 exports.unload = exports.load = exports.methods = void 0;
 // path.join不能正确处理'db://'结构，会把'//'变成'/'
-const fs_1 = require("fs");
-const path_1 = __importDefault(require("path"));
-const utils_1 = require("./utils");
+const fs_1 = require('fs');
+const path_1 = __importDefault(require('path'));
+const utils_1 = require('./utils');
 const adminFolderName = 'app-admin';
 const controlFolderName = 'app-control';
 const managerFolderName = 'app-manager';
@@ -222,6 +222,7 @@ async function clearExecutor() {
     result += '    manager: {},\n';
     result += '    data: {},\n';
     result += '    config: {}\n';
+    result += '    scene: IViewName[]\n';
     result += '}\n';
     // 修正windows系统中的\为/
     result = result.replace(/\\/g, '/');
@@ -463,6 +464,7 @@ async function updateExecutor() {
     result += `    manager: {${mgrStr}},\n`;
     result += `    data: {${dataList.map(varname => `${varname.slice(5)}:${varname}`).join(',')}},\n`;
     result += `    config: {${confList.map(varname => `${varname.slice(7)}:${varname}`).join(',')}}\n`;
+    result += '    scene: IViewName[]\n';
     result += '}\n';
     // 修正windows系统中的\为/
     result = result.replace(/\\/g, '/');

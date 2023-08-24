@@ -11,9 +11,9 @@ export class PaperGameIndex extends BaseView {
     onLoad() {
         this.goto.on(Button.EventType.CLICK, () => {
             app.manager.ui.show({
-                name: 'PageHome'
-            })
-        })
+                name: 'PageOver'
+            });
+        });
     }
 
     // 界面打开时的相关逻辑写在这(onShow可被多次调用-它与onHide不成对)

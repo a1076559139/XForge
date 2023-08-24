@@ -8,8 +8,8 @@ import LoaderManager from '../../../extensions/app/assets/manager/loader/LoaderM
 import SoundManager from '../../../extensions/app/assets/manager/sound/SoundManager'
 import TimerManager from '../../../extensions/app/assets/manager/timer/TimerManager'
 import UIManager from '../../../extensions/app/assets/manager/ui/UIManager'
-enum viewNames { 'PageGame','PageHome'}
-const miniViewNames = {"PaperGameIndex":"PaperGame","PaperHomeIndex":"PaperHome"}
+enum viewNames { 'PageGame','PageHome','PageOver','PopTip'}
+const miniViewNames = {"PaperAllIndex":"PaperAll","PaperGameIndex":"PaperGame","PaperHomeIndex":"PaperHome","PaperOverIndex":"PaperOver"}
 enum musicNames { 'never'}
 enum effectNames { 'never'}
 
@@ -31,4 +31,5 @@ export type IApp = {
     manager: {event:Omit<EventManager,keyof Component>,loader:Omit<LoaderManager,keyof Component>,sound:Omit<SoundManager<IEffectName,IMusicName>,keyof Component>,timer:Omit<TimerManager,keyof Component>,ui:Omit<UIManager<IViewName,IMiniViewName>,keyof Component>},
     data: {},
     config: {}
+    scene: IViewName[]
 }

@@ -1,4 +1,4 @@
-import { AssetManager, assetManager, Component, error, EventTarget, find, instantiate, js, path, Prefab, settings, warn, Widget, _decorator } from 'cc';
+import { AssetManager, Component, EventTarget, Prefab, Widget, _decorator, assetManager, error, find, instantiate, js, path, settings, warn } from 'cc';
 import { DEBUG, EDITOR } from 'cc/env';
 import Core from '../Core';
 
@@ -137,7 +137,7 @@ export default class BaseManager extends Component {
             `%c ${this._base_manager_name} %c %s %c`,
             'background:#1e90ff ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #1e90ff; color: #fff;',
             'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #1e90ff; color: #1e90ff;',
-            ...args,
+            args.join(' '),
             'background:transparent'
         );
     }
@@ -147,7 +147,7 @@ export default class BaseManager extends Component {
             `%c ${this._base_manager_name} %c %s %c`,
             'background:#eccc68 ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #eccc68; color: #fff;',
             'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #eccc68; color: #eccc68;',
-            ...args,
+            args.join(' '),
             'background:transparent'
         );
     }
@@ -157,7 +157,7 @@ export default class BaseManager extends Component {
             `%c ${this._base_manager_name} %c %s %c`,
             'background:#ff4757 ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff4757; color: #fff;',
             'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff4757; color: #ff4757;',
-            ...args,
+            args.join(' '),
             'background:transparent'
         );
     }

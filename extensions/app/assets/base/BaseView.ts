@@ -1,4 +1,4 @@
-import { Asset, Component, Enum, EventTouch, Layers, Node, UITransform, Widget, _decorator, js } from 'cc';
+import { Asset, Component, Enum, EventTouch, Layers, Node, Scene, UITransform, Widget, _decorator, js } from 'cc';
 import { EDITOR } from 'cc/env';
 import { IMiniViewName, IMiniViewNames, IViewName } from '../../../../assets/app-builtin/app-admin/executor';
 import Core from '../Core';
@@ -26,7 +26,7 @@ interface IEvent<E> {
 
 export interface IShowParamAttr {
     zIndex?: number,
-    siblingIndex?: number
+    siblingIndex?: number,
 }
 
 export interface IShowParamOnShow<T = any> {
@@ -54,6 +54,7 @@ export type IViewType = 'Page' | 'Paper' | 'Pop' | 'Top';
 export enum ViewType {
     Page = 'Page',
     Paper = 'Paper',
+    PaperAll = 'PaperAll',
     Pop = 'Pop',
     Top = 'Top'
 }
@@ -90,9 +91,9 @@ enum ViewState {
 const Group = { id: 'BaseView', name: 'settings', displayOrder: -Infinity };
 
 @ccclass('BaseView')
-export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component {
-    static BindControl<SHOWDATA = any, HIDEDATA = any, T = any, E = any>(control: IBaseControl<T, E>) {
-        return class BindControl extends BaseView<SHOWDATA, HIDEDATA> {
+export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Component {
+    static BindControl<SHOW_DATA = any, HIDE_DATA = any, T = any, E = any>(control: IBaseControl<T, E>) {
+        return class BindControl extends BaseView<SHOW_DATA, HIDE_DATA> {
             private _base_view_control: IBaseControl<T, E> = control;
             protected get control(): Pick<T, keyof T> & Readonly<IEvent<E>> {
                 return this._base_view_control ? this._base_view_control.inst as any : null;
@@ -102,6 +103,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
 
     /**是否有效/是否可以被展示 */
     public static isViewValid(next: (valid: boolean) => void, data: any) {
+        data;
         next && next(true);
     }
 
@@ -114,7 +116,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     // 触摸是否有效
     private _base_touch_enable = true;
     // show/hide等待列表
-    private _base_showhide_delays: Function[] = [];
+    private _base_show_hide_delays: Function[] = [];
     // 子界面融合相关
     private _base_mini_show: Set<IMiniViewName> = new Set();
     private _base_mini_showing: Set<IMiniViewName> = new Set();
@@ -127,6 +129,10 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         return this._base_view_name?.indexOf(ViewType.Paper) === 0;
     }
 
+    protected isPaperAll() {
+        return this._base_view_name?.indexOf(ViewType.PaperAll) === 0;
+    }
+
     protected isPop() {
         return this._base_view_name?.indexOf(ViewType.Pop) === 0;
     }
@@ -135,23 +141,36 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         return this._base_view_name?.indexOf(ViewType.Top) === 0;
     }
 
+    protected isScene() {
+        return this.node.parent instanceof Scene && this.node.parent.name === this.viewName;
+    }
+
     protected is2D() {
-        return this.node?.layer === Layers.Enum.UI_2D;
+        return this.node?.layer === Layers.Enum.UI_2D && !this.isScene();
     }
 
     protected is3D() {
         return !this.is2D();
     }
 
+    @property
+    private _hideEvent = HideEvent.destroy;
     @property({
         group: Group,
         type: HideEvent,
         tooltip: '何种模式隐藏节点\n1、destroy: 销毁UI并释放对应的所有资源\n2、active: 缓存UI并加速下次的打开速度',
-        visible(this: BaseView) {
-            return this.is2D() || !this.isPage();
-        }
     })
-    private hideEvent = HideEvent.destroy;
+    public get hideEvent() {
+        if (this.isScene()) return HideEvent.destroy;
+        return this._hideEvent;
+    }
+    public set hideEvent(value) {
+        if (this.isScene() && value !== HideEvent.destroy) {
+            this.log('Page3D只能destroy模式');
+            return;
+        }
+        this._hideEvent = value;
+    }
 
     @property
     private _singleton = true;
@@ -159,17 +178,20 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     @property({
         group: Group,
         tooltip: '是否是单例模式\n1、单例模式: UI只会被创建一次(onShow会被重复触发)\n2、非单例模式: UI会被重复创建',
-        visible(this: BaseView) {
-            return this.is2D() || !this.isPage();
-        }
     })
     protected get singleton(): boolean {
         if (this.isPage()) return true;
+        if (this.isPaperAll()) return false;
         if (this.isPaper()) return true;
         return this._singleton && (<typeof BaseView>this.constructor)._singleton;
     }
     protected set singleton(value) {
-        if (!value) {
+        if (value) {
+            if (this.isPaperAll()) {
+                this.log('PaperAll只能是非单例模式');
+                return;
+            }
+        } else {
             if (this.isPage()) {
                 this.log('Page只能是单例模式');
                 return;
@@ -192,11 +214,11 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         }
     })
     protected get captureFocus() {
-        if (this.node?.layer !== Layers.Enum.UI_2D) return false;
+        if (this.is3D()) return false;
         return this._captureFocus;
     }
     protected set captureFocus(value) {
-        if (value && this.node?.layer !== Layers.Enum.UI_2D) {
+        if (value && this.is3D()) {
             this.log('只有UI_2D可以捕获焦点');
             return;
         }
@@ -213,13 +235,13 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         }
     })
     protected get shade() {
-        if (this.node?.layer !== Layers.Enum.UI_2D) return false;
+        if (this.is3D()) return false;
         if (this.isPage()) return false;
         return this._shade;
     }
     protected set shade(value) {
         if (value) {
-            if (this.node?.layer !== Layers.Enum.UI_2D) {
+            if (this.is3D()) {
                 this.log('只有UI_2D可以设置底层遮罩');
                 return;
             }
@@ -247,15 +269,13 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         }
     })
     protected get blockInput() {
-        if (this.node?.layer !== Layers.Enum.UI_2D) return false;
+        if (this.is3D()) return false;
         return this._blockInput;
     }
     protected set blockInput(value) {
-        if (value) {
-            if (this.node?.layer !== Layers.Enum.UI_2D) {
-                this.log('只有UI_2D可以设置阻断输入');
-                return;
-            }
+        if (value && this.is3D()) {
+            this.log('只有UI_2D可以设置阻断输入');
+            return;
         }
         this._blockInput = value;
     }
@@ -275,14 +295,14 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     /**
      * 基础名字, 如PageHome => Home
      */
-    public get viewBaseName() {
-        return this._base_view_name.slice(this.viewTypeName.length);
+    public get baseName() {
+        return this._base_view_name.slice(this.typeName.length);
     }
 
     /**
      * 类型名字, 如PageHome => Page
      */
-    public get viewTypeName() {
+    public get typeName() {
         if (this._base_view_name.indexOf(ViewType.Paper) === 0) return ViewType.Paper;
         if (this._base_view_name.indexOf(ViewType.Pop) === 0) return ViewType.Pop;
         if (this._base_view_name.indexOf(ViewType.Top) === 0) return ViewType.Top;
@@ -327,7 +347,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     // 用来初始化组件或节点的一些属性，当该组件被第一次添加到节点上或用户点击了它的 Reset 菜单时调用。这个回调只会在编辑器下调用。
     resetInEditor(): any {
         if (EDITOR) {
-            const is3D = this.node.layer !== Layers.Enum.UI_2D;
+            const is3D = this.is3D();
             if (this.viewName.indexOf(ViewType.Page) >= 0) {
                 this.shade = false;
                 this.blockInput = is3D ? false : true;
@@ -381,7 +401,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     }
 
     private onCreate(): any {
-        if (this.node.layer !== Layers.Enum.UI_2D) return;
+        if (this.is3D()) return;
         const uiTransform = this.getComponent(UITransform);
         if (uiTransform) uiTransform.hitTest = (...args: any[]): boolean => {
             if (this.blockInput) {
@@ -401,7 +421,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
      */
     protected hideAllMiniViews(data?: any) {
         this._base_mini_show.forEach((name) => {
-            Core.inst.manager.ui.hide({ name, data });
+            Core.inst.manager.ui.shift({ name, data });
         });
         this._base_mini_showing.clear();
         this._base_mini_show.clear();
@@ -432,7 +452,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     protected showMiniViews({ data, views, onShow, onHide, onFinish }: { data?: any, views: Array<IMiniViewName | IMiniViewNames>, onShow?: IMiniOnShow, onHide?: IMiniOnHide, onFinish?: IMiniOnFinish }) {
         if (this.miniViews.length === 0) return false;
         if (views.length === 0) return false;
-        if (this.viewTypeName !== ViewType.Page) return false;
+        if (this.typeName !== ViewType.Page) return false;
 
         const task = Core.inst.lib.task.createSync();
 
@@ -463,7 +483,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         const task = Core.inst.lib.task.createSync();
 
         if (this.miniViews.length === 0) return task;
-        if (this.viewTypeName !== ViewType.Page) return task;
+        if (this.typeName !== ViewType.Page) return task;
 
         views = views.filter(name => {
             if (this._base_mini_show.has(name)) {
@@ -474,7 +494,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
                 this.warn('[showMiniViews]', `${name}不在miniViews中, 已跳过`);
                 return false;
             }
-            if (name.indexOf(this.viewBaseName) !== ViewType.Paper.length && name.indexOf('All') !== ViewType.Paper.length) {
+            if (name.indexOf(this.baseName) !== ViewType.Paper.length && name.indexOf(ViewType.PaperAll) !== 0) {
                 this.warn('[showMiniViews]', `${name}不属于当前Page, 已跳过`);
                 return false;
             }
@@ -550,11 +570,11 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         }
     }
 
-    private show(data?: SHOWDATA, attr?: IShowParamAttr, onShow?: IShowParamOnShow, onHide?: IShowParamOnHide, beforeShow?: IShowParamBeforeShow) {
+    private show(data?: SHOW_DATA, attr?: IShowParamAttr, onShow?: IShowParamOnShow, onHide?: IShowParamOnHide, beforeShow?: IShowParamBeforeShow) {
         // 当前show操作需要等待其它流程
         if (this._base_view_state !== ViewState.Showed &&
             this._base_view_state !== ViewState.Hid) {
-            this._base_showhide_delays.push(
+            this._base_show_hide_delays.push(
                 this.show.bind(this, data, attr, onShow, onHide, beforeShow)
             );
             return;
@@ -610,8 +630,8 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
                 if (changeState) this._base_view_state = ViewState.Hid;
             }
 
-            if (this._base_showhide_delays.length > 0) {
-                this._base_showhide_delays.shift()();
+            if (this._base_show_hide_delays.length > 0) {
+                this._base_show_hide_delays.shift()();
             }
         };
 
@@ -632,7 +652,7 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         // 当前hide操作需要等待其它流程
         if (this._base_view_state !== ViewState.Hid &&
             this._base_view_state !== ViewState.Showed) {
-            this._base_showhide_delays.push(
+            this._base_show_hide_delays.push(
                 this.hide.bind(this, data, onHide)
             );
             return;
@@ -671,8 +691,8 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
             if (changeState) this._base_view_state = ViewState.Showed;
         }
 
-        if (this._base_showhide_delays.length > 0) {
-            this._base_showhide_delays.shift()();
+        if (this._base_show_hide_delays.length > 0) {
+            this._base_show_hide_delays.shift()();
         }
     }
 
@@ -761,11 +781,11 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
     }
 
     // 以下为可重写
-    protected onShow(data?: SHOWDATA): any {
+    protected onShow(data?: SHOW_DATA): any {
         return data;
     }
 
-    protected onHide(data?: HIDEDATA): any {
+    protected onHide(data?: HIDE_DATA): any {
         return data;
     }
 
@@ -777,11 +797,11 @@ export default class BaseView<SHOWDATA = any, HIDEDATA = any> extends Component 
         return true;
     }
 
-    protected beforeShow(next: (error?: string) => void, data?: SHOWDATA): any {
+    protected beforeShow(next: (error?: string) => void, data?: SHOW_DATA): any {
         next(null);
     }
 
-    protected beforeHide(data?: HIDEDATA): string {
+    protected beforeHide(data?: HIDE_DATA): string {
         return null;
     }
 
