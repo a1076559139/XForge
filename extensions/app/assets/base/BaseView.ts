@@ -1,4 +1,4 @@
-import { Asset, Component, Enum, EventTouch, Layers, Node, Scene, UITransform, Widget, _decorator, js } from 'cc';
+import { Asset, Component, Enum, EventTouch, Layers, Node, Scene, UITransform, Widget, _decorator, error, js, log } from 'cc';
 import { EDITOR } from 'cc/env';
 import { IMiniViewName, IMiniViewNames, IViewName } from '../../../../assets/app-builtin/app-admin/executor';
 import Core from '../Core';
@@ -751,7 +751,7 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
     }
 
     protected log(...args: any[]) {
-        console.log(
+        log(
             `%c ${this._base_view_name} %c %s %c`,
             'background:#1e90ff ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #1e90ff; color: #fff;',
             'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #1e90ff; color: #1e90ff;',
@@ -761,7 +761,7 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
     }
 
     protected warn(...args: any[]) {
-        console.log(
+        log(
             `%c ${this._base_view_name} %c %s %c`,
             'background:#eccc68 ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #eccc68; color: #fff;',
             'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #eccc68; color: #eccc68;',
@@ -771,7 +771,7 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
     }
 
     protected error(...args: any[]) {
-        console.error(
+        error(
             `%c ${this._base_view_name} %c %s %c`,
             'background:#ff4757 ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff4757; color: #fff;',
             'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff4757; color: #ff4757;',

@@ -1,4 +1,4 @@
-import { AssetManager, Component, EventTarget, Prefab, Widget, _decorator, assetManager, error, find, instantiate, js, path, settings, warn } from 'cc';
+import { AssetManager, Component, EventTarget, Prefab, Widget, _decorator, assetManager, error, find, instantiate, js, log, path, settings, warn } from 'cc';
 import { DEBUG, EDITOR } from 'cc/env';
 import Core from '../Core';
 
@@ -21,7 +21,7 @@ const uuid = new class UUID {
 const BundleName = 'app-manager';
 
 function black(arg1: string, arg2: string) {
-    console.log(
+    log(
         `%c ${arg1} %c ${arg2} %c`,
         'background:#3e4145 ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #3e4145; color: #fff;',
         'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #3e4145; color: #3e4145;',
@@ -29,7 +29,7 @@ function black(arg1: string, arg2: string) {
     );
 }
 function yellow(arg1: string, arg2: string) {
-    console.log(
+    log(
         `%c ${arg1} %c ${arg2} %c`,
         'background:#dea32c ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #dea32c; color: #fff;',
         'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #dea32c; color: #dea32c;',
@@ -37,7 +37,7 @@ function yellow(arg1: string, arg2: string) {
     );
 }
 function green(arg1: string, arg2: string) {
-    console.log(
+    log(
         `%c ${arg1} %c ${arg2} %c`,
         'background:#00ae9d ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #00ae9d; color: #fff;',
         'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #00ae9d; color: #00ae9d;',
@@ -45,7 +45,7 @@ function green(arg1: string, arg2: string) {
     );
 }
 function orange(arg1: string, arg2: string) {
-    console.log(
+    log(
         `%c ${arg1} %c ${arg2} %c`,
         'background:#ff7f50 ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff7f50; color: #fff;',
         'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff7f50; color: #ff7f50;',
@@ -53,7 +53,7 @@ function orange(arg1: string, arg2: string) {
     );
 }
 function red(arg1: string, arg2: string) {
-    console.log(
+    log(
         `%c ${arg1} %c ${arg2} %c`,
         'background:#ff4757 ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff4757; color: #fff;',
         'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff4757; color: #ff4757;',
@@ -133,7 +133,7 @@ export default class BaseManager extends Component {
     }
 
     protected log(...args: any[]) {
-        console.log(
+        log(
             `%c ${this._base_manager_name} %c %s %c`,
             'background:#1e90ff ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #1e90ff; color: #fff;',
             'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #1e90ff; color: #1e90ff;',
@@ -143,7 +143,7 @@ export default class BaseManager extends Component {
     }
 
     protected warn(...args: any[]) {
-        console.log(
+        log(
             `%c ${this._base_manager_name} %c %s %c`,
             'background:#eccc68 ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #eccc68; color: #fff;',
             'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #eccc68; color: #eccc68;',
@@ -153,7 +153,7 @@ export default class BaseManager extends Component {
     }
 
     protected error(...args: any[]) {
-        console.error(
+        error(
             `%c ${this._base_manager_name} %c %s %c`,
             'background:#ff4757 ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff4757; color: #fff;',
             'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff4757; color: #ff4757;',
