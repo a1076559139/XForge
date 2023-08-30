@@ -50,7 +50,7 @@ function syncFolders(source, destination) {
             const stats = fs.statSync(destinationPath);
 
             // 检查目标文件夹中的项在源文件夹中是否存在
-            if (!fs.existsSync(sourcePath)) {
+            if (!fs.existsSync(sourcePath) || stats.isDirectory() !== fs.statSync(sourcePath).isDirectory()) {
                 // 如果目标文件夹中的项在源文件夹中不存在，则删除(并删除对应的.meta)
                 if (fs.existsSync(destinationMetaPath)) {
                     fs.unlinkSync(destinationMetaPath);
