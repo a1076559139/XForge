@@ -1,18 +1,18 @@
 # 介绍
 > 框架设计之初主要考虑H5与小游戏环境，最终的目的是希望：<br/>
-> 1、更好的多人协同开发体验。<br/>
-> 2、尽可能统一的开发规范(尽量避免口头约束)。<br/>
-> 3、更小的首屏/首包体积。<br/>
-> 4、更小的增量更新体积。<br/>
-> 5、复用通用模块的能力。<br/>
-
-⚠️: 大部分的框架目录点击后，都会在属性检查器页面生成它的一些说明文字，可以进行查看。<br/>
-⚠️: 框架暂时不允许自定义assets下的文件夹，所有文件夹可以通过菜单栏App来创建。<br/>
-⚠️: 使用vscode推荐安装 Code Spell Checker 插件。<br/>
+> 1. 更好的多人协同开发体验。
+> 2. 尽可能统一的开发规范(尽量避免口头约束)。
+> 3. 更小的首屏/首包体积。
+> 4. 更小的增量更新体积。
+> 5. 复用通用模块的能力。
+___
+- ⚠️: 大部分的框架目录点击后，都会在属性检查器页面生成它的一些说明文字，可以进行查看。
+- ⚠️: 框架暂时不允许自定义assets下的文件夹，所有文件夹可以通过菜单栏App来创建。
+- ⚠️: 使用vscode推荐安装 Code Spell Checker 插件。
 
 # 使用
 ## 0、初始化项目
-* 在空文件夹下执行```npx @gamex/cc-cli@latest```或```npx --registry=https://registry.npmjs.org @gamex/cc-cli@latest```
+* 在空文件夹下执行```npx @gamex/cc-cli@latest```
 ## 1、更新项目框架
 * 在项目根目录下执行```npm run upgrade```
 ## 2、使用内置package
@@ -24,11 +24,17 @@
 * 在项目根目录下执行**npm install**
 
 ## 1、UI
-* 通过菜单栏App/创建/View来创建UI，会自动创建于assets/app-bundle/app-view下。
-* UI分为4类：Page、Paper、Pop和Top，他们都继承自BaseView，它们的层级按顺序依次增大(同camera下)，即: Top > Pop > Paper > Page。
-* UI的HideEvent如果选择destroy，会自动清理静态引用的资源。
-* **落地页**由**Page**和**Paper**共同组成，**Paper**可以看作一些动态加载的页面，通过将落地页分解为****Page控制加载****，**Paper显示具体内容**的模式，可以轻松实现多人协同开发。
-* Page和Paper在创建时区分3D与2D，**3D模式的Page会以Scene的形式存在**。**其它模式都会以单Scene多Prefab的形式存在**，它们在实例化时会分别设置为scene/Root3D/UserInterface、scene/Root2D/UserInterface的子节点。。
+通过菜单栏App/创建/View来创建UI，会自动创建于assets/app-bundle/app-view下。
+* UI分为4类：**Page**、**Paper**、**Pop**和**Top**，他们都继承自**BaseView**。
+  - 它们的层级按顺序依次增大(同Camera下)，即: Top > Pop > Paper > Page。
+* UI的**HideEvent**有**active**、**destroy**两种模式
+  - 如果选择**destroy**模式，会自动清理所在Bundle的所有资源，即便是你动态加载并增加引用计数的资源。
+* **页面**应由**Page**和**Paper**共同组成，实现单个页面多人协同开发。
+  - **Paper**可以看作一些动态加载的页面，将一个页面的内容按照某种规则拆分不同的Paper。
+  - 由**Page控制加载**，在Page内可通过调用this.showMiniViews来控制Paper的显示。
+* **Page**和**Paper**在创建时区分**3D**与**2D**。
+  - **3D模式的Page会以Scene的形式存在**。
+  - **其它模式都会以单Scene多Prefab的形式存在**，它们在实例化时会分别设置为scene/Root3D/UserInterface、scene/Root2D/UserInterface的子节点。
 ```
 // 打开一个UI(如果没能出现自动提示，请在vscode中打开一下executor.ts文件即可)
 app.manager.ui.show<UI类>({
@@ -80,7 +86,7 @@ app.manager.event.targetOff
 ```
 
 ## 5、全局loader
-* 对cc.assetManager的一些简单封装
+对cc.assetManager的一些简单封装
 ```
 app.manager.loader.load
 app.manager.loader.loadDir
@@ -96,13 +102,13 @@ app.lib.storage
 ```
 
 ## 7、自定义Manager
-* 通过菜单栏App/创建/Manager来创建自定义Manager，位置处于assets/app-builtin/app-manager下
+通过菜单栏App/创建/Manager来创建自定义Manager，位置处于assets/app-builtin/app-manager下
 ```
 app.manager.xxx
 ```
 
 ## 8、自定义Control
-* 通过菜单栏App/创建/Control来创建自定义Control，位置处于assets/app-builtin/app-control下
+通过菜单栏App/创建/Control来创建自定义Control，位置处于assets/app-builtin/app-control下
 * 它与Manager的区别是: Manager更偏向一些全局类的功能，而Control更偏向于作为某个UI的对外接口(UI是不能直接进行访问的)
 ```
   1、作为对外输出，Control内部可以新建变量和方法，在外部(通过XXXControl.inst调用)变量和方法会自动变为只读。
@@ -113,7 +119,7 @@ app.manager.xxx
 ```
 
 ## 9、自定义Model
-* 通过菜单栏App/创建/Model来创建自定义Model，位置处于assets/app-builtin/app-model下
+通过菜单栏App/创建/Model来创建自定义Model，位置处于assets/app-builtin/app-model下
 ```
 app.data.xxx
 app.config.xxx
