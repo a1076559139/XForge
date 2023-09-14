@@ -144,7 +144,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         this.UIRoot2D = find(UIRoot2DPath);
         this.UIRoot3D = find(UIRoot3DPath);
 
-        this.initUITouches();
         this.initUITypes();
 
         this.shade = instantiate(this.shadePre);
@@ -153,12 +152,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         this.loading.parent = this.UIRoot2D;
         this.shade.active = false;
         this.loading.active = false;
-    }
-
-    private initUITouches() {
-        for (let i = 0; i < BlockEvents.length; i++) {
-            this.UIRoot2D.on(BlockEvents[i], this.stopPropagation, this, true);
-        }
     }
 
     private initUITypes() {
@@ -184,6 +177,24 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             widget.bottom = 0;
             widget.alignMode = Widget.AlignMode.ON_WINDOW_RESIZE;
         });
+    }
+
+    private addTouchMaskListener() {
+        if (!this.touchEnabled) return;
+        if (this.touchMaskMap.size > 0) return;
+
+        for (let i = 0; i < BlockEvents.length; i++) {
+            this.UIRoot2D.on(BlockEvents[i], this.stopPropagation, this, true);
+        }
+    }
+
+    private removeTouchMaskListener() {
+        if (!this.touchEnabled) return;
+        if (this.touchMaskMap.size > 0) return;
+
+        for (let i = 0; i < BlockEvents.length; i++) {
+            this.UIRoot2D.off(BlockEvents[i], this.stopPropagation, this, true);
+        }
     }
 
     private stopPropagation(event: Event) {
@@ -1153,6 +1164,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 添加触摸屏蔽
      */
     public addTouchMask(timeout = 0) {
+        this.addTouchMaskListener();
         const uuid = this.createUUID();
         this.touchMaskMap.set(uuid, true);
         if (timeout > 0) this.scheduleOnce(() => {
@@ -1167,6 +1179,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      */
     public removeTouchMask(uuid: string) {
         this.touchMaskMap.delete(uuid);
+        this.removeTouchMaskListener();
     }
 
     /**
@@ -1174,8 +1187,14 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * @param {*} enabled 
      */
     public setTouchEnabled(enabled: boolean) {
-        this.log('[setTouchEnabled]', enabled);
-        this.touchEnabled = !!enabled;
+        if (enabled) {
+            this.touchEnabled = true;
+            this.removeTouchMaskListener();
+        } else {
+            this.addTouchMaskListener();
+            this.touchEnabled = false;
+        }
+        this.log('[setTouchEnabled]', this.touchEnabled);
     }
 
     /**
