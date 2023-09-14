@@ -43,6 +43,7 @@ export default class UIMgrShade extends Component {
         this.begin = begin;
         this.end = end;
         this.speed = speed;
+        this.stopAnimation = false;
     }
 
     protected onEnable() {
