@@ -39,7 +39,6 @@ export default class LoaderManager extends BaseManager {
      * @param {string} bundle 默认为resources
      */
     public preload(params: { path: string, bundle?: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (item: AssetManager.RequestItem[]) => void }) {
-        this.handle('preload', params);
         if (SceneAsset === params.type as typeof Asset) {
             this.handle('preloadScene', { path: params.path, bundle: params.bundle, onProgress: params.onProgress, onComplete: params.onComplete });
         } else {
