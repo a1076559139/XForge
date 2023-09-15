@@ -4,20 +4,17 @@ const { ccclass } = _decorator;
 
 @ccclass('EventManager')
 export default class EventManager extends BaseManager {
-    private events: Map<string, EventTarget> = new Map();
+    private events: Map<string | number, EventTarget> = new Map();
 
     clear() {
         return this.events.clear();
     }
 
-    delete(rootName: string) {
+    delete(rootName: string | number) {
         return this.events.delete(rootName);
     }
 
-    get(rootName: string): EventTarget {
-        if (typeof rootName === 'undefined') {
-            return null;
-        }
+    get(rootName: string | number): EventTarget {
         if (this.events.has(rootName)) {
             return this.events.get(rootName);
         }

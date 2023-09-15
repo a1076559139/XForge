@@ -115,7 +115,7 @@ class Timer extends Component implements ITimer {
 @ccclass('TimerManager')
 export default class TimerManager extends BaseManager {
 
-    private timers: Map<string, Timer> = new Map();
+    private timers: Map<string | number, Timer> = new Map();
 
     clear() {
         this.timers.forEach((timer) => {
@@ -124,7 +124,7 @@ export default class TimerManager extends BaseManager {
         this.timers.clear();
     }
 
-    delete(rootName: string) {
+    delete(rootName: string | number) {
         const timer = this.timers.get(rootName);
         if (timer) {
             this.timers.delete(rootName);
@@ -132,10 +132,7 @@ export default class TimerManager extends BaseManager {
         }
     }
 
-    get(rootName: string): ITimer {
-        if (typeof rootName === 'undefined') {
-            return null;
-        }
+    get(rootName: string | number): ITimer {
         if (this.timers.has(rootName)) {
             return this.timers.get(rootName);
         }
