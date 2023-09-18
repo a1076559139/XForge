@@ -34,6 +34,11 @@
                     "update-executor"
                 ]
             },
+            "scene:ready": {
+                "methods": [
+                    "scene:ready"
+                ]
+            },
             "asset-db:ready": {
                 "methods": [
                     "asset-db:ready"

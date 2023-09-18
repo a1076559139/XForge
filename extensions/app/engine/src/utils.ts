@@ -163,6 +163,14 @@ export async function createFolderByUrl(url: string, opts?: { subPaths?: string[
     return true;
 }
 
+export function delay(time: number) {
+    return new Promise((next) => {
+        setTimeout(() => {
+            next(null);
+        }, time);
+    });
+}
+
 /**
  * 等待文件存在
  */

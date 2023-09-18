@@ -65,34 +65,51 @@ const viewFolderPath = bundleFolderPath + '/' + viewFolderName;
 const executorFileUrl = adminFolderUrl + '/executor.ts';
 const executorFilePath = adminFolderPath + '/executor.ts';
 
-function isFolderValid(info: AssetInfo) {
-    if (!info.path) return true;
-    if (path.dirname(info.path) !== 'db://assets') return true;
+// 非法的文件夹
+function isIllegalFolder(info: AssetInfo) {
+    if (!info.path) return false;
+    if (!info.isDirectory) return false;
+    if (!info.path.startsWith('db://assets')) return false;
 
-    const basename = path.basename(info.path);
-    if (basename === 'app') return true;
-    if (basename === 'app-appinit') return true;
-    if (basename === 'app-builtin') return true;
-    if (basename === 'app-bundle') return true;
-    if (basename === 'app-scene') return true;
-    if (basename === 'res-bundle') return true;
-    if (basename === 'res-native') return true;
-    if (basename === 'resources') return true;
+    const cleanPath = info.path.slice('db://'.length);
+    if (path.dirname(cleanPath) !== 'assets') return false;
 
-    return false;
+    const basename = path.basename(cleanPath);
+    if (basename === 'app') return false;
+    if (basename === 'app-appinit') return false;
+    if (basename === 'app-builtin') return false;
+    if (basename === 'app-bundle') return false;
+    if (basename === 'app-scene') return false;
+    if (basename === 'res-bundle') return false;
+    if (basename === 'res-native') return false;
+    if (basename === 'resources') return false;
+
+    return true;
 }
 
-async function deleteInvalidFolders() {
-    await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/*' })
-        .then(infos => {
-            const deletePaths = infos.filter(info => !isFolderValid(info)).map(info => info.path);
-            if (deletePaths.length) {
-                Editor.Dialog.error(`${deletePaths.join('\r\n')}\r\n只允许使用插件App创建的文件夹`, { title: '非法文件夹', buttons: ['确认'] });
-                deletePaths.forEach(deletePath => {
-                    Editor.Message.request('asset-db', 'delete-asset', deletePath);
-                });
-            }
-        });
+async function moveIllegalFolders(infos: AssetInfo[] = null) {
+    if (!infos) {
+        infos = await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/*' })
+            .catch(() => []);
+    }
+
+    // 非法文件夹
+    const illegalPaths = infos.filter(info => isIllegalFolder(info)).map(info => info.path);
+    if (illegalPaths.length === 0) return;
+
+    // 创建文件夹
+    const folderName = 'res-native';
+    const folderPath = `db://assets/${folderName}`;
+    if (!await createFolderByUrl(folderPath, { readme: getResReadme(folderName) })) {
+        Editor.Dialog.error(`${illegalPaths.join('\r\n')}\r\n只允许使用插件App创建的文件夹`, { title: '非法文件夹', buttons: ['确认'] });
+        return;
+    }
+
+    illegalPaths.forEach(async illegalPath => {
+        const basename = path.basename(illegalPath);
+        console.log('移动:', illegalPath, '->', folderPath + '/' + basename);
+        await Editor.Message.request('asset-db', 'move-asset', illegalPath, folderPath + '/' + basename);
+    });
 }
 
 function isExecutor(info: AssetInfo, strict = true) {
@@ -539,24 +556,28 @@ export const methods: { [key: string]: (...any: any) => any } = {
         updateBuilder();
         callUpdateExecutor();
     },
+    ['scene:ready']() {
+        moveIllegalFolders();
+
+    },
     ['asset-db:ready']() {
-        updateExecutor().finally(() => {
-            deleteInvalidFolders();
-        });
+        updateExecutor();
     },
     ['asset-db:asset-add'](uuid: string, info: AssetInfo) {
-        if (!isFolderValid(info)) {
-            Editor.Dialog.error(`${info.path}\r\n只允许使用插件App创建的文件夹`, { title: '非法文件夹', buttons: ['确认'] });
-            Editor.Message.request('asset-db', 'delete-asset', info.path);
+        if (isIllegalFolder(info)) {
+            moveIllegalFolders([info]);
+            // Editor.Dialog.error(`${info.path}\r\n只允许使用插件App创建的文件夹`, { title: '非法文件夹', buttons: ['确认'] });
+            // Editor.Message.request('asset-db', 'delete-asset', info.path);
             return;
         }
         if (!isExecutor(info)) return;
         callUpdateExecutor();
     },
     ['asset-db:asset-change'](uuid: string, info: AssetInfo) {
-        if (!isFolderValid(info)) {
-            Editor.Dialog.error(`${info.path}\r\n只允许使用插件App创建的文件夹`, { title: '非法文件夹', buttons: ['确认'] });
-            Editor.Message.request('asset-db', 'delete-asset', info.path);
+        if (isIllegalFolder(info)) {
+            moveIllegalFolders([info]);
+            // Editor.Dialog.error(`${info.path}\r\n只允许使用插件App创建的文件夹`, { title: '非法文件夹', buttons: ['确认'] });
+            // Editor.Message.request('asset-db', 'delete-asset', info.path);
             return;
         }
         if (!isExecutor(info, false)) return;
@@ -577,9 +598,7 @@ export function load() {
     Editor.Message.request('asset-db', 'query-ready')
         .then(ready => {
             if (!ready) return;
-            updateExecutor().finally(() => {
-                deleteInvalidFolders();
-            });
+            updateExecutor();
         });
 }
 
