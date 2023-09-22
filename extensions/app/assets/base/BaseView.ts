@@ -24,6 +24,17 @@ interface IEvent<E> {
     targetOff(target: any): void;
 }
 
+export type IShade = {
+    /**等待 默认0秒 */
+    delay?: number,
+    /**开始透明度 默认60 */
+    begin?: number,
+    /**结束透明度 默认180 */
+    end?: number,
+    /**透明变化速度 默认100 */
+    speed?: number
+};
+
 export interface IShowParamAttr {
     zIndex?: number,
     siblingIndex?: number,
@@ -67,16 +78,6 @@ interface IMiniOnHide {
 }
 interface IMiniOnFinish {
     (): any
-}
-interface IOnShadeReturn {
-    /**等待 默认0秒 */
-    delay?: number,
-    /**开始透明度 默认60 */
-    begin?: number,
-    /**结束透明度 默认180 */
-    end?: number,
-    /**透明变化速度 默认10 */
-    speed?: number
 }
 
 enum ViewState {
@@ -815,7 +816,7 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
     /**
      * 背景遮照的参数
      */
-    protected onShade(): IOnShadeReturn {
+    protected onShade(): IShade {
         return {};
     }
 }

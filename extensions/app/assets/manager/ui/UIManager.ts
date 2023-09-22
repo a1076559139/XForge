@@ -3,7 +3,7 @@ import { DEBUG } from 'cc/env';
 import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
 import Core from '../../Core';
 import BaseManager from '../../base/BaseManager';
-import BaseView, { IHideParamOnHide, IShowParamAttr, IShowParamOnHide, IShowParamOnShow, IViewType, ViewType } from '../../base/BaseView';
+import BaseView, { IHideParamOnHide, IShade, IShowParamAttr, IShowParamOnHide, IShowParamOnShow, IViewType, ViewType } from '../../base/BaseView';
 import UIMgrShade from '../../manager/ui/comp/UIMgrShade';
 import UIMgrZOrder from '../../manager/ui/comp/UIMgrZOrder';
 
@@ -49,16 +49,6 @@ const UIRoot2DPath = 'Root2D/UserInterface';
 const ViewTypes = [ViewType.Page, ViewType.Paper, ViewType.Pop, ViewType.Top];
 
 type IPreload = (IViewName | IMiniViewName | Array<IViewName | IMiniViewName>)[];
-type IShade = {
-    /**等待 默认0秒 */
-    delay?: number,
-    /**开始透明度 默认60 */
-    begin?: number,
-    /**结束透明度 默认180 */
-    end?: number,
-    /**透明变化速度 默认100 */
-    speed?: number
-};
 
 @ccclass('UIManager')
 export default class UIManager<UIName extends string, MiniName extends string> extends BaseManager {
