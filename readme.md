@@ -257,9 +257,18 @@
 **UI位于assets/app-builtin/app-view中。**
 
 - 不需要也不建议手动去创建，可以通过菜单栏App->创建->View选项来进行创建。
-UI继承自BaseView。
 
-**在Cocos原有的生命周期函数外，又增加了一些框架的生命周期函数。**
+**UI目录包含native和resources两个文件夹。**
+
+- native和resources都是Bundle。
+
+- native负责存储脚本与Prefab/Scene资源，native/expansion目录存储你自己创建的脚本与Prefab。
+
+- resources存储所有渲染资源，如图片、spine、font等。
+
+> 这样处理的的好处在于native与resources将分别采用不同的分包策略，来达到在各平台上加载性能与体积最优。
+
+**UI继承自BaseView，在Cocos原有的生命周期函数外，又增加了一些框架的生命周期函数。**
 
 - `beforeShow`：UI显示前触发。
     > 可用于在显示前加载或处理某些任务，比如在Page显示之前先显示Paper，可以避免视觉上Page和Paper显示延迟的割裂感。
