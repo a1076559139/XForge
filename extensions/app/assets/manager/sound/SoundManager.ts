@@ -310,8 +310,8 @@ export default class SoundManager<E extends string, M extends string> extends Ba
 
     public setMusicMute(mute: boolean, isCache = false) {
         isCache && storage.set(this.musicMuteCacheKey, mute);
-        const result = AudioEngine.inst.setMusicMute(mute);
-        if (!result && this.playingMusic.name) {
+        AudioEngine.inst.setMusicMute(mute);
+        if (!mute && this.playingMusic.name) {
             this.playMusic({
                 name: this.playingMusic.name as any,
                 volume: this.playingMusic.volume
