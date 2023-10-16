@@ -1,4 +1,4 @@
-import { Asset, AssetManager, SceneAsset, _decorator, assetManager } from 'cc';
+import { Asset, AssetManager, Font, Label, SceneAsset, Sprite, SpriteFrame, _decorator, assetManager, isValid, sp } from 'cc';
 import BaseManager from '../../base/BaseManager';
 const { ccclass } = _decorator;
 
@@ -162,5 +162,50 @@ export default class LoaderManager extends BaseManager {
                 onComplete && onComplete(res);
             });
         }
+    }
+
+    public setFont(params: { target: Label, path: string, bundle?: string, onSuccess?: () => void, onFail?: () => void }) {
+        this.load({
+            path: params.path,
+            bundle: params.bundle,
+            type: Font,
+            onComplete: (font) => {
+                if (!font || !isValid(params.target)) {
+                    return params.onFail && params.onFail();
+                }
+                params.target.font = font;
+                params.onSuccess && params.onSuccess();
+            }
+        });
+    }
+
+    public setSpine(params: { target: sp.Skeleton, path: string, bundle?: string, onSuccess?: () => void, onFail?: () => void }) {
+        this.load({
+            path: params.path,
+            bundle: params.bundle,
+            type: sp.SkeletonData,
+            onComplete: (skeletonData) => {
+                if (!skeletonData || !isValid(params.target)) {
+                    return params.onFail && params.onFail();
+                }
+                params.target.skeletonData = skeletonData;
+                params.onSuccess && params.onSuccess();
+            }
+        });
+    }
+
+    public setSprite(params: { target: Sprite, path: string, bundle?: string, onSuccess?: () => void, onFail?: () => void }) {
+        this.load({
+            path: params.path,
+            bundle: params.bundle,
+            type: SpriteFrame,
+            onComplete: (spriteFrame) => {
+                if (!spriteFrame || !isValid(params.target)) {
+                    return params.onFail && params.onFail();
+                }
+                params.target.spriteFrame = spriteFrame;
+                params.onSuccess && params.onSuccess();
+            }
+        });
     }
 }
