@@ -457,8 +457,8 @@ async function updateExecutor() {
         effectKeys['never'] = '';
     result += 'enum viewNames { \'' + Object.keys(viewKeys).join('\',\'') + '\'}\n';
     result += 'const miniViewNames = ' + JSON.stringify(miniViewKeys) + '\n';
-    result += 'enum musicNames { \'' + Object.keys(musicKeys).join('\',\'') + '\'}\n';
-    result += 'enum effectNames { \'' + Object.keys(effectKeys).join('\',\'') + '\'}\n\n';
+    result += 'export enum musicNames { \'' + Object.keys(musicKeys).join('\',\'') + '\'}\n';
+    result += 'export enum effectNames { \'' + Object.keys(effectKeys).join('\',\'') + '\'}\n\n';
     result += 'export type IViewName = keyof typeof viewNames\n';
     result += 'export type IViewNames = IViewName[]\n';
     result += 'export type IMiniViewName = keyof typeof miniViewNames\n';
