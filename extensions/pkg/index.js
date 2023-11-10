@@ -116,7 +116,7 @@ function deleteDirectory(dir) {
     fs.rmdirSync(dir);
 }
 
-const assetsDir = path.join(__dirname, 'assets');
+const assetsDir = path.join(__dirname, 'node_modules');
 const packageDir = path.join(__dirname, 'package');
 const modulesDir = path.join(packageDir, 'node_modules');
 const executorPath = path.join(__dirname, '../../assets/app-builtin/app-admin/executor.ts');
@@ -141,7 +141,7 @@ async function main() {
             // 直接更新executor.ts避免安装后直接在vscode中无法触发智能提示
             if (fs.existsSync(executorPath)) {
                 const str = fs.readFileSync(executorPath, 'utf-8');
-                const reg = new RegExp(`import\\s+['"]db://pkg/${pkgName}['"]`)
+                const reg = new RegExp(`import\\s+['"]db://pkg/${pkgName}['"]`);
                 if (str.search(reg) === -1) {
                     fs.writeFileSync(executorPath, str + `\nimport 'db://pkg/${pkgName}'`, 'utf-8');
                 }

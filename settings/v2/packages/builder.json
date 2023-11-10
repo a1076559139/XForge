@@ -238,6 +238,34 @@
             "overwriteSettings": {}
           }
         }
+      },
+      "default": {
+        "displayName": "i18n:builder.asset_bundle.defaultConfig",
+        "configs": {
+          "native": {
+            "preferredOptions": {
+              "isRemote": true,
+              "compressionType": "merge_dep"
+            }
+          },
+          "web": {
+            "preferredOptions": {
+              "isRemote": true,
+              "compressionType": "merge_dep"
+            },
+            "fallbackOptions": {
+              "compressionType": "merge_dep"
+            }
+          },
+          "miniGame": {
+            "fallbackOptions": {
+              "isRemote": true,
+              "compressionType": "merge_dep"
+            },
+            "configMode": "fallback",
+            "overwriteSettings": {}
+          }
+        }
       }
     }
   }
