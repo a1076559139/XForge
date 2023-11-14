@@ -138,6 +138,10 @@ async function main() {
         if (code !== 0) {
             console.error(`[失败]: ${code}`);
         } else {
+            // 如果不存在文件夹则创建
+            if (!fs.existsSync(assetsDir)) {
+                fs.mkdirSync(assetsDir);
+            }
             // 直接更新executor.ts避免安装后直接在vscode中无法触发智能提示
             if (fs.existsSync(executorPath)) {
                 const str = fs.readFileSync(executorPath, 'utf-8');
