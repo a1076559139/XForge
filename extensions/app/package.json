@@ -7,6 +7,7 @@
     "description": "i18n:app.description",
     "main": "./engine/dist/main.js",
     "contributions": {
+        "builder": "./engine/dist/builder/index.js",
         "scene": {
             "script": "./engine/dist/scene.js"
         },
