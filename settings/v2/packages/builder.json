@@ -47,7 +47,7 @@
                 "isRemote": false
               },
               "alipay-mini-game": {
-                "compressionType": "merge_dep",
+                "compressionType": "subpackage",
                 "isRemote": false
               },
               "taobao-creative-app": {
@@ -127,8 +127,8 @@
                 "isRemote": false
               },
               "alipay-mini-game": {
-                "compressionType": "merge_dep",
-                "isRemote": false
+                "compressionType": "subpackage",
+                "isRemote": true
               },
               "taobao-creative-app": {
                 "compressionType": "merge_all_json",
@@ -177,55 +177,7 @@
           },
           "miniGame": {
             "configMode": "fallback",
-            "overwriteSettings": {
-              "bytedance-mini-game": {
-                "isRemote": true
-              },
-              "oppo-mini-game": {
-                "isRemote": true
-              },
-              "huawei-quick-game": {
-                "isRemote": true
-              },
-              "vivo-mini-game": {
-                "isRemote": true
-              },
-              "xiaomi-quick-game": {
-                "isRemote": true
-              },
-              "baidu-mini-game": {
-                "compressionType": "merge_dep",
-                "isRemote": true
-              },
-              "wechatgame": {
-                "isRemote": true
-              },
-              "cocos-play": {
-                "compressionType": "merge_dep",
-                "isRemote": true
-              },
-              "alipay-mini-game": {
-                "compressionType": "merge_dep",
-                "isRemote": false
-              },
-              "taobao-creative-app": {
-                "isRemote": true
-              },
-              "taobao-mini-game": {
-                "isRemote": true
-              },
-              "link-sure": {
-                "compressionType": "merge_dep",
-                "isRemote": false
-              },
-              "qtt": {
-                "compressionType": "merge_dep",
-                "isRemote": false
-              },
-              "fb-instant-games": {
-                "isRemote": true
-              }
-            },
+            "overwriteSettings": {},
             "fallbackOptions": {
               "isRemote": true
             }
