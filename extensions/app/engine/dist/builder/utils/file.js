@@ -65,7 +65,7 @@ function adaptFileMD5(filepath, exclude = []) {
                 const subFilePathReal = queryFile(subFilePath);
                 // 实际的子文件不存在
                 if (!subFilePathReal) {
-                    console.warn('[跳过] [文件不存在]', filepath, subRelativePath);
+                    // console.warn('[跳过] [文件不存在]', filepath, subRelativePath);
                     continue;
                 }
                 // 如果引用的文件路径不带md5，但是实际文件有md5，则

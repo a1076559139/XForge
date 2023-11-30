@@ -7,5 +7,9 @@ export const onAfterBuild: BuildHook.onAfterBuild = async function (options, res
         return;
     }
 
+    if (!options.md5Cache) {
+        return;
+    }
+
     adaptFileMD5(path.join(result.dest, 'index.html'));
 };
