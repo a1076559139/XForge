@@ -21,7 +21,7 @@ export default class LoaderManager extends BaseManager {
         if (onProgress) args.push(onProgress);
         args.push((err: string, res: any) => {
             if (err) {
-                this.error(`${handle} "${path}" fail`);
+                this.error(`${handle} "${path}" fail`, err);
                 onComplete && onComplete(null);
             } else {
                 onComplete && onComplete(res);
@@ -225,7 +225,7 @@ export default class LoaderManager extends BaseManager {
      * 
      * @example
      * const bundle = app.manager.ui.getResBundleName('PageGame')
-     * setSprite({target:sprite, path:'img/a', bundle:bundle, onSuccess:()=>{}})
+     * setSprite({target:sprite, path:'img/a/spriteFrame', bundle:bundle, onSuccess:()=>{}})
      */
     public setSprite(params: { target: Sprite, path: string, bundle?: string, onSuccess?: () => void, onFail?: () => void }) {
         this.load({
