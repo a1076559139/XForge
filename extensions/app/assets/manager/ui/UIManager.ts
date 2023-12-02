@@ -117,10 +117,10 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             setting.preload.forEach((preload) => {
                 if (preload instanceof Array) {
                     task.add(preload.map(name => {
-                        return next => this.installUI(name, next);
+                        return next => this.installUI(name as any, next);
                     }));
                 } else {
-                    task.add(next => this.installUI(preload, next));
+                    task.add(next => this.installUI(preload as any, next));
                 }
             });
             task.start();
@@ -248,7 +248,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 安装UI
      */
-    private installUI(name: string, complete?: (result: Prefab | SceneAsset) => any, progress?: (finish: number, total: number, item: AssetManager.RequestItem) => void) {
+    private installUI(name: UIName | MiniName, complete?: (result: Prefab | SceneAsset) => any, progress?: (finish: number, total: number, item: AssetManager.RequestItem) => void) {
         const isScene = this.isScene(name);
         if (isScene) {
             if (this.sceneCache[name]) {
@@ -295,7 +295,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 卸载UI
      */
-    private uninstallUI(name: string) {
+    private uninstallUI(name: UIName | MiniName) {
         const isScene = this.isScene(name);
         const cache = isScene ? this.sceneCache : this.prefabCache;
 
@@ -328,7 +328,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             const view = this.getBaseView(target.node) || this.getViewInParents(target.node);
             if (view) {
                 Core.inst.manager.loader.load({
-                    bundle: this.getResBundleName(view.viewName),
+                    bundle: this.getResBundleName(view.viewName as UIName | MiniName),
                     path: path,
                     type: type,
                     onComplete: callback
@@ -353,7 +353,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             const view = this.getBaseView(target.node) || this.getViewInParents(target.node);
             if (view) {
                 Core.inst.manager.loader.preload({
-                    bundle: this.getResBundleName(view.viewName),
+                    bundle: this.getResBundleName(view.viewName as UIName | MiniName),
                     path: path,
                     type: type
                 });
@@ -378,7 +378,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             const view = this.getBaseView(target.node) || this.getViewInParents(target.node);
             if (view) {
                 Core.inst.manager.loader.loadDir({
-                    bundle: this.getResBundleName(view.viewName),
+                    bundle: this.getResBundleName(view.viewName as UIName | MiniName),
                     path: path,
                     type: type,
                     onComplete: callback
@@ -403,7 +403,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             const view = this.getBaseView(target.node) || this.getViewInParents(target.node);
             if (view) {
                 Core.inst.manager.loader.preloadDir({
-                    bundle: this.getResBundleName(view.viewName),
+                    bundle: this.getResBundleName(view.viewName as UIName | MiniName),
                     path: path,
                     type: type
                 });
@@ -486,14 +486,14 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         // 当全部释放时才清除缓存
         const nodes = this.getUIInScene(uiName, true);
         if (nodes.length === 0 || nodes.every(node => !isValid(node, true))) {
-            this.uninstallUI(uiName);
+            this.uninstallUI(uiName as UIName | MiniName);
         }
     }
 
     /**
      * 获取UI原生Bundle名字
      */
-    public getNativeBundleName(uiName: string) {
+    public getNativeBundleName(uiName: UIName | MiniName) {
         const oldBundleName = `app-view_${uiName}`;
         const projectBundles = settings.querySettings(Settings.Category.ASSETS, 'projectBundles') as string[];
         if (projectBundles && projectBundles.indexOf(oldBundleName) >= 0) {
@@ -505,7 +505,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 获取UI资源Bundle名字
      */
-    public getResBundleName(uiName: string) {
+    public getResBundleName(uiName: UIName | MiniName) {
         const oldBundleName = `app-view_${uiName}_Res`;
         const projectBundles = settings.querySettings(Settings.Category.ASSETS, 'projectBundles') as string[];
         if (projectBundles && projectBundles.indexOf(oldBundleName) >= 0) {
@@ -518,7 +518,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 加载UI前置Bundle
      */
-    private loadUIBundle(name: string, onFinish: (result: [AssetManager.Bundle, AssetManager.Bundle]) => any) {
+    private loadUIBundle(name: UIName | MiniName, onFinish: (result: [AssetManager.Bundle, AssetManager.Bundle]) => any) {
         Core.inst.lib.task.createASync<[AssetManager.Bundle, AssetManager.Bundle]>()
             .add((next) => {
                 Core.inst.manager.loader.loadBundle({
@@ -668,7 +668,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 0 UI无效
      * 1 UI有效
      */
-    private checkUIValid(name: string, data: any, callback: (valid: -1 | 0 | 1) => any) {
+    private checkUIValid(name: UIName | MiniName, data: any, callback: (valid: -1 | 0 | 1) => any) {
         this.installUI(name, (result) => {
             if (!result) return callback(-1);
             const View = this.getUIClass(name);

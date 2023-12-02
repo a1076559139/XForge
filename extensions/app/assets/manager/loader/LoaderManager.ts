@@ -56,7 +56,9 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 加载bundle下的资源
-     * @param {string} bundle 默认为resources
+     * @param params.bundle 默认为resources
+     * @param params.path bundle下的相对路径
+     * @param params.type 资源类型
      */
     public load<T extends typeof Asset>(params: { path: string, bundle?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (item: InstanceType<T>) => void }) {
         if (SceneAsset === params.type as typeof Asset) {
@@ -68,7 +70,9 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 加载bundle下的资源
-     * @param {string} bundle 默认为resources
+     * @param params.bundle 默认为resources
+     * @param params.path bundle下的相对路径
+     * @param params.type 资源类型
      */
     public loadDir<T extends typeof Asset>(params: { path: string, bundle?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (items: InstanceType<T>[]) => void }) {
         this.handle('loadDir', params);
@@ -76,7 +80,9 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 销毁一个bundle中对应path和type的资源
-     * @param {string} bundle 默认为resources
+     * @param params.bundle 默认为resources
+     * @param params.path bundle下的相对路径
+     * @param params.type 资源类型
      */
     public release({ path, bundle, type }: { path: string, bundle?: string, type?: typeof Asset }) {
         if (!bundle) bundle = 'resources';
@@ -85,7 +91,7 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 销毁一个bundle中所有的资源
-     * @param {string} bundle 默认为resources
+     * @param bundle 默认为resources
      */
     public releaseAll(bundle?: string) {
         if (!bundle) bundle = 'resources';
@@ -101,7 +107,7 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 销毁一个bundle中未使用的资源
-     * @param {string} bundle 默认为resources
+     * @param bundle 默认为resources
      */
     public releaseUnused(bundle?: string) {
         if (!bundle) bundle = 'resources';
@@ -111,7 +117,7 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 加载一个bundle
-     * @param {string} bundle 默认为resources
+     * @param params.bundle 默认为resources
      */
     public loadBundle({ bundle, onComplete }: { bundle?: string, onComplete?: (bundle: AssetManager.Bundle) => any }) {
         if (!bundle) bundle = 'resources';
@@ -122,7 +128,7 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 获取一个已经加载的bundle
-     * @param {string} bundle 默认为resources
+     * @param bundle 默认为resources
      */
     public getBundle(bundle?: string) {
         if (!bundle) bundle = 'resources';
@@ -131,7 +137,7 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 移除一个已经加载的bundle
-     * @param {string} bundle 默认为resources
+     * @param bundle 默认为resources
      */
     public removeBundle(bundle?: string) {
         if (!bundle) bundle = 'resources';
@@ -164,6 +170,15 @@ export default class LoaderManager extends BaseManager {
         }
     }
 
+    /**
+     * 设置字体资源
+     * @param params.bundle 默认为resources
+     * @param params.path bundle下的相对路径
+     * 
+     * @example
+     * const bundle = app.manager.ui.getResBundleName('PageGame')
+     * setFont({target:label, path:'font/num', bundle:bundle, onSuccess:()=>{}})
+     */
     public setFont(params: { target: Label, path: string, bundle?: string, onSuccess?: () => void, onFail?: () => void }) {
         this.load({
             path: params.path,
@@ -179,6 +194,15 @@ export default class LoaderManager extends BaseManager {
         });
     }
 
+    /**
+     * 设置Spine资源
+     * @param params.bundle 默认为resources
+     * @param params.path bundle下的相对路径
+     * 
+     * @example
+     * const bundle = app.manager.ui.getResBundleName('PageGame')
+     * setSpine({target:spine, path:'spine/role', bundle:bundle, onSuccess:()=>{}})
+     */
     public setSpine(params: { target: sp.Skeleton, path: string, bundle?: string, onSuccess?: () => void, onFail?: () => void }) {
         this.load({
             path: params.path,
@@ -194,6 +218,15 @@ export default class LoaderManager extends BaseManager {
         });
     }
 
+    /**
+     * 设置图片资源
+     * @param params.bundle 默认为resources
+     * @param params.path bundle下的相对路径
+     * 
+     * @example
+     * const bundle = app.manager.ui.getResBundleName('PageGame')
+     * setSprite({target:sprite, path:'img/a', bundle:bundle, onSuccess:()=>{}})
+     */
     public setSprite(params: { target: Sprite, path: string, bundle?: string, onSuccess?: () => void, onFail?: () => void }) {
         this.load({
             path: params.path,
