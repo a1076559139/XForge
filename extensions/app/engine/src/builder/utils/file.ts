@@ -21,7 +21,7 @@ function getFiles(dir: string): string[] {
         const item_path = path.join(dir, item);
         const isDir = fs.statSync(item_path).isDirectory();
         if (!isDir) result.push(item_path);
-    })
+    });
 
     return result;
 }
@@ -209,7 +209,11 @@ export function getFilesBySameNameDiffMD5(dir: string): { name: string; ext: str
  * @returns 
  */
 export function getFileNameRemoveMD5(filename: string) {
-    const basename = path.basename(filename);
+    const basename = path.basename(filename)
+        // a-jqw89a.js => a.js
+        // a-jqw89a.min.js => a.min.js
+        .replace(/-[a-z0-9]+\./, '.');
+
     return basename.split('.').filter((str, index, array) => {
         if (index === 0 || index === array.length - 1) return true;
         return index == 1 && str === 'min';

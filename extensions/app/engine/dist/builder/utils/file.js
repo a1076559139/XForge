@@ -200,7 +200,10 @@ exports.getFilesBySameNameDiffMD5 = getFilesBySameNameDiffMD5;
  * @returns
  */
 function getFileNameRemoveMD5(filename) {
-    const basename = path_1.default.basename(filename);
+    const basename = path_1.default.basename(filename)
+        // a-jqw89a.js => a.js
+        // a-jqw89a.min.js => a.min.js
+        .replace(/-[a-z0-9]+\./, '.');
     return basename.split('.').filter((str, index, array) => {
         if (index === 0 || index === array.length - 1)
             return true;

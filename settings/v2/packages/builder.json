@@ -128,7 +128,7 @@
               },
               "alipay-mini-game": {
                 "compressionType": "subpackage",
-                "isRemote": true
+                "isRemote": false
               },
               "taobao-creative-app": {
                 "compressionType": "merge_all_json",
