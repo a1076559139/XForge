@@ -106,6 +106,7 @@ async function createFolderByUrl(url, opts) {
     // 主目录meta
     if (opts === null || opts === void 0 ? void 0 : opts.meta) {
         await delayFileExistsByUrl(`${url}.meta`);
+        await delay(100);
         const queryMeta = await Editor.Message.request('asset-db', 'query-asset-meta', url).catch(_ => null);
         if (!queryMeta)
             return false;
@@ -120,6 +121,7 @@ async function createFolderByUrl(url, opts) {
     }
     // 创建子目录
     if (opts === null || opts === void 0 ? void 0 : opts.subPaths) {
+        await delay(100);
         for (let index = 0; index < opts.subPaths.length; index++) {
             const subPath = `${pathHead}/${opts.subPaths[index]}`;
             if (!fs_1.existsSync(convertUrlToPath(subPath))) {
@@ -130,6 +132,7 @@ async function createFolderByUrl(url, opts) {
         }
     }
     if (opts === null || opts === void 0 ? void 0 : opts.subFolders) {
+        await delay(100);
         for (let index = 0; index < opts.subFolders.length; index++) {
             const subOpts = opts.subFolders[index];
             const subUrl = `${pathHead}/${subOpts.folder}`;
