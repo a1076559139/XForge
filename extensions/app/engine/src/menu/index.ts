@@ -1,16 +1,15 @@
 import { AssetInfo } from '../../@types/packages/asset-db/@types/public';
-// @ts-ignore
+import tinyPNG from './tinyPNG';
 
-function getMenu() {
+function getMenu(assetInfo: AssetInfo) {
     return [
         {
             label: 'i18n:app.menuMain',
             submenu: [
                 {
-                    label: 'i18n:app.create',
+                    label: 'i18n:app.tiny',
                     click() {
-                        // Editor.Panel.open(`${packageJSON.name}.open-panel`);
-                        Editor.Message.send('app', 'open-panel');
+                        tinyPNG(assetInfo.file);
                     },
                 }
             ],
@@ -31,5 +30,5 @@ export function onPanelMenu(assetInfo: AssetInfo) {
 }
 
 export function onAssetMenu(assetInfo: AssetInfo) {
-    return getMenu();
+    return getMenu(assetInfo);
 }

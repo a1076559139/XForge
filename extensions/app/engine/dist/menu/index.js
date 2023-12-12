@@ -1,17 +1,19 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.onAssetMenu = exports.onPanelMenu = exports.onDBMenu = exports.onCreateMenu = void 0;
-// @ts-ignore
-function getMenu() {
+const tinyPNG_1 = __importDefault(require("./tinyPNG"));
+function getMenu(assetInfo) {
     return [
         {
             label: 'i18n:app.menuMain',
             submenu: [
                 {
-                    label: 'i18n:app.create',
+                    label: 'i18n:app.tiny',
                     click() {
-                        // Editor.Panel.open(`${packageJSON.name}.open-panel`);
-                        Editor.Message.send('app', 'open-panel');
+                        (0, tinyPNG_1.default)(assetInfo.file);
                     },
                 }
             ],
@@ -31,6 +33,6 @@ function onPanelMenu(assetInfo) {
 }
 exports.onPanelMenu = onPanelMenu;
 function onAssetMenu(assetInfo) {
-    return getMenu();
+    return getMenu(assetInfo);
 }
 exports.onAssetMenu = onAssetMenu;
