@@ -119,15 +119,9 @@ function toSize(b) {
 function toPercent(num) {
     return (num * 100).toFixed(2) + '%';
 }
-async function fileTiny(filePath, logName) {
+async function fileTiny(filePath) {
     return fileUpload(filePath)
-        .then(obj => {
-        return fileUpdate(filePath, obj);
-    }).then(obj => {
-        console.log(`[${logName}] 压缩成功，原始: ${toSize(obj.input.size)}，压缩: ${toSize(obj.output.size)}，压缩比: ${toPercent(obj.output.ratio)}`);
-    }).catch(err => {
-        console.log(`[${logName}] 压缩失败！报错：${err}`);
-    });
+        .then(obj => fileUpdate(filePath, obj));
 }
 function default_1(folder) {
     // 路径是否存在
@@ -143,13 +137,28 @@ function default_1(folder) {
             console.log(`[${basename}] 压缩失败！报错：只支持png、jpg与jpeg格式`);
             return;
         }
-        fileTiny(folder, basename);
+        fileTiny(folder)
+            .then(obj => {
+            console.log('[1/1]', `[${basename}]`, `压缩成功，原始: ${toSize(obj.input.size)}，压缩: ${toSize(obj.output.size)}，压缩比: ${toPercent(obj.output.ratio)}`);
+        })
+            .catch(err => {
+            console.log('[1/1]', `[${basename}]`, `压缩失败！报错：${err}`);
+        });
         return;
     }
+    let total = 0;
+    let finished = 0;
     // 是文件夹
     fileEach(folder, (filePath => {
+        total++;
         const relativePath = path_1.default.relative(folder, filePath);
-        fileTiny(filePath, relativePath);
+        fileTiny(filePath)
+            .then(obj => {
+            console.log(`[${++finished}/${total}]`, `[${relativePath}]`, `压缩成功，原始: ${toSize(obj.input.size)}，压缩: ${toSize(obj.output.size)}，压缩比: ${toPercent(obj.output.ratio)}`);
+        })
+            .catch(err => {
+            console.log(`[${++finished}/${total}]`, `[${relativePath}]`, `压缩失败！报错：${err}`);
+        });
     }));
 }
 exports.default = default_1;

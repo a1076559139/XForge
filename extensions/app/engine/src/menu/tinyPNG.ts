@@ -140,17 +140,9 @@ function toPercent(num: number) {
     return (num * 100).toFixed(2) + '%';
 }
 
-async function fileTiny(filePath: string, logName: string) {
+async function fileTiny(filePath: string) {
     return fileUpload(filePath)
-        .then(obj => {
-            return fileUpdate(filePath, obj);
-        }).then(obj => {
-            console.log(
-                `[${logName}] 压缩成功，原始: ${toSize(obj.input.size)}，压缩: ${toSize(obj.output.size)}，压缩比: ${toPercent(obj.output.ratio)}`
-            );
-        }).catch(err => {
-            console.log(`[${logName}] 压缩失败！报错：${err}`);
-        });
+        .then(obj => fileUpdate(filePath, obj));
 }
 
 export default function (folder: string) {
@@ -169,13 +161,44 @@ export default function (folder: string) {
             console.log(`[${basename}] 压缩失败！报错：只支持png、jpg与jpeg格式`);
             return;
         }
-        fileTiny(folder, basename);
+        fileTiny(folder)
+            .then(obj => {
+                console.log(
+                    '[1/1]',
+                    `[${basename}]`,
+                    `压缩成功，原始: ${toSize(obj.input.size)}，压缩: ${toSize(obj.output.size)}，压缩比: ${toPercent(obj.output.ratio)}`
+                );
+            })
+            .catch(err => {
+                console.log(
+                    '[1/1]',
+                    `[${basename}]`,
+                    `压缩失败！报错：${err}`
+                );
+            });
         return;
     }
 
+    let total = 0;
+    let finished = 0;
     // 是文件夹
     fileEach(folder, (filePath => {
+        total++;
         const relativePath = path.relative(folder, filePath);
-        fileTiny(filePath, relativePath);
+        fileTiny(filePath)
+            .then(obj => {
+                console.log(
+                    `[${++finished}/${total}]`,
+                    `[${relativePath}]`,
+                    `压缩成功，原始: ${toSize(obj.input.size)}，压缩: ${toSize(obj.output.size)}，压缩比: ${toPercent(obj.output.ratio)}`
+                );
+            })
+            .catch(err => {
+                console.log(
+                    `[${++finished}/${total}]`,
+                    `[${relativePath}]`,
+                    `压缩失败！报错：${err}`
+                );
+            });
     }));
 }
