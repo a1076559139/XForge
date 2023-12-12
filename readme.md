@@ -211,7 +211,7 @@
 
   ```js
   app.manager.loader.load({
-    bundle: 'xxx', // 不穿入bundle，默认为resources
+    bundle: 'xxx', // 不传入bundle，默认为resources
     path: 'xxx/xxxx'
     type: Asset,
     onComplete(asset){
