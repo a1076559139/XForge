@@ -27,7 +27,9 @@ enum ErrorCode {
 interface IShowParams<T, IShow = any, IShowReturn = any, IHideReturn = any> {
     name: T,
     data?: IShow,
+    /**是否将UI显示在最上 */
     top?: boolean,
+    /**队列模式: join-排队 jump-插队 */
     queue?: 'join' | 'jump',
     onShow?: IShowParamOnShow<IShowReturn>,
     onHide?: IShowParamOnHide<IHideReturn>,
@@ -773,8 +775,8 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         return view.node;
     }
 
-    private createUILoadingUuid(name: UIName) {
-        const uuid = this.addTouchMask();
+    private addUILoadingUuid(name: UIName) {
+        const uuid = this.createUUID();
         if (!this.uiLoadingMap.has(name)) {
             this.uiLoadingMap.set(name, [uuid]);
         } else {
@@ -784,7 +786,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     private removeUILoadingUuid(name: UIName, uuid: string) {
-        this.removeTouchMask(uuid);
         if (!this.uiLoadingMap.has(name)) return false;
         const index = this.uiLoadingMap.get(name).indexOf(uuid);
         if (index === -1) return false;
@@ -792,41 +793,56 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         return true;
     }
 
-    // 创建UI
-    private createUI(name: UIName, callback: (node: Node, scene?: Scene) => any) {
+    /**
+     * 创建UI
+     */
+    private createUI(silent: boolean, name: UIName, callback: (node: Node, scene?: Scene) => any) {
+        // 添加触摸屏蔽
+        const maskUUID = silent ? '' : this.addTouchMask();
+
         if (!name) {
-            const maskUUID = this.addTouchMask();
             return this.scheduleOnce(() => {
+                // 移除触摸屏蔽
                 this.removeTouchMask(maskUUID);
                 callback(null);
             });
         }
 
         // 生成一个UI加载的UUID
-        const loadingUuid = this.createUILoadingUuid(name);
+        const uiLoadingUuid = this.addUILoadingUuid(name);
 
         // 判断是否已经存在节点并且是单例模式
         const node = this.getUIInScene(name);
         if (isValid(node, true) && this.getBaseView(node).isSingleton === true) {
             return this.scheduleOnce(() => {
+                // 移除触摸屏蔽
+                this.removeTouchMask(maskUUID);
                 // 验证本次加载是否有效
-                if (this.removeUILoadingUuid(name, loadingUuid) === false) return;
-                if (isValid(node, true)) { callback(node); }
-                else { this.createUI(name, callback); }
+                if (this.removeUILoadingUuid(name, uiLoadingUuid) === false) return;
+                // 验证节点是否有效
+                if (isValid(node, true)) {
+                    callback(node);
+                } else {
+                    this.createUI(silent, name, callback);
+                }
             });
         }
 
         // 加载prefab
-        const showLoadingUuid = this.showLoading();
+        const loadingUuid = silent ? '' : this.showLoading();
         this.load(name, (asset) => {
+            // 移除触摸屏蔽
+            this.removeTouchMask(maskUUID);
+
             // 验证本次加载是否有效
-            if (this.removeUILoadingUuid(name, loadingUuid) === false)
-                return this.hideLoading(showLoadingUuid);
+            if (this.removeUILoadingUuid(name, uiLoadingUuid) === false) {
+                return this.hideLoading(loadingUuid);
+            }
 
             // 是场景
             if (asset instanceof SceneAsset) {
                 callback(this.parsingScene(asset, name), asset.scene);
-                this.hideLoading(showLoadingUuid);
+                this.hideLoading(loadingUuid);
                 return;
             }
 
@@ -834,10 +850,10 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             const node = this.getUIInScene(name);
             if (!isValid(node, true) || this.getBaseView(node).isSingleton === false) {
                 callback(this.parsingPrefab(asset, name));
-                this.hideLoading(showLoadingUuid);
+                this.hideLoading(loadingUuid);
             } else {
                 callback(node);
-                this.hideLoading(showLoadingUuid);
+                this.hideLoading(loadingUuid);
             }
         });
     }
@@ -937,8 +953,11 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         // 加入队列中
         if (queue) return this.putInShowQueue({ name, data, queue, onShow, onHide, onError, top, attr });
 
+        // 静默模式，不影响触摸也不显示loading
+        const silent = this.isPaper(name);
+
         this.log('[show]', name);
-        const show = () => this.createUI(name, (node, scene) => {
+        const show = () => this.createUI(silent, name, (node, scene) => {
             if (!node) {
                 this.error('[show]', `${name} 不存在或加载失败`);
                 // 「没有指定onError」或「onError返回true」会自动发起重试
@@ -946,7 +965,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                     return;
                 }
                 this.scheduleOnce(show, 1);
-                this.showLoading(1);
+                if (!silent) this.showLoading(1);
                 return;
             }
 
@@ -995,7 +1014,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         });
 
         // 判断ui是否有效
-        const showLoadingUuid = this.showLoading();
+        const showLoadingUuid = silent ? '' : this.showLoading();
         Core.inst.lib.task.execute((retry) => {
             this.checkUIValid(name, data, (valid) => {
                 // 加载失败
@@ -1144,6 +1163,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     public hideLoading(uuid: string) {
+        if (!uuid) return;
         this.showLoadingMap.delete(uuid);
         if (this.showLoadingMap.size === 0) {
             this.loading.active = false;
@@ -1168,6 +1188,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * @param uuid addTouchMask的返回值
      */
     public removeTouchMask(uuid: string) {
+        if (!uuid) return;
         this.touchMaskMap.delete(uuid);
         this.removeTouchMaskListener();
     }
