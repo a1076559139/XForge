@@ -234,6 +234,8 @@
 
 - UI需要通过继承BaseView.BindControl(XXXControl)来绑定一个控制器，并通过this.control访问到这个控制器实例，与inst调用不同的是，它是不受限的(属性等都不是只读)，而且可以通过this.control中的on、once、off、targetOff来接收和关闭emit或call的事件。
 
+- **与cc.Node的事件不同，通过control注册的事件，需要通过off或targetOff手动销毁**
+
 **控制器负责维护外部与UI内部的联系。**
 
 **控制器通过import的方式引入。**
