@@ -44,9 +44,7 @@ interface IHideParams<T, IHide = any, IHideReturn = any> {
 }
 
 const UIScene = 'UIRoot';
-const Root3DPath = 'Root3D';
 const Root2DPath = 'Root2D';
-const UIRoot3DPath = 'Root3D/UserInterface';
 const UIRoot2DPath = 'Root2D/UserInterface';
 const ViewTypes = [ViewType.Page, ViewType.Paper, ViewType.Pop, ViewType.Top];
 
@@ -73,7 +71,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     // 根结点
     private UIRoot2D: Node = null;
-    private UIRoot3D: Node = null;
 
     // 加载和遮罩节点
     private loading: Node = null;
@@ -130,11 +127,9 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     protected onLoad() {
-        director.addPersistRootNode(find(Root3DPath));
         director.addPersistRootNode(find(Root2DPath));
 
         this.UIRoot2D = find(UIRoot2DPath);
-        this.UIRoot3D = find(UIRoot3DPath);
 
         this.initUITypes();
 
@@ -148,11 +143,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     private initUITypes() {
         ViewTypes.forEach((type) => {
-            const d3 = new Node(type);
-            d3.layer = Layers.Enum.UI_3D;
-            d3.addComponent(UIMgrZOrder);
-            d3.parent = this.UIRoot3D;
-
             const d2 = new Node(type);
             d2.layer = Layers.Enum.UI_2D;
             d2.addComponent(UIMgrZOrder);
@@ -557,44 +547,23 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     /**
-     * 根据UI名字获取其父节点是谁
+     * 根据UI名字查询父节点
      */
-    private getUIParent(name: string, is2D: boolean): Node {
-        const prefix = this.getPrefix(name);
+    private getUIParent(name: string): Node {
+        if (this.isScene(name)) {
+            return director.getScene();
+        }
 
+        const prefix = this.getPrefix(name);
         for (let index = 0; index < ViewTypes.length; index++) {
-            const name = ViewTypes[index];
-            if (name === prefix) {
-                if (is2D) {
-                    return this.UIRoot2D.getChildByName(name);
-                } else {
-                    return this.UIRoot3D.getChildByName(name);
-                }
+            const viewType = ViewTypes[index];
+            if (viewType === prefix) {
+                return this.UIRoot2D.getChildByName(viewType);
             }
         }
 
         this.error('[getUIParent]', `找不到${name}对应的Parent`);
         return null;
-    }
-
-    /**
-     * 根据UI名字查询可能的父节点
-     */
-    private searchUIParents(name: string): Node[] {
-        if (this.isScene(name)) {
-            return [director.getScene()];
-        }
-        const prefix = this.getPrefix(name);
-
-        for (let index = 0; index < ViewTypes.length; index++) {
-            const viewType = ViewTypes[index];
-            if (viewType === prefix) {
-                return [this.UIRoot2D.getChildByName(viewType), this.UIRoot3D.getChildByName(viewType)];
-            }
-        }
-
-        this.error('[searchUIParents]', `搜索不到${name}对应的Parents`);
-        return [];
     }
 
     /**
@@ -618,18 +587,14 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     private getUIInScene(name: string, multiple: false): Node;
     private getUIInScene(name: string, multiple: true): Node[];
     private getUIInScene(name: string, multiple = false) {
-        const parents = this.searchUIParents(name);
+        const parent = this.getUIParent(name);
 
-        for (let index = 0; index < parents.length; index++) {
-            const parent = parents[index];
-
-            if (multiple) {
-                const result = parent.children.filter(node => node.name === name);
-                if (result.length) return result.filter(node => isValid(node, true));
-            } else {
-                const result = parent.children.find(node => node.name === name);
-                if (result) return isValid(result, true) ? result : null;
-            }
+        if (multiple) {
+            const result = parent.children.filter(node => node.name === name);
+            if (result.length) return result.filter(node => isValid(node, true));
+        } else {
+            const result = parent.children.find(node => node.name === name);
+            if (result) return isValid(result, true) ? result : null;
         }
 
         return multiple ? [] : null;
@@ -753,7 +718,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             this.warn('[parsingPrefab]', `节点名与预制名不一致，已重置为预制名: ${this.getUIPath(name)}`);
             node.name = name;
         }
-        node.parent = this.getUIParent(name, node.layer === Layers.Enum.UI_2D);
+        node.parent = this.getUIParent(name);
         node.getComponent(Widget)?.updateAlignment();
         return node;
     }

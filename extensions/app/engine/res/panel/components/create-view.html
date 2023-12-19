@@ -11,7 +11,7 @@
         </ui-prop>
 
         <ui-prop class="content-item" v-show="showSelectGroup">
-            <ui-label slot="label">分组</ui-label>
+            <ui-label slot="label">模版</ui-label>
             <ui-select id="group" slot="content" :value="groupSelectIndex"
                 @confirm="onChangeGroupSelect($event.target.value)">
                 <option :value="index" v-for="(name,index) in groupSelects">

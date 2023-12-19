@@ -1,4 +1,4 @@
-import { Asset, Component, Enum, EventTouch, Layers, Node, Scene, UITransform, Widget, _decorator, error, js, log } from 'cc';
+import { Asset, Component, Enum, EventTouch, Node, Scene, UITransform, Widget, _decorator, error, js, log } from 'cc';
 import { EDITOR } from 'cc/env';
 import { IMiniViewName, IMiniViewNames, IViewName } from '../../../../assets/app-builtin/app-admin/executor';
 import Core from '../Core';
@@ -142,16 +142,12 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
         return this._base_view_name?.indexOf(ViewType.Top) === 0;
     }
 
-    protected isScene() {
+    private is2D() {
+        return !this.is3D();
+    }
+
+    private is3D() {
         return this.node.parent instanceof Scene && this.node.parent.name === this.viewName;
-    }
-
-    protected is2D() {
-        return this.node?.layer === Layers.Enum.UI_2D && !this.isScene();
-    }
-
-    protected is3D() {
-        return !this.is2D();
     }
 
     @property
@@ -162,11 +158,11 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
         tooltip: '何种模式隐藏节点\n1、destroy: 销毁UI并释放对应的所有资源\n2、active: 缓存UI并加速下次的打开速度',
     })
     public get hideEvent() {
-        if (this.isScene()) return HideEvent.destroy;
+        if (this.is3D()) return HideEvent.destroy;
         return this._hideEvent;
     }
     public set hideEvent(value) {
-        if (this.isScene() && value !== HideEvent.destroy) {
+        if (this.is3D() && value !== HideEvent.destroy) {
             this.log('Page3D只能destroy模式');
             return;
         }
