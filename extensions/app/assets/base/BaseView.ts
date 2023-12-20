@@ -611,6 +611,7 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
                 } catch (err) {
                     this.onError();
                     this.error('[onShow]', err);
+                    console.error(err);
                 }
 
                 try {
