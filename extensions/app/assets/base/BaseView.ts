@@ -1,4 +1,4 @@
-import { Asset, Component, Enum, EventTouch, Node, Scene, UITransform, Widget, _decorator, error, js, log } from 'cc';
+import { Asset, Component, Enum, EventTouch, Node, Scene, UITransform, Widget, _decorator, director, error, js, log } from 'cc';
 import { EDITOR } from 'cc/env';
 import { IMiniViewName, IMiniViewNames, IViewName } from '../../../../assets/app-builtin/app-admin/executor';
 import Core from '../Core';
@@ -142,12 +142,16 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
         return this._base_view_name?.indexOf(ViewType.Top) === 0;
     }
 
-    private is2D() {
+    protected is2D() {
         return !this.is3D();
     }
 
-    private is3D() {
-        return this.node.parent instanceof Scene && this.node.parent.name === this.viewName;
+    protected is3D() {
+        if (this.node.parent instanceof Scene) {
+            return this.node.parent.name === this.viewName;
+        }
+        const scene = director.getScene();
+        return scene.name === this.viewName;
     }
 
     @property
