@@ -11,7 +11,7 @@
           "native": {
             "preferredOptions": {
               "compressionType": "merge_all_json",
-              "isRemote": true
+              "isRemote": false
             },
             "overwriteSettings": {}
           },
@@ -91,7 +91,7 @@
           "native": {
             "preferredOptions": {
               "compressionType": "merge_all_json",
-              "isRemote": true
+              "isRemote": false
             },
             "overwriteSettings": {}
           },
@@ -171,7 +171,7 @@
           "native": {
             "preferredOptions": {
               "compressionType": "merge_dep",
-              "isRemote": true
+              "isRemote": false
             },
             "overwriteSettings": {}
           },
