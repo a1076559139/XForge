@@ -16,6 +16,7 @@ module.exports = {
     ],
     globals: {},
     rules: {
+        'no-useless-escape': 0,
         'prefer-spread': 0,
         'prefer-const': 0,
         'comma-spacing': 'error',

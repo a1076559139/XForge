@@ -1,6 +1,6 @@
-import path from "path";
-import { BuildHook } from "../../@types/packages/builder/@types";
-import { adaptFileMD5 } from "./utils/file";
+import path from 'path';
+import { BuildHook } from '../../@types/packages/builder/@types';
+import { adaptFileMD5 } from './utils/file';
 
 export const onAfterBuild: BuildHook.onAfterBuild = async function (options, result) {
     if (options.platform !== 'web-mobile' && options.platform !== 'web-desktop') {
@@ -11,5 +11,8 @@ export const onAfterBuild: BuildHook.onAfterBuild = async function (options, res
         return;
     }
 
-    adaptFileMD5(path.join(result.dest, 'index.html'));
+    adaptFileMD5(path.join(result.dest, 'index.html'), [
+        { path: /\/sw.js$/, md5: false },
+        { path: /\/registerSW.js$/, md5: false }
+    ]);
 };

@@ -13,6 +13,9 @@ const onAfterBuild = async function (options, result) {
     if (!options.md5Cache) {
         return;
     }
-    (0, file_1.adaptFileMD5)(path_1.default.join(result.dest, 'index.html'));
+    (0, file_1.adaptFileMD5)(path_1.default.join(result.dest, 'index.html'), [
+        { path: /\/sw.js$/, md5: false },
+        { path: /\/registerSW.js$/, md5: false }
+    ]);
 };
 exports.onAfterBuild = onAfterBuild;

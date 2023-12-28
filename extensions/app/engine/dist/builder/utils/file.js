@@ -7,6 +7,7 @@ exports.queryFile = exports.getFilePathRemoveMD5 = exports.getFileNameRemoveMD5 
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const md5_1 = __importDefault(require("./md5"));
+const includeExts = ['.html', '.css', '.js', '.json'];
 const regExp = new RegExp('(?<=(\'|"|url\\(|URL\\())(?!//)[a-zA-Z0-9_\./-]+\\.(js|css|json|png|apng|jpg|jpeg|gif|svg)(?=(\'|"|\\)))', 'g');
 /**
  * 获取文件夹内的文件
@@ -30,8 +31,8 @@ function getFiles(dir) {
 }
 /**
  * 以某个文件为起点，对其引用的文件树进行md5
- * @param {string} filepath 文件路径
- * @param {string[]} exclude 排除的文件路径(不带md5,不支持相对路径),排除的文件不会遍历子文件树,但是其本身会进行md5
+ * @param  filepath 文件路径
+ * @param  exclude 排除的文件路径(不带md5,不支持相对路径),排除的文件不会遍历子文件树,默认其本身会进行md5
  */
 function adaptFileMD5(filepath, exclude = []) {
     // 参数不合法
@@ -42,10 +43,17 @@ function adaptFileMD5(filepath, exclude = []) {
     if (!filepath)
         return false;
     // 排除的文件
-    const isExcluded = !!exclude.length && exclude.indexOf(getFilePathRemoveMD5(filepath)) >= 0;
-    // 文件扩展名
     const fileExt = path_1.default.extname(filepath);
-    if (!isExcluded && ['.html', '.css', '.js', '.json'].indexOf(fileExt) >= 0) {
+    const filepathNoMD5 = getFilePathRemoveMD5(filepath);
+    const excludeItem = exclude.find(item => {
+        if (item.path instanceof RegExp)
+            return item.path.test(filepath);
+        else
+            return item.path === filepathNoMD5;
+    });
+    const isExcluded = !!excludeItem || includeExts.indexOf(fileExt) === -1;
+    // 文件扩展名
+    if (!isExcluded) {
         // 文件目录
         const fileDir = path_1.default.dirname(filepath);
         // 文件内容
@@ -101,7 +109,7 @@ function adaptFileMD5(filepath, exclude = []) {
         fs_1.default.writeFileSync(filepath, fileText, 'utf-8');
     }
     // 将文件md5重命名
-    if (fileExt !== '.html') {
+    if (fileExt !== '.html' && (excludeItem === null || excludeItem === void 0 ? void 0 : excludeItem.md5) !== false) {
         renameFileByMD5(filepath);
     }
     return true;
