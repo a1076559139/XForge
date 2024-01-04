@@ -5,14 +5,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const vue_1 = __importDefault(require("vue/dist/vue"));
 const utils_1 = require("../../utils");
-const typeNames = ['res-bundle', 'res-native', 'resources'];
+const typeNames = ['res-native', 'res-bundle', 'resources'];
 exports.default = vue_1.default.extend({
-    template: (0, utils_1.getResPanel)('create-res'),
+    template: utils_1.getResPanel('create-res'),
     data() {
         return {
             inputName: '',
             display: '',
-            typeSelects: ['公共动态目录', '公共静态目录', 'resources'],
+            typeSelects: ['公共静态目录', '公共动态目录', 'resources'],
             typeSelectIndex: 0,
             showLoading: false
         };
@@ -24,13 +24,13 @@ exports.default = vue_1.default.extend({
         async onClickCreate() {
             const folderName = typeNames[this.typeSelectIndex];
             const folderPath = `db://assets/${folderName}`;
-            const name = (0, utils_1.stringCase)(this.inputName, true);
+            const name = utils_1.stringCase(this.inputName, true);
             if (/^[a-z][a-z0-9-]*[a-z0-9]+$/.test(name) === false) {
-                this.display = '[错误] 名字不合法\n匹配规则: /^[a-z][a-z0-9-]*[a-z0-9]+$/\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
+                this.display = '[错误] 名字不合法\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
                 return;
             }
             if (name === 'resources') {
-                this.display = '[错误] 名字不合法\n不能使用resources作为名字';
+                this.display = '[错误] 名字不合法\n1、不能使用resources作为名字';
                 return;
             }
             // 创建前确认
@@ -40,13 +40,13 @@ exports.default = vue_1.default.extend({
             }
             this.display = '创建中';
             this.showLoading = true;
-            if (!await (0, utils_1.createFolderByUrl)(folderPath, {
-                readme: (0, utils_1.getResReadme)(folderName),
-                meta: folderName === 'resources' ? (0, utils_1.getResMeta)('resources') : undefined,
+            if (!await utils_1.createFolderByUrl(folderPath, {
+                readme: utils_1.getResReadme(folderName),
+                meta: folderName === 'resources' ? utils_1.getResMeta('resources') : undefined,
                 subFolders: [
                     {
                         folder: name,
-                        meta: this.typeSelectIndex === 0 ? (0, utils_1.getResMeta)('custom-bundle') : undefined
+                        meta: folderName === 'res-bundle' ? utils_1.getResMeta('custom-bundle') : undefined
                     }
                 ]
             })) {

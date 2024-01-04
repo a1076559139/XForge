@@ -13,17 +13,21 @@ function getScript(type, className) {
     if (type === 'data' || type === 'config') {
         const BaseModel = '../../../extensions/app/assets/base/BaseModel';
         return 'import { IModel } from \'' + BaseModel + '\';\r\n' +
+            '// Model中「不能定义任何方法」, 可以创建ModelManager负责管理Model\r\n' +
             'export default class ' + className + ' implements IModel<' + className + '> {\r\n' +
             '}';
     }
     else {
-        return '// 存放直接导出的interface、type或enum等\r\n\r\n' +
+        return '// 🔥切记: 当前文件处于分包中, 由于加载顺序的原因，不可以在「主包」或者「Control」中使用此文件内导出的变量\r\n' +
+            '// 🔥切记: 当前文件处于分包中, 由于加载顺序的原因，不可以在「主包」或者「Control」中使用此文件内导出的变量\r\n' +
+            '// 🔥切记: 当前文件处于分包中, 由于加载顺序的原因，不可以在「主包」或者「Control」中使用此文件内导出的变量\r\n\r\n' +
+            '// 存放直接导出的interface、type或enum等\r\n\r\n' +
             '// export type IString = string;\r\n' +
             '// export enum Type { None };';
     }
 }
 exports.default = vue_1.default.extend({
-    template: (0, utils_1.getResPanel)('create-model'),
+    template: utils_1.getResPanel('create-model'),
     data() {
         return {
             inputName: '',
@@ -41,7 +45,7 @@ exports.default = vue_1.default.extend({
             const type = this.typeSelects[this.typeSelectIndex];
             const name = this.inputName;
             if (/^[a-z][a-z0-9-]*[a-z0-9]+$/.test(name) === false) {
-                this.display = '[错误] 名字不合法\n匹配规则: /^[a-z][a-z0-9-]*[a-z0-9]+$/\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
+                this.display = '[错误] 名字不合法\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
                 return;
             }
             const rootPath = 'db://assets/app-builtin/app-model';
@@ -55,17 +59,17 @@ exports.default = vue_1.default.extend({
             this.display = '创建中';
             this.showLoading = true;
             // 目录如果不存在则创建
-            if (!await (0, utils_1.createFolderByUrl)(rootPath, { meta: (0, utils_1.getResMeta)('app-model'), readme: (0, utils_1.getResReadme)('app-model') })) {
+            if (!await utils_1.createFolderByUrl(rootPath, { meta: utils_1.getResMeta('app-model'), readme: utils_1.getResReadme('app-model') })) {
                 this.showLoading = false;
                 this.display = `[错误] 创建目录失败\n${rootPath}`;
                 return;
             }
-            if ((0, fs_1.existsSync)((0, utils_1.convertUrlToPath)(scriptUrl))) {
+            if (fs_1.existsSync(utils_1.convertUrlToPath(scriptUrl))) {
                 this.showLoading = false;
                 this.display = `[错误] 文件已存在, 请删除\n${scriptUrl}`;
                 return;
             }
-            const createScriptResult = await Editor.Message.request('asset-db', 'create-asset', scriptUrl, getScript(type, (0, utils_1.stringCase)(name))).catch(_ => null);
+            const createScriptResult = await Editor.Message.request('asset-db', 'create-asset', scriptUrl, getScript(type, utils_1.stringCase(name))).catch(_ => null);
             if (!createScriptResult) {
                 this.showLoading = false;
                 this.display = `[错误] 创建脚本失败\n${scriptUrl}`;

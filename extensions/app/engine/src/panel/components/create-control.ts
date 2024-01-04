@@ -35,7 +35,7 @@ export default Vue.extend({
             const name = this.inputName;
 
             if (/^[a-z][a-z0-9-]*[a-z0-9]+$/.test(name) === false) {
-                this.display = '[错误] 名字不合法\n匹配规则: /^[a-z][a-z0-9-]*[a-z0-9]+$/\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
+                this.display = '[错误] 名字不合法\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
                 return;
             }
 

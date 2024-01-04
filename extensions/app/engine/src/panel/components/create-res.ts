@@ -1,7 +1,7 @@
 import Vue from 'vue/dist/vue';
 import { createFolderByUrl, getResMeta, getResPanel, getResReadme, stringCase } from '../../utils';
 
-const typeNames: ('res-bundle' | 'res-native' | 'resources')[] = ['res-bundle', 'res-native', 'resources'];
+const typeNames: ('res-bundle' | 'res-native' | 'resources')[] = ['res-native', 'res-bundle', 'resources'];
 export default Vue.extend({
     template: getResPanel('create-res'),
     data() {
@@ -9,7 +9,7 @@ export default Vue.extend({
             inputName: '',
             display: '',
 
-            typeSelects: ['公共动态目录', '公共静态目录', 'resources'],
+            typeSelects: ['公共静态目录', '公共动态目录', 'resources'],
             typeSelectIndex: 0,
 
             showLoading: false
@@ -25,11 +25,11 @@ export default Vue.extend({
             const name = stringCase(this.inputName, true);
 
             if (/^[a-z][a-z0-9-]*[a-z0-9]+$/.test(name) === false) {
-                this.display = '[错误] 名字不合法\n匹配规则: /^[a-z][a-z0-9-]*[a-z0-9]+$/\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
+                this.display = '[错误] 名字不合法\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
                 return;
             }
             if (name === 'resources') {
-                this.display = '[错误] 名字不合法\n不能使用resources作为名字';
+                this.display = '[错误] 名字不合法\n1、不能使用resources作为名字';
                 return;
             }
 
@@ -48,7 +48,7 @@ export default Vue.extend({
                 subFolders: [
                     {
                         folder: name,
-                        meta: this.typeSelectIndex === 0 ? getResMeta('custom-bundle') : undefined
+                        meta: folderName === 'res-bundle' ? getResMeta('custom-bundle') : undefined
                     }
                 ]
             })) {

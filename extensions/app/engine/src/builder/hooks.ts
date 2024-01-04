@@ -11,8 +11,5 @@ export const onAfterBuild: BuildHook.onAfterBuild = async function (options, res
         return;
     }
 
-    adaptFileMD5(path.join(result.dest, 'index.html'), [
-        { path: /\/sw.js$/, md5: false },
-        { path: /\/registerSW.js$/, md5: false }
-    ]);
+    adaptFileMD5(path.join(result.dest, 'index.html'));
 };

@@ -9,10 +9,14 @@ function getScript(type: string, className: string) {
     if (type === 'data' || type === 'config') {
         const BaseModel = '../../../extensions/app/assets/base/BaseModel';
         return 'import { IModel } from \'' + BaseModel + '\';\r\n' +
+            '// Model中「不能定义任何方法」, 可以创建ModelManager负责管理Model\r\n' +
             'export default class ' + className + ' implements IModel<' + className + '> {\r\n' +
             '}';
     } else {
-        return '// 存放直接导出的interface、type或enum等\r\n\r\n' +
+        return '// 🔥切记: 当前文件处于分包中, 由于加载顺序的原因，不可以在「主包」或者「Control」中使用此文件内导出的变量\r\n' +
+            '// 🔥切记: 当前文件处于分包中, 由于加载顺序的原因，不可以在「主包」或者「Control」中使用此文件内导出的变量\r\n' +
+            '// 🔥切记: 当前文件处于分包中, 由于加载顺序的原因，不可以在「主包」或者「Control」中使用此文件内导出的变量\r\n\r\n' +
+            '// 存放直接导出的interface、type或enum等\r\n\r\n' +
             '// export type IString = string;\r\n' +
             '// export enum Type { None };';
     }
@@ -25,7 +29,7 @@ export default Vue.extend({
             inputName: '',
             display: '',
 
-            typeSelects: ['data', 'config', 'export'],
+            typeSelects: ['data', 'config', 'export'], //
             typeSelectIndex: 0,
 
             showLoading: false
@@ -40,7 +44,7 @@ export default Vue.extend({
             const name = this.inputName;
 
             if (/^[a-z][a-z0-9-]*[a-z0-9]+$/.test(name) === false) {
-                this.display = '[错误] 名字不合法\n匹配规则: /^[a-z][a-z0-9-]*[a-z0-9]+$/\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
+                this.display = '[错误] 名字不合法\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
                 return;
             }
 
