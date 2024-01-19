@@ -30,6 +30,9 @@ async function spawnCmd(cmd, args, options) {
  * @param {*} destination 目标
  */
 function syncFolders(source, destination) {
+    if (!fs.existsSync(destination)) {
+        fs.mkdirSync(destination);
+    }
     // 删除在源中不存在的内容
     function remove(source, destination) {
         const files = fs.readdirSync(destination);
