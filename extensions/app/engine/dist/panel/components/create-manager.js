@@ -29,7 +29,7 @@ function getScript(name) {
         '}';
 }
 exports.default = vue_1.default.extend({
-    template: utils_1.getResPanel('create-manager'),
+    template: (0, utils_1.getResPanel)('create-manager'),
     data() {
         return {
             inputName: '',
@@ -45,7 +45,7 @@ exports.default = vue_1.default.extend({
                 return;
             }
             const rootPath = 'db://assets/app-builtin/app-manager';
-            const managerName = `${utils_1.stringCase(name)}Manager`;
+            const managerName = `${(0, utils_1.stringCase)(name)}Manager`;
             const folderName = name;
             const folderPath = `${rootPath}/${folderName}`;
             const scriptUrl = `${folderPath}/${managerName}.ts`;
@@ -57,19 +57,19 @@ exports.default = vue_1.default.extend({
             }
             this.display = '创建中';
             this.showLoading = true;
-            if (fs_1.existsSync(utils_1.convertUrlToPath(folderPath))) {
+            if ((0, fs_1.existsSync)((0, utils_1.convertUrlToPath)(folderPath))) {
                 this.showLoading = false;
                 this.display = `[错误] 目录已存在, 请删除\n${folderPath}`;
                 return;
             }
             // 目录如果不存在则创建
-            if (!await utils_1.createFolderByUrl(rootPath, {
-                meta: utils_1.getResMeta('app-manager'),
-                readme: utils_1.getResReadme('app-manager'),
+            if (!await (0, utils_1.createFolderByUrl)(rootPath, {
+                meta: (0, utils_1.getResMeta)('app-manager'),
+                readme: (0, utils_1.getResReadme)('app-manager'),
                 subFolders: [
                     {
                         folder: folderName,
-                        readme: `${managerName}所在文件夹, 通过app.manager.${utils_1.stringCase(name, true)}的方式调用`
+                        readme: `${managerName}所在文件夹, 通过app.manager.${(0, utils_1.stringCase)(name, true)}的方式调用`
                     }
                 ]
             })) {

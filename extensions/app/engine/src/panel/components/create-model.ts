@@ -6,11 +6,28 @@ import { convertUrlToPath, createFolderByUrl, getResMeta, getResPanel, getResRea
  * 根据语言获取脚本内容
  */
 function getScript(type: string, className: string) {
-    if (type === 'data' || type === 'config') {
+    if (type === 'data') {
         const BaseModel = '../../../extensions/app/assets/base/BaseModel';
         return 'import { IModel } from \'' + BaseModel + '\';\r\n' +
-            '// Model中「不能定义任何方法」, 可以创建ModelManager负责管理Model\r\n' +
+            '// data中不能定义任何方法\r\n' +
             'export default class ' + className + ' implements IModel<' + className + '> {\r\n' +
+            '}';
+    } else if (type === 'config') {
+        const BaseModel = '../../../extensions/app/assets/base/BaseModel';
+        return 'import { IModel } from \'' + BaseModel + '\';\r\n' +
+            '// config中不能定义任何方法, 任何变量在外部访问都是readonly\r\n' +
+            'export default class ' + className + ' implements IModel<' + className + '> {\r\n' +
+            '}';
+    } else if (type === 'store') {
+        const BaseModel = '../../../extensions/app/assets/base/BaseModel';
+        return 'import { IStore } from \'' + BaseModel + '\';\r\n' +
+            '// store中只允许在根路径下定义方法，任何变量在外部访问都是readonly\r\n' +
+            '// store类型的引入是借鉴了Web前端框架中全局状态管理的思路，意图是让数据更安全，更可控。同时框架中还提供了数据绑定的扩展包，可以通过pkg的方式安装，实现「数据->视图」的单向绑定。\r\n' +
+            'export default class ' + className + ' implements IStore<' + className + '> {\r\n' +
+            '    count = 0;\r\n' +
+            '    setCount(v: number) {\r\n' +
+            '        this.count = v;\r\n' +
+            '    }\r\n' +
             '}';
     } else {
         return '// 🔥切记: 当前文件处于分包中, 由于加载顺序的原因，不可以在「主包」或者「Control」中使用此文件内导出的变量\r\n' +
@@ -29,7 +46,7 @@ export default Vue.extend({
             inputName: '',
             display: '',
 
-            typeSelects: ['data', 'config', 'export'], //
+            typeSelects: ['store', 'data', 'config', 'export'],
             typeSelectIndex: 0,
 
             showLoading: false

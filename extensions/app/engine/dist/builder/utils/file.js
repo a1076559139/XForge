@@ -167,7 +167,7 @@ function renameFileByMD5(filePath) {
         return filePath;
     const dirname = path_1.default.dirname(filePath);
     const txt = fs_1.default.readFileSync(filePath, 'utf-8');
-    const renamePath = path_1.default.join(dirname, `${filename}.${md5_1.default(txt)}${extname}`);
+    const renamePath = path_1.default.join(dirname, `${filename}.${(0, md5_1.default)(txt)}${extname}`);
     fs_1.default.renameSync(filePath, renamePath);
     return renamePath;
 }

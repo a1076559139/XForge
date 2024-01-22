@@ -13,7 +13,7 @@ function getMenu(assetInfo) {
                 {
                     label: 'i18n:app.tiny',
                     click() {
-                        tinyPNG_1.default(assetInfo.file);
+                        (0, tinyPNG_1.default)(assetInfo.file);
                     },
                 }
             ],

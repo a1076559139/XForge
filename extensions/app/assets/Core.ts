@@ -24,6 +24,7 @@ enum EventType {
 type IScene = string[];
 type IData = { [key in string]: any };
 type IConfig = { [key in string]: any };
+type IStore = { [key in string]: any };
 
 interface ITypeofManager {
     Loader: Omit<typeof LoaderManager, keyof Component>,
@@ -45,6 +46,7 @@ interface ICore {
     data: IData,
     scene: IScene,
     config: IConfig,
+    store: IStore,
     manager: IManager,
     Manager: ITypeofManager
 }
@@ -54,6 +56,7 @@ const Lib = { task, storage, debug };
 const Scene = [];
 const Config = {};
 const Data = {};
+const Store = {};
 const Manager = {};
 const manager = {};
 const eventTarget = new EventTarget();
@@ -70,6 +73,7 @@ export default class Core<T extends ICore> {
     scene: T['scene'] = null;
     config: T['config'] = null;
     data: T['data'] = null;
+    store: T['store'] = null;
     Manager: T['Manager'] = null;
     manager: T['manager'] = null;
 
@@ -77,6 +81,7 @@ export default class Core<T extends ICore> {
         this.scene = Scene;
         this.config = Config;
         this.data = Data;
+        this.store = Store;
         this.Manager = Manager as any;
         this.manager = manager as any;
     }

@@ -21,12 +21,12 @@ function update(assetList, metaList) {
     else {
         this.$.code.innerHTML = assetList
             .filter((asset) => {
-            const mdFile = path_1.join(asset.file, `.${asset.name}.md`);
-            return fs_1.existsSync(mdFile);
+            const mdFile = (0, path_1.join)(asset.file, `.${asset.name}.md`);
+            return (0, fs_1.existsSync)(mdFile);
         })
             .map((asset) => {
-            const mdFile = path_1.join(asset.file, `.${asset.name}.md`);
-            const mdStr = fs_1.readFileSync(mdFile, 'utf-8');
+            const mdFile = (0, path_1.join)(asset.file, `.${asset.name}.md`);
+            const mdStr = (0, fs_1.readFileSync)(mdFile, 'utf-8');
             return assetList.length > 1 ? `${asset.url}:\n ${mdStr}` : mdStr;
         })
             .join('\n') || '';

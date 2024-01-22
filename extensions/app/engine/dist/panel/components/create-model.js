@@ -10,11 +10,30 @@ const utils_1 = require("../../utils");
  * 根据语言获取脚本内容
  */
 function getScript(type, className) {
-    if (type === 'data' || type === 'config') {
+    if (type === 'data') {
         const BaseModel = '../../../extensions/app/assets/base/BaseModel';
         return 'import { IModel } from \'' + BaseModel + '\';\r\n' +
-            '// Model中「不能定义任何方法」, 可以创建ModelManager负责管理Model\r\n' +
+            '// data中不能定义任何方法\r\n' +
             'export default class ' + className + ' implements IModel<' + className + '> {\r\n' +
+            '}';
+    }
+    else if (type === 'config') {
+        const BaseModel = '../../../extensions/app/assets/base/BaseModel';
+        return 'import { IModel } from \'' + BaseModel + '\';\r\n' +
+            '// config中不能定义任何方法, 任何变量在外部访问都是readonly\r\n' +
+            'export default class ' + className + ' implements IModel<' + className + '> {\r\n' +
+            '}';
+    }
+    else if (type === 'store') {
+        const BaseModel = '../../../extensions/app/assets/base/BaseModel';
+        return 'import { IStore } from \'' + BaseModel + '\';\r\n' +
+            '// store中只允许在根路径下定义方法，任何变量在外部访问都是readonly\r\n' +
+            '// store类型的引入是借鉴了Web前端框架中全局状态管理的思路，意图是让数据更安全，更可控。同时框架中还提供了数据绑定的扩展包，可以通过pkg的方式安装，实现「数据->视图」的单向绑定。\r\n' +
+            'export default class ' + className + ' implements IStore<' + className + '> {\r\n' +
+            '    count = 0;\r\n' +
+            '    setCount(v: number) {\r\n' +
+            '        this.count = v;\r\n' +
+            '    }\r\n' +
             '}';
     }
     else {
@@ -27,12 +46,12 @@ function getScript(type, className) {
     }
 }
 exports.default = vue_1.default.extend({
-    template: utils_1.getResPanel('create-model'),
+    template: (0, utils_1.getResPanel)('create-model'),
     data() {
         return {
             inputName: '',
             display: '',
-            typeSelects: ['data', 'config', 'export'],
+            typeSelects: ['store', 'data', 'config', 'export'],
             typeSelectIndex: 0,
             showLoading: false
         };
@@ -59,17 +78,17 @@ exports.default = vue_1.default.extend({
             this.display = '创建中';
             this.showLoading = true;
             // 目录如果不存在则创建
-            if (!await utils_1.createFolderByUrl(rootPath, { meta: utils_1.getResMeta('app-model'), readme: utils_1.getResReadme('app-model') })) {
+            if (!await (0, utils_1.createFolderByUrl)(rootPath, { meta: (0, utils_1.getResMeta)('app-model'), readme: (0, utils_1.getResReadme)('app-model') })) {
                 this.showLoading = false;
                 this.display = `[错误] 创建目录失败\n${rootPath}`;
                 return;
             }
-            if (fs_1.existsSync(utils_1.convertUrlToPath(scriptUrl))) {
+            if ((0, fs_1.existsSync)((0, utils_1.convertUrlToPath)(scriptUrl))) {
                 this.showLoading = false;
                 this.display = `[错误] 文件已存在, 请删除\n${scriptUrl}`;
                 return;
             }
-            const createScriptResult = await Editor.Message.request('asset-db', 'create-asset', scriptUrl, getScript(type, utils_1.stringCase(name))).catch(_ => null);
+            const createScriptResult = await Editor.Message.request('asset-db', 'create-asset', scriptUrl, getScript(type, (0, utils_1.stringCase)(name))).catch(_ => null);
             if (!createScriptResult) {
                 this.showLoading = false;
                 this.display = `[错误] 创建脚本失败\n${scriptUrl}`;

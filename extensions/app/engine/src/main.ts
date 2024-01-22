@@ -116,7 +116,7 @@ function isExecutor(info: AssetInfo, strict = true) {
     if (!strict) {
         if (info.path.endsWith('Control') && info.type === 'cc.Script') return true;
         if (info.path.endsWith('Manager') && (info.type === 'cc.Script' || info.type === 'cc.Prefab')) return true;
-        if ((info.name.startsWith('data.') || info.name.startsWith('config.')) && info.type === 'cc.Script') return true;
+        if ((info.name.startsWith('data.') || info.name.startsWith('config.') || info.name.startsWith('store.')) && info.type === 'cc.Script') return true;
         if ((info.name.startsWith('Page') || info.name.startsWith('Paper') || info.name.startsWith('Pop') || info.name.startsWith('Top'))
             && (info.type === 'cc.Script' || info.type === 'cc.Prefab' || info.type === 'cc.Scene' || info.type === 'cc.SceneAsset')) return true;
         if (info.type === 'cc.AudioClip') return true;
@@ -139,7 +139,7 @@ function isExecutor(info: AssetInfo, strict = true) {
         return info.path.endsWith('Manager') && (info.type === 'cc.Script' || info.type === 'cc.Prefab');
     }
     if (info.path.startsWith(modelFolderUrl)) {
-        return (info.name.startsWith('data.') || info.name.startsWith('config.')) && info.type === 'cc.Script';
+        return (info.name.startsWith('data.') || info.name.startsWith('config.') || info.name.startsWith('store.')) && info.type === 'cc.Script';
     }
     if (info.path.startsWith(viewFolderUrl)) {
         return (info.name.startsWith('Page') || info.name.startsWith('Paper') || info.name.startsWith('Pop') || info.name.startsWith('Top'))
@@ -267,6 +267,7 @@ async function updateExecutor() {
     const mgrList: any[] = [];
     const dataList: any[] = [];
     const confList: any[] = [];
+    const storeList: any[] = [];
 
     const viewKeys: { [name in string]: boolean } = {};
     const miniViewKeys: { [name in string]: string } = {};
@@ -342,6 +343,8 @@ async function updateExecutor() {
                     dataList.push([filename, dirname, varname, extname]);
                 } else if (filename.startsWith('config.')) {
                     confList.push([filename, dirname, varname, extname]);
+                } else if (filename.startsWith('store.')) {
+                    storeList.push([filename, dirname, varname, extname]);
                 }
             }
         } else if (extname === '.prefab' || extname === '.scene') {
@@ -479,13 +482,19 @@ async function updateExecutor() {
 
     // config
     handle(confList, false);
-    result += `if(!EDITOR||DEV) Object.assign(app.config, {${confList.map(varname => `${varname.slice(7)}:new ${varname}()`).join(',')}})\n\n`;
+    result += `if(!EDITOR||DEV) Object.assign(app.config, {${confList.map(varname => `${varname.slice(7)}:new ${varname}()`).join(',')}})\n`;
 
+    // store
+    handle(storeList, false);
+    result += `if(!EDITOR||DEV) Object.assign(app.store, {${storeList.map(varname => `${varname.slice(6)}:new ${varname}()`).join(',')}})\n\n`;
+
+    result += 'type IReadOnly<T> = { readonly [P in keyof T]: T[P] extends Function ? T[P] : (T[P] extends Object ? IReadOnly<T[P]> : T[P]); };\n';
     result += 'export type IApp = {\n';
     result += `    Manager: {${MgrStr}},\n`;
     result += `    manager: {${mgrStr}},\n`;
-    result += `    data: {${dataList.map(varname => `${varname.slice(5)}:${varname}`).join(',')}},\n`;
+    result += `    data: {${dataList.map(varname => `${varname.slice(5)}:IReadOnly<${varname}>`).join(',')}},\n`;
     result += `    config: {${confList.map(varname => `${varname.slice(7)}:${varname}`).join(',')}}\n`;
+    result += `    store: {${storeList.map(varname => `${varname.slice(6)}:IReadOnly<${varname}>`).join(',')}}\n`;
     result += '    scene: IViewName[]\n';
     result += '}\n';
 
