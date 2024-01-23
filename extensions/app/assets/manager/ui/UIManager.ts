@@ -4,8 +4,9 @@ import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-
 import Core from '../../Core';
 import BaseManager from '../../base/BaseManager';
 import BaseView, { IHideParamOnHide, IShade, IShowParamAttr, IShowParamOnHide, IShowParamOnShow, IViewType, ViewType } from '../../base/BaseView';
-import UIMgrShade from '../../manager/ui/comp/UIMgrShade';
-import UIMgrZOrder from '../../manager/ui/comp/UIMgrZOrder';
+import UIMgrShade from './comp/UIMgrShade';
+import UIMgrToast from './comp/UIMgrToast';
+import UIMgrZOrder from './comp/UIMgrZOrder';
 
 const { ccclass, property } = _decorator;
 
@@ -63,11 +64,23 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**错误码 */
     static ErrorCode = ErrorCode;
 
-    @property(Prefab)
+    @property({
+        type: Prefab,
+        tooltip: '位置: app://manager/ui/prefab/UIMgrLoading'
+    })
     private loadingPre: Prefab = null;
 
-    @property(Prefab)
+    @property({
+        type: Prefab,
+        tooltip: '位置: app://manager/ui/prefab/UIMgrShade'
+    })
     private shadePre: Prefab = null;
+
+    @property({
+        type: Prefab,
+        tooltip: '位置: app://manager/ui/prefab/UIMgrToast'
+    })
+    private toastPre: Prefab = null;
 
     // 根结点
     private UIRoot2D: Node = null;
@@ -75,6 +88,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     // 加载和遮罩节点
     private loading: Node = null;
     private shade: Node = null;
+    private toast: Node = null;
 
     private defaultUI: UIName = null;
     private defaultData: string = '';
@@ -139,6 +153,11 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         this.loading.parent = this.UIRoot2D;
         this.shade.active = false;
         this.loading.active = false;
+        // toast是后面加的，需要做容错
+        if (this.toastPre) {
+            this.toast = instantiate(this.toastPre);
+            this.toast.parent = this.UIRoot2D;
+        }
     }
 
     private initUITypes() {
@@ -1156,6 +1175,28 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         if (!uuid) return;
         this.touchMaskMap.delete(uuid);
         this.removeTouchMaskListener();
+    }
+
+    /**
+     * 显示Toast
+     * @param message 文本
+     * @param timeout 持续时间(秒)，默认2秒
+     */
+    public showToast(message: string, timeout?: number) {
+        if (!this.toast) {
+            return this.error('[showToast]', '请确认首场景中「Root2D/Manager/UIManager」的「Toast Pre」属性存在');
+        }
+        this.toast.getComponent(UIMgrToast).add({
+            message, timeout
+        });
+    }
+
+    /**
+     * 清理Toast
+     */
+    public clearToast() {
+        if (!this.toast) return;
+        this.toast.getComponent(UIMgrToast).clear();
     }
 
     /**
