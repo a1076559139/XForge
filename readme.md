@@ -1,19 +1,15 @@
 # 一、介绍
 
-> 框架设计之初主要考虑H5与小游戏环境，最终的目的是希望：
->> 1. 更好的多人协同开发体验。
->> 2. 尽可能统一的开发规范(尽量避免口头约束)。
->> 3. 更小的首屏/首页体积。
->> 4. 更小的增量更新体积。
->> 5. 复用通用模块的能力。
+框架设计之初主要考虑H5与小游戏环境，最终的目的是希望：<br/>
+1、更好的多人协同开发体验，尽可能避免合并冲突。<br/>
+2、尽可能统一的开发规范，避免仅仅是口头约束，减少因此带来的CR人力成本。<br/>
+3、更小的首屏/首页体积，优化新用户加载性能。<br/>
+4、更小的增量更新体积，优化老用户加载性能。<br/>
+5、复用通用模块的能力。<br/>
 
-***
-
-- ⚠️大部分的框架目录点击后，都会在属性检查器页面生成它的一些说明文字，可以进行查看。
-
-- ⚠️框架暂时不允许自定义assets下的文件夹，所有文件夹可以通过菜单栏App来创建。
-
-- ⚠️使用vscode推荐安装 Code Spell Checker 插件。
+> ⚠️大部分的框架目录点击后，都会在属性检查器页面生成它的一些说明文字，可以进行查看。<br/>
+> ⚠️框架暂时不允许自定义assets下的文件夹，所有文件夹可以通过菜单栏App来创建。<br/>
+> ⚠️使用vscode推荐安装 Code Spell Checker 插件。<br/>
 
 <br>
 
@@ -21,15 +17,28 @@
 
 ## 1、 初始化项目
 
-* 在空文件夹下执行`npx @gamex/cc-cli@latest`
+在空文件夹下执行：<br/>
+`npx @gamex/cc-cli@latest`
+
+如果npm源无法使用，可以尝试使用淘宝源：<br/>
+`npx @gamex/cc-cli@latest --registry=https://registry.npmmirror.com`
 
 ## 2、 更新项目框架
 
-* 在项目根目录下执行`npm run upgrade`
+在开发过程中，框架可能会发布新版本以修复BUG或更新特性等。<br/>
+如果想更新框架，可以在项目根目录下执行快捷指令：<br/>
+`npm run upgrade`
+
+其本质还是调用```@gamex/cc-cli```，通过cli方式升级框架，可以几乎不用考虑因升级带来的一些兼容性问题，因为cli内部会处理这些问题。
 
 ## 3、 管理扩展包
 
-* 在项目根目录下执行`npm run package`
+扩展包中包含通用组件、控件、库等。
+
+想要添加或删除扩展包，可以在项目根目录下，执行快捷指令：<br/>
+`npm run package`
+
+然后可以选择**安装**、**卸载**、**更新**、**退出**选项。
 
 <br>
 
@@ -362,17 +371,85 @@ export class PageHome extends BaseView {
   - 勾选后，会使触摸无法穿透此UI。
 
 ## 7、扩展包
+目前共有21个扩展包(扩展包更新可能会与文档不一致，实际以脚手架展示的为准)：
+```
+  01) 模块 | @gamex/cc-expand                  | 属性扩展: node.x、node.scaleX等 
+  02) 模块 | @gamex/cc-store                   | 状态管理，数据变化自动更新UI 
+  03) 模块 | @gamex/cc-request                 | POST|GET网络请求 
+  04) 模块 | @gamex/cc-decimal                 | 定点数学运算 
+  05) 模块 | @gamex/cc-number                  | 防内存挂数字类型 
+  06) 模块 | @gamex/cc-astar                   | A星巡路，支持4/6/8方向及路径平滑 
+  07) 模块 | @gamex/cc-ecs                     | 实体-组件-系统
+  08) 模块 | @gamex/cc-quadtree                | 四叉碰撞树 
+  09) 模块 | @gamex/cc-sat                     | SAT碰撞检测 
+  10) 模块 | @gamex/cc-rvo2                    | 动态避障 
+  11) 模块 | @gamex/cc-xml-parser              | XML解析 
+  12) 模块 | @gamex/cc-minisdk                 | 小游戏SDK模块 
+  13) 组件 | @gamex/cc-comp-toggle             | Toggle组件 
+  14) 组件 | @gamex/cc-comp-rich-text          | RichText组件
+  15) 组件 | @gamex/cc-comp-animation          | Animation组件 
+  16) 组件 | @gamex/cc-comp-skeleton           | Spine组件 
+  17) 组件 | @gamex/cc-comp-skeletal-animation | 3D骨骼动画组件 
+  18) 组件 | @gamex/cc-comp-movie-animation    | MovieClip播放组件 
+  19) 组件 | @gamex/cc-comp-frame-animation    | 帧动画播放组件 
+  20) 组件 | @gamex/cc-comp-rewardfly          | 奖励飞行动画组件 
+  21) 控件 | @gamex/cc-ctrl-toast              | 消息提示控件 
+```
 
-**扩展包包含通用组件、控件、库等。**
+**扩展包的使用可以精简框架初始的代码量，平滑学习成本，另一方面也为各项目后续的升级维护工作带来极大的便利。**
 
-想要添加或删除扩展包，可以在项目根目录下，执行快捷指令：
-`npm run package`
+## 8、内置工具
 
-然后可以选择**安装**、**卸载**、**更新**、**退出**选项。
+框架内只内置了最基本的工具库，其它工具库通过扩展包的形式添加。
 
-**扩展包的使用一方面可以精简框架的体积，另一方面也为各项目后续的升级维护工作带来极大的便利。**
+内置工具通过app.lib调用，包含：
 
-## 8、设置
+```app.lib.task```用于创建异步、同步任务
+```
+const task = app.lib.task.createASync();
+task.add((next, retry) => {
+    if (成功) {
+        // 任务成功，继续执行
+        next(数据);
+    } else {
+        // 等待0.5秒后重试
+        retry(0.5);
+    }
+});
+task.add((next, retry) => {
+    if (成功) {
+        // 任务成功，继续执行
+        next(数据);
+    } else {
+        // 任务失败，停止任务
+        task.stop();
+    }
+});
+task.start((results, success) => {
+    console.log(success ? '任务成功' : '任务失败');
+});
+```
+
+```app.lib.storage```用于存储本地数据
+```
+// 存取数据
+app.lib.storage.set('key', 'value');
+app.lib.storage.get('key');
+// 存取每天过期数据
+app.lib.storage.setDay('key', 'value');
+app.lib.storage.getDay('key');
+// 存取每周过期数据
+app.lib.storage.setWeek('key', 'value');
+app.lib.storage.getWeek('key');
+```
+
+```app.lib.debug```用于防止代码被调试(仅web中有效)
+```
+// 当在浏览器开发者工具中试图调试this时，会使当前页面刷新
+app.lib.debug.unobservable(this);
+```
+
+## 9、设置
 
 **设置UIManager和SoundManager，位置位于assets/app/setting.ts内**
 
