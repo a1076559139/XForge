@@ -9,8 +9,6 @@
 
 ***
 
-- 目前根据经验，2D游戏gzip后，首屏资源可控制在1M以内，游戏首页可控制在2.5M以内。
-
 - ⚠️大部分的框架目录点击后，都会在属性检查器页面生成它的一些说明文字，可以进行查看。
 
 - ⚠️框架暂时不允许自定义assets下的文件夹，所有文件夹可以通过菜单栏App来创建。
@@ -21,28 +19,21 @@
 
 # 二、脚手架
 
-## 0、 初始化项目
+## 1、 初始化项目
 
 * 在空文件夹下执行`npx @gamex/cc-cli@latest`
 
-## 1、 更新项目框架
+## 2、 更新项目框架
 
 * 在项目根目录下执行`npm run upgrade`
 
-## 2、 使用内置package
+## 3、 管理扩展包
 
 * 在项目根目录下执行`npm run package`
 
 <br>
 
 # 三、功能介绍 [(视频)](https://www.bilibili.com/video/BV1wp4y1G7ue/?spm_id_from=888.80997.embed_other.whitelist&t=1)
-
-
-## 0、 ESLint
-
-* 在vscode中安装ESLint插件
-
-* 在项目根目录下执行**npm install**
 
 ## 1、 首屏
 
@@ -255,9 +246,11 @@
 **音频位于assets/app-builtin/app-sound中。**
 > 不需要也不建议手动去创建目录，可以通过菜单栏App->创建->Sound选项来进行创建。
 
-- music 音乐目录
-- effect 音效目录
-- 通过app.manager.sound来控制播放。
+其中：
+- music目录为音乐目录
+- effect目录为音效目录
+
+通过app.manager.sound来控制播放。
 
 ## 6、界面
 
@@ -300,7 +293,7 @@
 
 - 它们的层级按顺序依次增大(同Camera下)，即: Top > Pop > Paper > Page。
 
-- Page和Paper在创建时区分3D与2D类型，3D类型的Page会以cc.Scene的形式存在，其它以cc.Prefab的形式存在。
+- Page在创建时区分3D与2D类型，3D类型的Page会以cc.Scene的形式存在，2D类型以cc.Prefab的形式存在。
 
 - 一个落地页应由Page和Paper共同组成，通过这种模型可以轻松实现多人协同开发。
 
@@ -370,21 +363,23 @@ export class PageHome extends BaseView {
 
 ## 7、扩展包
 
-**扩展包包含通用组件、控件、库等内容，需要脚手架来配合使用。**
-1. 在创建好的项目根目录下，使用命令行执行`npm run package`。
-2. 选择**安装选项**。
-3. 在下拉列表内使用方向键选择需要的包。
+**扩展包包含通用组件、控件、库等。**
+
+想要添加或删除扩展包，可以在项目根目录下，执行快捷指令：
+`npm run package`
+
+然后可以选择**安装**、**卸载**、**更新**、**退出**选项。
 
 **扩展包的使用一方面可以精简框架的体积，另一方面也为各项目后续的升级维护工作带来极大的便利。**
 
 ## 8、设置
 
-**目前仅支持设置UIManager和SoundManager，位置位于assets/app/setting.ts内**
+**设置UIManager和SoundManager，位置位于assets/app/setting.ts内**
 
 ```js
 // 预加载的UI(符合app.lib.task.createAny规则)
 UIManager.setting.preload = ['PageHome', 'PaperHomeIndex'];
-// 默认UI, 会在首屏流程后自动show
+// 默认UI, 会在首屏流程后自动show(根据首界面的名字自行修改)
 UIManager.setting.defaultUI = 'PageHome';
 // 控制全局背景遮罩透明度与动画
 UIManager.setting.shade = { ... };
