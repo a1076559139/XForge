@@ -130,12 +130,12 @@ async function main() {
     const cmd = process.argv[2].trim();
 
     if (cmd === 'update') {
-        const cmd = ['--registry=https://registry.npmjs.org', 'update', '--prefix', packageDir];
+        const cmd = ['--registry=https://registry.npmmirror.com', 'update', '--prefix', packageDir];
         const code = await spawnCmd(npm, cmd);
         if (code !== 0) console.error(`[失败]: ${code}`);
     } else if (cmd === 'add') {
         const pkgName = process.argv[3].trim();
-        const args = ['--registry=https://registry.npmjs.org', 'install', '--prefix', packageDir];
+        const args = ['--registry=https://registry.npmmirror.com', 'install', '--prefix', packageDir];
         if (pkgName) args.push(pkgName);
         const code = await spawnCmd(npm, args);
         if (code !== 0) {
