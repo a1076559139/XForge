@@ -157,7 +157,7 @@ async function main() {
     } else if (cmd === 'remove') {
         const pkgName = process.argv[3].trim();
         const pkgDir = path.join(modulesDir, pkgName);
-        const args = ['--registry=https://registry.npmjs.org', 'uninstall', '--prefix', packageDir];
+        const args = ['--registry=https://registry.npmmirror.com', 'uninstall', '--prefix', packageDir];
         if (!pkgName) return console.error('[失败]: 输入要卸载的名字');
         args.push(pkgName);
         const code = await spawnCmd(npm, args);
