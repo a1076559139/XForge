@@ -47,12 +47,17 @@ export default class UIMgrShade extends Component {
     }
 
     protected onEnable() {
-        this.stopAnimation = true;
-        this.node.getComponent(UIOpacity).opacity = 0;
-        this.scheduleOnce(() => {
-            this.node.getComponent(UIOpacity).opacity = this.begin;
+        if (this.delay <= 0) {
             this.stopAnimation = false;
-        }, this.delay);
+            this.node.getComponent(UIOpacity).opacity = this.begin;
+        } else {
+            this.stopAnimation = true;
+            this.node.getComponent(UIOpacity).opacity = 0;
+            this.scheduleOnce(() => {
+                this.node.getComponent(UIOpacity).opacity = this.begin;
+                this.stopAnimation = false;
+            }, this.delay);
+        }
     }
 
     protected onDisable() {

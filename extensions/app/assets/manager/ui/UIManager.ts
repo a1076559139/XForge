@@ -681,41 +681,43 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 let children = uiRoot.children;
                 for (let i = children.length - 1; i >= 0; i--) {
                     const node = children[i];
-                    if (node !== this.shade) {
-                        const com = this.getBaseView(node);
-                        // 触发onFocus
-                        if (!onFocus && com.isCaptureFocus && com.isShow) {
-                            onFocus = true;
-                            if (this.currFocus !== com) {
-                                isValid(this.currFocus, true) && this.currFocus.constructor.prototype.focus.call(this.currFocus, false);
-                                this.currFocus = com;
-                                this.currFocus.constructor.prototype.focus.call(this.currFocus, true);
-                            }
-                        }
-                        // 添加遮罩
-                        if (com.isNeedShade && com.isShow) {
-                            const shadeSetting = Object.assign({}, UIManager.setting.shade, com.constructor.prototype.onShade.call(com));
-                            this.shade.getComponent(UIMgrShade).init(
-                                typeof shadeSetting.delay !== 'number' ? 0 : shadeSetting.delay,
-                                typeof shadeSetting.begin !== 'number' ? 60 : shadeSetting.begin,
-                                typeof shadeSetting.end !== 'number' ? 180 : shadeSetting.end,
-                                typeof shadeSetting.speed !== 'number' ? 100 : shadeSetting.speed
-                            );
-                            this.shade.parent = uiRoot;
-                            this.shade.active = true;
-                            this.shade.layer = node.layer;
-                            // 以z坐标来代替2.x时代的zIndex
-                            this.shade.setPosition(this.shade.position.x, this.shade.position.y, node.position.z);
+                    if (node === this.shade) continue;
 
-                            let shadeIndex = this.shade.getSiblingIndex();
-                            let nodeIndex = node.getSiblingIndex();
-                            if (shadeIndex > nodeIndex) {
-                                this.shade.setSiblingIndex(nodeIndex);
-                            } else {
-                                this.shade.setSiblingIndex(nodeIndex - 1);
-                            }
-                            return;
+                    const com = this.getBaseView(node);
+                    if (!com) continue;
+
+                    // 触发onFocus
+                    if (!onFocus && com.isCaptureFocus && com.isShow) {
+                        onFocus = true;
+                        if (this.currFocus !== com) {
+                            isValid(this.currFocus, true) && this.currFocus.constructor.prototype.focus.call(this.currFocus, false);
+                            this.currFocus = com;
+                            this.currFocus.constructor.prototype.focus.call(this.currFocus, true);
                         }
+                    }
+                    // 添加遮罩
+                    if (com.isNeedShade && com.isShow) {
+                        const shadeSetting = Object.assign({}, UIManager.setting.shade, com.constructor.prototype.onShade.call(com));
+                        this.shade.getComponent(UIMgrShade).init(
+                            typeof shadeSetting.delay !== 'number' ? 0 : shadeSetting.delay,
+                            typeof shadeSetting.begin !== 'number' ? 60 : shadeSetting.begin,
+                            typeof shadeSetting.end !== 'number' ? 180 : shadeSetting.end,
+                            typeof shadeSetting.speed !== 'number' ? 100 : shadeSetting.speed
+                        );
+                        this.shade.parent = uiRoot;
+                        this.shade.active = true;
+                        this.shade.layer = node.layer;
+                        // 以z坐标来代替2.x时代的zIndex
+                        this.shade.setPosition(this.shade.position.x, this.shade.position.y, node.position.z);
+
+                        let shadeIndex = this.shade.getSiblingIndex();
+                        let nodeIndex = node.getSiblingIndex();
+                        if (shadeIndex > nodeIndex) {
+                            this.shade.setSiblingIndex(nodeIndex);
+                        } else {
+                            this.shade.setSiblingIndex(nodeIndex - 1);
+                        }
+                        return;
                     }
                 }
             }

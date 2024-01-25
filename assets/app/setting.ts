@@ -5,6 +5,13 @@ import UIManager from '../../extensions/app/assets/manager/ui/UIManager';
 UIManager.setting.preload = ['PageHome', 'PaperHomeIndex'];
 // 默认UI, 会在首屏流程后自动show
 UIManager.setting.defaultUI = 'PageHome';
+// 弹窗默认遮罩展现动画配置
+UIManager.setting.shade = {
+    delay: 0,
+    begin: 60,
+    end: 180,
+    speed: 100,
+};
 
 // 预加载的音频(按数组顺序依次预加载)
 SoundManager.setting.preload = [];
