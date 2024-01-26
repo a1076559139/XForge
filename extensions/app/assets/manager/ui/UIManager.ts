@@ -181,6 +181,8 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
             if (DEV) {
                 d2.on(Node.EventType.CHILD_ADDED, (child: Node) => {
+                    if (!child) return;
+                    if (child === this.shade) return;
                     if (this.getBaseView(child)) return;
                     this.warn(`${UIRoot2DPath}/${type}下非必要请不要添加非UI节点:`, child?.name);
                 }, this);
