@@ -1,5 +1,5 @@
 import { Asset, AssetManager, Component, Event, Layers, Node, Prefab, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, error, find, instantiate, isValid, js, settings } from 'cc';
-import { DEBUG } from 'cc/env';
+import { DEBUG, DEV } from 'cc/env';
 import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
 import Core from '../../Core';
 import BaseManager from '../../base/BaseManager';
@@ -153,6 +153,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         this.loading.parent = this.UIRoot2D;
         this.shade.active = false;
         this.loading.active = false;
+
         // toast是后面加的，需要做容错
         if (this.toastPre) {
             this.toast = instantiate(this.toastPre);
@@ -177,6 +178,13 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             widget.right = 0;
             widget.bottom = 0;
             widget.alignMode = Widget.AlignMode.ON_WINDOW_RESIZE;
+
+            if (DEV) {
+                d2.on(Node.EventType.CHILD_ADDED, (child: Node) => {
+                    if (this.getBaseView(child)) return;
+                    this.warn(`${UIRoot2DPath}/${type}下非必要请不要添加非UI节点:`, child?.name);
+                }, this);
+            }
         });
     }
 
