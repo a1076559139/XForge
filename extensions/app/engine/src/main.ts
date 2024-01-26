@@ -492,8 +492,8 @@ async function updateExecutor() {
     result += 'export type IApp = {\n';
     result += `    Manager: {${MgrStr}},\n`;
     result += `    manager: {${mgrStr}},\n`;
-    result += `    data: {${dataList.map(varname => `${varname.slice(5)}:IReadOnly<${varname}>`).join(',')}},\n`;
-    result += `    config: {${confList.map(varname => `${varname.slice(7)}:${varname}`).join(',')}}\n`;
+    result += `    data: {${dataList.map(varname => `${varname.slice(5)}:${varname}`).join(',')}},\n`;
+    result += `    config: {${confList.map(varname => `${varname.slice(7)}:IReadOnly<${varname}>`).join(',')}}\n`;
     result += `    store: {${storeList.map(varname => `${varname.slice(6)}:IReadOnly<${varname}>`).join(',')}}\n`;
     result += '    scene: IViewName[]\n';
     result += '}\n';
