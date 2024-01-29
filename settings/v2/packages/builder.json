@@ -214,8 +214,7 @@
               "isRemote": true,
               "compressionType": "merge_dep"
             },
-            "configMode": "fallback",
-            "overwriteSettings": {}
+            "configMode": "fallback"
           }
         }
       }
