@@ -1,4 +1,5 @@
-import { Component, EventTarget } from 'cc';
+import { Component, EventTarget, js } from 'cc';
+import { DEV, EDITOR } from 'cc/env';
 import * as debug from './lib/debug/debug';
 import storage from './lib/storage/storage';
 import task from './lib/task/task';
@@ -84,6 +85,11 @@ export default class Core<T extends ICore> {
         this.store = Store;
         this.Manager = Manager as any;
         this.manager = manager as any;
+        if (!EDITOR || DEV) {
+            if (this.constructor !== Core && !js.getClassById('App')) {
+                js.setClassAlias(this.constructor as any, 'App');
+            }
+        }
     }
 
     on(event: keyof typeof EventType, callback: (...any: any[]) => void, target?: any): any {
