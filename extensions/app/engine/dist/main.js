@@ -519,8 +519,8 @@ function callUpdateExecutor(clear = false) {
 function updateBuilder() {
     const builder = (0, utils_1.getResJson)('builder');
     const sourcePath = path_1.default.join((0, utils_1.getProjectPath)(), 'settings/v2/packages/builder.json');
-    const str = (0, fs_1.readFileSync)(sourcePath, 'utf-8');
-    const source = JSON.parse(str);
+    const sourceStr = (0, fs_1.readFileSync)(sourcePath, 'utf-8');
+    const source = JSON.parse(sourceStr);
     const overwriteKeys = builder.bundleConfig['custom'] ? Object.keys(builder.bundleConfig['custom']) : [];
     const handle = (data, out) => {
         for (const key in data) {
@@ -549,18 +549,18 @@ exports.methods = {
     },
     ['update-executor']() {
         // 点击更新
-        updateBuilder();
+        // updateBuilder();
         callUpdateExecutor();
     },
     ['scene:ready']() {
-        moveIllegalFolders();
+        // moveIllegalFolders();
     },
     ['asset-db:ready']() {
         updateExecutor();
     },
     ['asset-db:asset-add'](uuid, info) {
         if (isIllegalFolder(info)) {
-            moveIllegalFolders([info]);
+            // moveIllegalFolders([info]);
             // Editor.Dialog.error(`${info.path}\r\n只允许使用插件App创建的文件夹`, { title: '非法文件夹', buttons: ['确认'] });
             // Editor.Message.request('asset-db', 'delete-asset', info.path);
             return;
@@ -571,7 +571,7 @@ exports.methods = {
     },
     ['asset-db:asset-change'](uuid, info) {
         if (isIllegalFolder(info)) {
-            moveIllegalFolders([info]);
+            // moveIllegalFolders([info]);
             // Editor.Dialog.error(`${info.path}\r\n只允许使用插件App创建的文件夹`, { title: '非法文件夹', buttons: ['确认'] });
             // Editor.Message.request('asset-db', 'delete-asset', info.path);
             return;
@@ -591,7 +591,7 @@ exports.methods = {
  * @zh 扩展加载完成后触发的钩子
  */
 function load() {
-    updateBuilder();
+    // updateBuilder();
     Editor.Message.request('asset-db', 'query-ready')
         .then(ready => {
         if (!ready)

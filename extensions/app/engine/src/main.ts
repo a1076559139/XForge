@@ -528,8 +528,8 @@ function updateBuilder() {
     const builder = getResJson('builder');
 
     const sourcePath = path.join(getProjectPath(), 'settings/v2/packages/builder.json');
-    const str = readFileSync(sourcePath, 'utf-8');
-    const source = JSON.parse(str);
+    const sourceStr = readFileSync(sourcePath, 'utf-8');
+    const source = JSON.parse(sourceStr);
 
     const overwriteKeys = builder.bundleConfig['custom'] ? Object.keys(builder.bundleConfig['custom']) : [];
 
@@ -562,11 +562,11 @@ export const methods: { [key: string]: (...any: any) => any } = {
     },
     ['update-executor']() {
         // 点击更新
-        updateBuilder();
+        // updateBuilder();
         callUpdateExecutor();
     },
     ['scene:ready']() {
-        moveIllegalFolders();
+        // moveIllegalFolders();
 
     },
     ['asset-db:ready']() {
@@ -574,7 +574,7 @@ export const methods: { [key: string]: (...any: any) => any } = {
     },
     ['asset-db:asset-add'](uuid: string, info: AssetInfo) {
         if (isIllegalFolder(info)) {
-            moveIllegalFolders([info]);
+            // moveIllegalFolders([info]);
             // Editor.Dialog.error(`${info.path}\r\n只允许使用插件App创建的文件夹`, { title: '非法文件夹', buttons: ['确认'] });
             // Editor.Message.request('asset-db', 'delete-asset', info.path);
             return;
@@ -584,7 +584,7 @@ export const methods: { [key: string]: (...any: any) => any } = {
     },
     ['asset-db:asset-change'](uuid: string, info: AssetInfo) {
         if (isIllegalFolder(info)) {
-            moveIllegalFolders([info]);
+            // moveIllegalFolders([info]);
             // Editor.Dialog.error(`${info.path}\r\n只允许使用插件App创建的文件夹`, { title: '非法文件夹', buttons: ['确认'] });
             // Editor.Message.request('asset-db', 'delete-asset', info.path);
             return;
@@ -603,7 +603,7 @@ export const methods: { [key: string]: (...any: any) => any } = {
  * @zh 扩展加载完成后触发的钩子
  */
 export function load() {
-    updateBuilder();
+    // updateBuilder();
     Editor.Message.request('asset-db', 'query-ready')
         .then(ready => {
             if (!ready) return;
