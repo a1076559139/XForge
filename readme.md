@@ -42,7 +42,35 @@
 
 <br>
 
-# 三、功能介绍 [(视频)](https://www.bilibili.com/video/BV1wp4y1G7ue/?spm_id_from=888.80997.embed_other.whitelist&t=1)
+# 三、目录结构
+```
+├─assets
+│   ├─app
+│   │  ├─app.ts     // app入口
+│   │  ├─handle.ts  // 初始化回调
+│   │  └─setting.ts // 配置文件
+│   │
+│   ├─app-appinit   // 首屏
+│   │
+│   ├─app-builtin
+│   │  ├─app-admin  // 框架自动生成的内容
+│   │  ├─app-manager// 管理器
+│   │  ├─app-control// 控制器
+│   │  └─app-model  // 数据
+│   │
+│   ├─app-bundle    // 框架资源包
+│   │  ├─app-view   // 界面
+│   │  └─app-sound  // 声音
+│   │
+│   ├─app-scene     // 初始场景
+│   │
+│   ├─res-bundle    // Bundle动态资源目录
+│   └─res-native    // 静态资源目录
+│
+└─pkg               // 扩展包
+```
+
+# 四、功能介绍 [(视频)](https://www.bilibili.com/video/BV1wp4y1G7ue/?spm_id_from=888.80997.embed_other.whitelist&t=1)
 
 ## 1、 首屏
 
