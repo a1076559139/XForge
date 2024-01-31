@@ -1,51 +1,83 @@
-gitee: https://gitee.com/cocos2d-zp/cococs-creator-frame-3d <br/>
-论坛: https://forum.cocos.org/t/topic/150588 https://forum.cocos.org/t/topic/153151<br/>
+gitee: <br/>
+https://gitee.com/cocos2d-zp/cococs-creator-frame-3d <br/>
+
+论坛: <br/>
+https://forum.cocos.org/t/topic/150588 <br/>
+https://forum.cocos.org/t/topic/153151<br/>
 
 # 一、介绍
 
-> 框架设计之初主要考虑H5与小游戏环境，最终的目的是希望：
->> 1. 更好的多人协同开发体验。
->> 2. 尽可能统一的开发规范(尽量避免口头约束)。
->> 3. 更小的首屏/首页体积。
->> 4. 更小的增量更新体积。
->> 5. 复用通用模块的能力。
+框架设计之初主要考虑H5与小游戏环境，最终的目的是希望：<br/>
+1、更好的多人协同开发体验，尽可能避免合并冲突。<br/>
+2、尽可能统一的开发规范，避免仅仅是口头约束，减少因此带来的CR人力成本。<br/>
+3、更小的首屏/首页体积，优化新用户加载性能。<br/>
+4、更小的增量更新体积，优化老用户加载性能。<br/>
+5、复用通用模块的能力。<br/>
 
-***
-
-- 目前根据经验，2D游戏gzip后，首屏资源可控制在1M以内，游戏首页可控制在2.5M以内。
-
-- ⚠️大部分的框架目录点击后，都会在属性检查器页面生成它的一些说明文字，可以进行查看。
-
-- ⚠️框架暂时不允许自定义assets下的文件夹，所有文件夹可以通过菜单栏App来创建。
-
-- ⚠️使用vscode推荐安装 Code Spell Checker 插件。
+> ⚠️大部分的框架目录点击后，都会在属性检查器页面生成它的一些说明文字，可以进行查看。<br/>
+> ⚠️尽量不要再assets下自定义文件夹，可以通过菜单栏App来创建。<br/>
+> ⚠️使用vscode推荐安装 Code Spell Checker 插件。<br/>
 
 <br>
 
 # 二、脚手架
 
-## 0、 初始化项目
+## 1、 初始化项目
 
-* 在空文件夹下执行`npx @gamex/cc-cli@latest`
+在空文件夹下执行：<br/>
+`npx @gamex/cc-cli@latest`
 
-## 1、 更新项目框架
+如果npm源无法使用，可以尝试使用淘宝源：<br/>
+`npx @gamex/cc-cli@latest --registry=https://registry.npmmirror.com`
 
-* 在项目根目录下执行`npm run upgrade`
+## 2、 更新项目框架
 
-## 2、 使用内置package
+在开发过程中，框架可能会发布新版本以修复BUG或更新特性等。<br/>
+如果想更新框架，可以在项目根目录下执行快捷指令：<br/>
+`npm run upgrade`
 
-* 在项目根目录下执行`npm run package`
+其本质还是调用```@gamex/cc-cli```，通过cli方式升级框架，可以几乎不用考虑因升级带来的一些兼容性问题，因为cli内部会处理这些问题。
+
+## 3、 管理扩展包
+
+扩展包中包含通用组件、控件、库等。
+
+想要添加或删除扩展包，可以在项目根目录下，执行快捷指令：<br/>
+`npm run package`
+
+然后可以选择**安装**、**卸载**、**更新**、**退出**选项。
 
 <br>
 
-# 三、功能介绍 [(视频)](https://www.bilibili.com/video/BV1wp4y1G7ue/?spm_id_from=888.80997.embed_other.whitelist&t=1)
+# 三、目录结构
+```
+├─assets
+│   ├─app
+│   │  ├─app.ts     // app入口
+│   │  ├─handle.ts  // 初始化回调
+│   │  └─setting.ts // 配置文件
+│   │
+│   ├─app-appinit   // 首屏
+│   │
+│   ├─app-builtin
+│   │  ├─app-admin  // 框架自动生成的内容
+│   │  ├─app-manager// 管理器
+│   │  ├─app-control// 控制器
+│   │  └─app-model  // 数据
+│   │
+│   ├─app-bundle    // 框架资源包
+│   │  ├─app-view   // 界面
+│   │  └─app-sound  // 声音
+│   │
+│   ├─app-scene     // 初始场景
+│   │
+│   ├─res-bundle    // Bundle动态资源目录
+│   └─res-native    // 静态资源目录
+│
+└─pkg               // 扩展包
+```
 
-
-## 0、 ESLint
-
-* 在vscode中安装ESLint插件
-
-* 在项目根目录下执行**npm install**
+# 四、功能介绍 [(视频)](https://www.bilibili.com/video/BV1wp4y1G7ue/?spm_id_from=888.80997.embed_other.whitelist&t=1)
 
 ## 1、 首屏
 
@@ -96,7 +128,7 @@ gitee: https://gitee.com/cocos2d-zp/cococs-creator-frame-3d <br/>
 ## 2、管理器
 
 **管理器位于assets/app-builtin/app-manager中。**
-- 不需要也不建议手动去创建，可以通过菜单栏App->创建->Manager选项来进行创建。
+> 不需要也不建议手动去创建，可以通过菜单栏App->创建->Manager选项来进行创建。
 
 **管理器继承自BaseManager。**
 - 可以通过重写init方法，来初始化一些管理器内部需要用到的资源，完成后需要调用finish表示初始化完成。
@@ -214,7 +246,7 @@ gitee: https://gitee.com/cocos2d-zp/cococs-creator-frame-3d <br/>
 
   ```js
   app.manager.loader.load({
-    bundle: 'xxx', // 不穿入bundle，默认为resources
+    bundle: 'xxx', // 不传入bundle，默认为resources
     path: 'xxx/xxxx'
     type: Asset,
     onComplete(asset){
@@ -226,8 +258,7 @@ gitee: https://gitee.com/cocos2d-zp/cococs-creator-frame-3d <br/>
 ## 3、控制器
 
 **管理器位于assets/app-builtin/app-control中。**
-
-- 不需要也不建议手动去创建，可以通过菜单栏App->创建->Control选项来进行创建。
+> 不需要也不建议手动去创建，可以通过菜单栏App->创建->Control选项来进行创建。
 
 **控制器继承自BaseControl。**
 
@@ -237,6 +268,8 @@ gitee: https://gitee.com/cocos2d-zp/cococs-creator-frame-3d <br/>
 
 - UI需要通过继承BaseView.BindControl(XXXControl)来绑定一个控制器，并通过this.control访问到这个控制器实例，与inst调用不同的是，它是不受限的(属性等都不是只读)，而且可以通过this.control中的on、once、off、targetOff来接收和关闭emit或call的事件。
 
+- **与cc.Node的事件不同，通过control注册的事件，需要通过off或targetOff手动销毁**
+
 **控制器负责维护外部与UI内部的联系。**
 
 **控制器通过import的方式引入。**
@@ -244,25 +277,41 @@ gitee: https://gitee.com/cocos2d-zp/cococs-creator-frame-3d <br/>
 ## 4、数据
 
 **数据位于assets/app-builtin/app-model中。**
+> 不需要也不建议手动去创建，可以通过菜单栏App->创建->Model选项来进行创建。
 
-- 不需要也不建议手动去创建，可以通过菜单栏App->创建->Model选项来进行创建。
+框架内置了数据管理，分为store、data和config类型，可以通过app.data、app.config和app.store来访问。
+- config类型的数据，**不可以定义方法**，所有属性都是**只读**，用于存储静态配置。
+- data类型的数据，**不可以定义方法**，所有属性都是**可读可写**，用于存储不安全的数据(因为可以在任何地方修改它)。
+- store类型的数据，**可以定义方法**，所有属性都是**只读**，用于存储安全的数据(数据只允许在内部修改，外部只有访问权限)。
 
-**通过app.data.xxx或者app.config.xxx来访问。**
+**store类型的引入是借鉴了Web前端框架中全局状态管理的思路，意图是让数据更安全，更可控。同时框架中还提供了数据绑定的扩展包，可以通过pkg的方式安装，实现「数据->视图」的单向绑定。**
 
 ## 5、音频
 **音频位于assets/app-builtin/app-sound中。**
+> 不需要也不建议手动去创建目录，可以通过菜单栏App->创建->Sound选项来进行创建。
 
-- 不需要也不建议手动去创建，可以通过菜单栏App->创建->Sound选项来进行创建。
+其中：
+- music目录为音乐目录
+- effect目录为音效目录
+
 通过app.manager.sound来控制播放。
 
 ## 6、界面
 
 **UI位于assets/app-builtin/app-view中。**
+> 不需要也不建议手动去创建，可以通过菜单栏App->创建->View选项来进行创建。
 
-- 不需要也不建议手动去创建，可以通过菜单栏App->创建->View选项来进行创建。
-UI继承自BaseView。
+**UI目录包含native和resources两个文件夹。**
 
-**在Cocos原有的生命周期函数外，又增加了一些框架的生命周期函数。**
+- native和resources都是Bundle。
+
+- native负责存储脚本与Prefab/Scene资源，native/expansion目录存储你自己创建的脚本与Prefab。
+
+- resources存储所有渲染资源，如图片、spine、font等。
+
+> 这样处理的的好处在于native与resources将分别采用不同的分包策略，来达到在各平台上加载性能与体积最优。
+
+**UI继承自BaseView，在Cocos原有的生命周期函数外，又增加了一些框架的生命周期函数。**
 
 - `beforeShow`：UI显示前触发。
     > 可用于在显示前加载或处理某些任务，比如在Page显示之前先显示Paper，可以避免视觉上Page和Paper显示延迟的割裂感。
@@ -288,7 +337,7 @@ UI继承自BaseView。
 
 - 它们的层级按顺序依次增大(同Camera下)，即: Top > Pop > Paper > Page。
 
-- Page和Paper在创建时区分3D与2D类型，3D类型的Page会以cc.Scene的形式存在，其它以cc.Prefab的形式存在。
+- Page在创建时区分3D与2D类型，3D类型的Page会以cc.Scene的形式存在，2D类型以cc.Prefab的形式存在。
 
 - 一个落地页应由Page和Paper共同组成，通过这种模型可以轻松实现多人协同开发。
 
@@ -357,22 +406,92 @@ export class PageHome extends BaseView {
   - 勾选后，会使触摸无法穿透此UI。
 
 ## 7、扩展包
+目前共有21个扩展包(扩展包更新可能会与文档不一致，实际以脚手架展示的为准)：
+```
+  01) 模块 | @gamex/cc-expand                  | 属性扩展: node.x、node.scaleX等 
+  02) 模块 | @gamex/cc-store                   | 状态管理，数据变化自动更新UI 
+  03) 模块 | @gamex/cc-request                 | POST|GET网络请求 
+  04) 模块 | @gamex/cc-decimal                 | 定点数学运算 
+  05) 模块 | @gamex/cc-number                  | 防内存挂数字类型 
+  06) 模块 | @gamex/cc-astar                   | A星巡路，支持4/6/8方向及路径平滑 
+  07) 模块 | @gamex/cc-ecs                     | 实体-组件-系统
+  08) 模块 | @gamex/cc-quadtree                | 四叉碰撞树 
+  09) 模块 | @gamex/cc-sat                     | SAT碰撞检测 
+  10) 模块 | @gamex/cc-rvo2                    | 动态避障 
+  11) 模块 | @gamex/cc-xml-parser              | XML解析 
+  12) 模块 | @gamex/cc-minisdk                 | 小游戏SDK模块 
+  13) 组件 | @gamex/cc-comp-toggle             | Toggle组件 
+  14) 组件 | @gamex/cc-comp-rich-text          | RichText组件
+  15) 组件 | @gamex/cc-comp-animation          | Animation组件 
+  16) 组件 | @gamex/cc-comp-skeleton           | Spine组件 
+  17) 组件 | @gamex/cc-comp-skeletal-animation | 3D骨骼动画组件 
+  18) 组件 | @gamex/cc-comp-movie-animation    | MovieClip播放组件 
+  19) 组件 | @gamex/cc-comp-frame-animation    | 帧动画播放组件 
+  20) 组件 | @gamex/cc-comp-rewardfly          | 奖励飞行动画组件 
+  21) 控件 | @gamex/cc-ctrl-toast              | 消息提示控件 
+```
 
-**扩展包包含通用组件、控件、库等内容，需要脚手架来配合使用。**
-1. 在创建好的项目根目录下，使用命令行执行`npm run package`。
-2. 选择**安装选项**。
-3. 在下拉列表内使用方向键选择需要的包。
+**扩展包的使用可以精简框架初始的代码量，平滑学习成本，另一方面也为各项目后续的升级维护工作带来极大的便利。**
 
-**扩展包的使用一方面可以精简框架的体积，另一方面也为各项目后续的升级维护工作带来极大的便利。**
+## 8、内置工具
 
-## 8、设置
+框架内只内置了最基本的工具库，其它工具库通过扩展包的形式添加。
 
-**目前仅支持设置UIManager和SoundManager，位置位于assets/app/setting.ts内**
+内置工具通过app.lib调用，包含：
+
+```app.lib.task```用于创建异步、同步任务
+```
+const task = app.lib.task.createASync();
+task.add((next, retry) => {
+    if (成功) {
+        // 任务成功，继续执行
+        next(数据);
+    } else {
+        // 等待0.5秒后重试
+        retry(0.5);
+    }
+});
+task.add((next, retry) => {
+    if (成功) {
+        // 任务成功，继续执行
+        next(数据);
+    } else {
+        // 任务失败，停止任务
+        task.stop();
+    }
+});
+task.start((results, success) => {
+    console.log(success ? '任务成功' : '任务失败');
+});
+```
+
+```app.lib.storage```用于存储本地数据
+```
+// 存取数据
+app.lib.storage.set('key', 'value');
+app.lib.storage.get('key');
+// 存取每天过期数据
+app.lib.storage.setDay('key', 'value');
+app.lib.storage.getDay('key');
+// 存取每周过期数据
+app.lib.storage.setWeek('key', 'value');
+app.lib.storage.getWeek('key');
+```
+
+```app.lib.debug```用于防止代码被调试(仅web中有效)
+```
+// 当在浏览器开发者工具中试图调试this时，会使当前页面刷新
+app.lib.debug.unobservable(this);
+```
+
+## 9、设置
+
+**设置UIManager和SoundManager，位置位于assets/app/setting.ts内**
 
 ```js
 // 预加载的UI(符合app.lib.task.createAny规则)
 UIManager.setting.preload = ['PageHome', 'PaperHomeIndex'];
-// 默认UI, 会在首屏流程后自动show
+// 默认UI, 会在首屏流程后自动show(根据首界面的名字自行修改)
 UIManager.setting.defaultUI = 'PageHome';
 // 控制全局背景遮罩透明度与动画
 UIManager.setting.shade = { ... };
