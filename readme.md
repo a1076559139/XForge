@@ -22,7 +22,7 @@
 `npx @gamex/cc-cli@latest`
 
 如果npm源无法使用，可以尝试使用淘宝源：<br/>
-`npx @gamex/cc-cli@latest --registry=https://registry.npmmirror.com`
+`npx --registry=https://registry.npmmirror.com @gamex/cc-cli@latest`
 
 ## 2、 更新项目框架
 
