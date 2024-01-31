@@ -1,11 +1,12 @@
 # 一、介绍
 
 框架设计之初主要考虑H5与小游戏环境，最终的目的是希望：<br/>
-1、更好的多人协同开发体验，尽可能避免合并冲突。<br/>
-2、尽可能统一的开发规范，避免仅仅是口头约束，减少因此带来的CR人力成本。<br/>
-3、更小的首屏/首页体积，优化新用户加载性能。<br/>
-4、更小的增量更新体积，优化老用户加载性能。<br/>
-5、复用通用模块的能力。<br/>
+1、**对新手友好，平滑学习曲线。**<br/>
+2、更好的多人协同开发体验，尽可能避免合并冲突。<br/>
+3、尽可能统一的开发规范，避免仅仅是口头约束，减少因此带来的CR人力成本。<br/>
+4、更小的首屏/首页体积，优化新用户加载性能。<br/>
+5、更小的增量更新体积，优化老用户加载性能。<br/>
+6、通过扩展的方式复用通用模块，同时平滑框架学习难度。<br/>
 
 > ⚠️大部分的框架目录点击后，都会在属性检查器页面生成它的一些说明文字，可以进行查看。<br/>
 > ⚠️尽量不要再assets下自定义文件夹，可以通过菜单栏App来创建。<br/>
@@ -46,7 +47,7 @@
 ```
 ├─assets
 │   ├─app
-│   │  ├─app.ts     // app入口
+│   │  ├─app.ts     // app单例(框架中的所有单例都绑定在app下)
 │   │  ├─handle.ts  // 初始化回调
 │   │  └─setting.ts // 配置文件
 │   │
@@ -67,10 +68,70 @@
 │   ├─res-bundle    // Bundle动态资源目录
 │   └─res-native    // 静态资源目录
 │
+├─app               // 框架代码
+│
 └─pkg               // 扩展包
 ```
+<br/>
 
-# 四、功能介绍 [(视频)](https://www.bilibili.com/video/BV1wp4y1G7ue/?spm_id_from=888.80997.embed_other.whitelist&t=1)
+# 四、快速上手
+框架中有**两个非常关键的点**，一个是脚手架```@gamex/cc-cli```，一个是菜单栏```App```。<br/>
+脚手架用于**创建项目、更新项目框架、管理扩展包**。<br/>
+菜单栏App用于**创建框架的所有目录及内容**，包括页面、管理器、数据等，它是完全自动的。<br/>
+
+接下来通过一个简单的例子来快速上手。
+
+## 1、 创建项目
+在空文件夹下执行：<br/>
+`npx @gamex/cc-cli@latest`<br/>
+如果npm源无法使用，可以尝试使用淘宝源：<br/>
+`npx @gamex/cc-cli@latest --registry=https://registry.npmmirror.com`
+
+选择创建空白项目。
+
+## 2、 创建界面
+**框架中所有内容都可以通过菜单栏中的App来创建**, 比如创建界面，点击菜单栏App->创建。<br/>
+打开创建工具窗口后，选择View菜单，其中类型选择page，模版选择2d，**名字输入main**，点击创建按钮，然后在二次确认框中选择「创建并打开」。
+
+## 3、 编辑界面
+现在Cocos已经自动打开了PageMain，可以在页面中添加Label、Sprite等内容。
+
+## 4、 配置首页
+你需要让框架知道你使用哪个界面是首页。<br/>
+在assets/app/setting.ts文件中编辑：<br/>
+UIManager.setting.preload = ['PageMain']; // 框架会在初始化过程中按数组顺序进行预加载<br/>
+UIManager.setting.defaultUI = 'PageMain'; // 设置首页<br/>
+
+## 5、 预览
+使用Cocos Creator的预览功能，在浏览器中进行预览。
+
+## 6、 创建弹窗
+点击菜单栏App->创建，选择View菜单，其中类型选择pop，**名字输入test**，点击创建按钮，然后在二次确认框中选择「创建并打开」。
+
+## 7、 编辑弹窗
+现在Cocos已经自动打开了PopTest，在页面中添加一个Button，在PopTest.ts中添加按钮点击方法，并与按钮绑定，代码如下：
+```ts
+onClick() {
+  this.hide();
+}
+```
+
+## 8、 在首页中打开弹窗
+在PageMain中添加一个Button，在PageMain.ts中添加按钮点击方法，并与按钮绑定，代码如下：
+```ts
+onClick() {
+  app.manager.ui.show({
+    name: 'PopTest',
+  })
+}
+```
+
+## 9、 预览
+使用Cocos Creator的预览功能，在浏览器中进行预览。
+
+<br/>
+
+# 五、详细介绍 [(视频)](https://www.bilibili.com/video/BV1wp4y1G7ue/?spm_id_from=888.80997.embed_other.whitelist&t=1)
 
 ## 1、 首屏
 
@@ -281,13 +342,13 @@
 
 ## 5、音频
 **音频位于assets/app-builtin/app-sound中。**
-> 不需要也不建议手动去创建目录，可以通过菜单栏App->创建->Sound选项来进行创建。
+> 不需要也不建议手动去创建目录，可以通过菜单栏App->创建->Sound选项来进行创建目录。
 
 其中：
 - music目录为音乐目录
 - effect目录为音效目录
 
-通过app.manager.sound来控制播放。
+将音乐或音效文件放入相应的目录内，通过app.manager.sound来控制播放。
 
 ## 6、界面
 
