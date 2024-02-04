@@ -451,9 +451,11 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
      * 展示子界面
      */
     protected showMiniViews({ data, views, onShow, onHide, onFinish }: { data?: any, views: Array<IMiniViewName | IMiniViewNames>, onShow?: IMiniOnShow, onHide?: IMiniOnHide, onFinish?: IMiniOnFinish }) {
-        if (this.miniViews.length === 0) return false;
         if (views.length === 0) return false;
-        if (this.typeName !== ViewType.Page) return false;
+        if (this.typeName !== ViewType.Page) {
+            this.warn('[showMiniViews]', '仅支持Page类型');
+            return false;
+        }
 
         const task = Core.inst.lib.task.createSync();
 
@@ -483,8 +485,10 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
     private createMixMiniViewsTask(views: IMiniViewNames = [], data?: any, onShow?: IMiniOnShow, onHide?: IMiniOnHide) {
         const task = Core.inst.lib.task.createSync();
 
-        if (this.miniViews.length === 0) return task;
-        if (this.typeName !== ViewType.Page) return task;
+        if (this.typeName !== ViewType.Page) {
+            this.warn('[showMiniViews]', '仅支持Page类型');
+            return task;
+        }
 
         views = views.filter(name => {
             if (this._base_mini_show.has(name)) {
