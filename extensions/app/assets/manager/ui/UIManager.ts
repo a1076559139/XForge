@@ -273,11 +273,17 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         const isScene = this.isScene(name);
         if (isScene) {
             if (this.sceneCache[name]) {
-                return complete && this.scheduleOnce(() => complete(this.sceneCache[name]));
+                complete && setTimeout(() => {
+                    complete(this.sceneCache[name]);
+                });
+                return;
             }
         } else {
             if (this.prefabCache[name]) {
-                return complete && this.scheduleOnce(() => complete(this.prefabCache[name]));
+                complete && setTimeout(() => {
+                    complete(this.prefabCache[name]);
+                });
+                return;
             }
         }
         const task = Core.inst.lib.task.createSync<[[AssetManager.Bundle, AssetManager.Bundle], Prefab | SceneAsset]>()
@@ -447,9 +453,10 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         // 验证name是否为真
         if (!name) {
             this.error('[load]', 'fail');
-            return complete && this.scheduleOnce(function () {
+            complete && setTimeout(function () {
                 complete(null);
             });
+            return;
         }
 
         // 异步加载
@@ -792,16 +799,17 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 创建UI
      */
-    private createUI(silent: boolean, name: UIName, callback: (node: Node, scene?: Scene) => any) {
+    private createUI(name: UIName, silent: boolean, callback: (node: Node, scene?: Scene) => any) {
         // 添加触摸屏蔽
         const maskUUID = silent ? '' : this.addTouchMask();
 
         if (!name) {
-            return this.scheduleOnce(() => {
+            setTimeout(() => {
                 // 移除触摸屏蔽
                 this.removeTouchMask(maskUUID);
                 callback(null);
             });
+            return;
         }
 
         // 生成一个UI加载的UUID
@@ -810,7 +818,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         // 判断是否已经存在节点并且是单例模式
         const node = this.getUIInScene(name);
         if (isValid(node, true) && this.getBaseView(node).isSingleton === true) {
-            return this.scheduleOnce(() => {
+            setTimeout(() => {
                 // 移除触摸屏蔽
                 this.removeTouchMask(maskUUID);
                 // 验证本次加载是否有效
@@ -819,9 +827,10 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 if (isValid(node, true)) {
                     callback(node);
                 } else {
-                    this.createUI(silent, name, callback);
+                    this.createUI(name, silent, callback);
                 }
             });
+            return;
         }
 
         // 加载prefab
@@ -953,7 +962,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         const silent = this.isPaper(name);
 
         this.log('[show]', name);
-        const show = () => this.createUI(silent, name, (node, scene) => {
+        const show = () => this.createUI(name, silent, (node, scene) => {
             if (!node) {
                 this.error('[show]', `${name} 不存在或加载失败`);
                 // 「没有指定onError」或「onError返回true」会自动发起重试
