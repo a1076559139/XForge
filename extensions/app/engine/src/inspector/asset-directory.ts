@@ -82,6 +82,6 @@ export function ready(this: PanelThis) {
     // TODO something
 }
 
-export function close(his: PanelThis,) {
+export function close(this: PanelThis,) {
     // TODO something
 }

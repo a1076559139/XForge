@@ -43,7 +43,7 @@ function ready() {
     // TODO something
 }
 exports.ready = ready;
-function close(his) {
+function close() {
     // TODO something
 }
 exports.close = close;

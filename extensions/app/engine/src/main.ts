@@ -22,10 +22,11 @@
 
 // path.join不能正确处理'db://'结构，会把'//'变成'/'
 
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'fs';
 import path from 'path';
 import { AssetInfo } from '../@types/packages/asset-db/@types/public';
-import { convertUrlToPath, createFolderByUrl, getProjectPath, getResJson, getResMeta, getResReadme, stringCase, stringCaseNegate } from './utils';
+import { convertUrlToPath, createFolderByUrl, getResMeta, getResReadme, stringCase, stringCaseNegate } from './utils';
+const electron = require('electron');
 
 const adminFolderName = 'app-admin';
 const controlFolderName = 'app-control';
@@ -64,53 +65,6 @@ const viewFolderPath = bundleFolderPath + '/' + viewFolderName;
 
 const executorFileUrl = adminFolderUrl + '/executor.ts';
 const executorFilePath = adminFolderPath + '/executor.ts';
-
-// 非法的文件夹
-function isIllegalFolder(info: AssetInfo) {
-    if (!info.path) return false;
-    if (!info.isDirectory) return false;
-    if (!info.path.startsWith('db://assets')) return false;
-
-    const cleanPath = info.path.slice('db://'.length);
-    if (path.dirname(cleanPath) !== 'assets') return false;
-
-    const basename = path.basename(cleanPath);
-    if (basename === 'app') return false;
-    if (basename === 'app-appinit') return false;
-    if (basename === 'app-builtin') return false;
-    if (basename === 'app-bundle') return false;
-    if (basename === 'app-scene') return false;
-    if (basename === 'res-bundle') return false;
-    if (basename === 'res-native') return false;
-    if (basename === 'resources') return false;
-
-    return true;
-}
-
-async function moveIllegalFolders(infos: AssetInfo[] = null) {
-    if (!infos) {
-        infos = await Editor.Message.request('asset-db', 'query-assets', { pattern: 'db://assets/*' })
-            .catch(() => []);
-    }
-
-    // 非法文件夹
-    const illegalPaths = infos.filter(info => isIllegalFolder(info)).map(info => info.path);
-    if (illegalPaths.length === 0) return;
-
-    // 创建文件夹
-    const folderName = 'res-native';
-    const folderPath = `db://assets/${folderName}`;
-    if (!await createFolderByUrl(folderPath, { readme: getResReadme(folderName) })) {
-        Editor.Dialog.error(`${illegalPaths.join('\r\n')}\r\n只允许使用插件App创建的文件夹`, { title: '非法文件夹', buttons: ['确认'] });
-        return;
-    }
-
-    illegalPaths.forEach(async illegalPath => {
-        const basename = path.basename(illegalPath);
-        console.log('移动:', illegalPath, '->', folderPath + '/' + basename);
-        await Editor.Message.request('asset-db', 'move-asset', illegalPath, folderPath + '/' + basename);
-    });
-}
 
 function isExecutor(info: AssetInfo, strict = true) {
     if (!strict) {
@@ -187,14 +141,6 @@ function isTSDefault(value: string[]) {
         return false;
     }
     const filename = value[0];
-    // const res = cc.require(filename);
-    // const keys = Object.keys(res);
-    // if (keys.length === 1 && keys[0] === 'default') {
-    //     return true;
-    // }
-    // return false;
-    // storage,db://assets/app/lib/storage,storage,ts
-
     const filepath = path.join(convertUrlToPath(value[1]), filename + '.ts');
     const js = readFileSync(filepath, 'utf8');
     return js.search(/export\s+default/) >= 0;
@@ -524,36 +470,24 @@ function callUpdateExecutor(clear = false) {
     }
 }
 
-function updateBuilder() {
-    const builder = getResJson('builder');
-
-    const sourcePath = path.join(getProjectPath(), 'settings/v2/packages/builder.json');
-    const sourceStr = readFileSync(sourcePath, 'utf-8');
-    const source = JSON.parse(sourceStr);
-
-    const overwriteKeys = builder.bundleConfig['custom'] ? Object.keys(builder.bundleConfig['custom']) : [];
-
-    const handle = (data: object, out: object) => {
-        for (const key in data) {
-            if (!Object.prototype.hasOwnProperty.call(data, key)) {
-                continue;
-            }
-            if (!out[key]) {
-                out[key] = data[key];
-                continue;
-            }
-            if (overwriteKeys.indexOf(key) >= 0) {
-                out[key] = data[key];
-                continue;
-            }
-            if (data[key] && typeof data[key] === 'object' && out[key] && typeof out[key] === 'object') {
-                handle(data[key], out[key]);
-            }
+// 获得Creator主窗口
+function getMainWebContents() {
+    const windows = electron.BrowserWindow.getAllWindows();
+    for (let i = 0; i < windows.length; i++) {
+        const win = windows[i];
+        if (win.webContents.getURL().includes('windows/main.html') || (win.title && win.title.includes('Cocos Creator'))) {
+            return win.webContents;
         }
-    };
+    }
+    return;
+}
 
-    handle(builder, source);
-    writeFileSync(sourcePath, JSON.stringify(source, null, '  '), { encoding: 'utf-8' });
+function updateMark() {
+    const webContents = getMainWebContents();
+    if (webContents) {
+        const hackCode = readFileSync(path.join(__dirname, '../res/mark.js'), 'utf-8');
+        webContents.executeJavaScript(hackCode);
+    }
 }
 
 export const methods: { [key: string]: (...any: any) => any } = {
@@ -562,33 +496,20 @@ export const methods: { [key: string]: (...any: any) => any } = {
     },
     ['update-executor']() {
         // 点击更新
-        // updateBuilder();
         callUpdateExecutor();
     },
     ['scene:ready']() {
-        // moveIllegalFolders();
-
+        // 
     },
     ['asset-db:ready']() {
         updateExecutor();
+        updateMark();
     },
     ['asset-db:asset-add'](uuid: string, info: AssetInfo) {
-        if (isIllegalFolder(info)) {
-            // moveIllegalFolders([info]);
-            // Editor.Dialog.error(`${info.path}\r\n只允许使用插件App创建的文件夹`, { title: '非法文件夹', buttons: ['确认'] });
-            // Editor.Message.request('asset-db', 'delete-asset', info.path);
-            return;
-        }
         if (!isExecutor(info)) return;
         callUpdateExecutor();
     },
     ['asset-db:asset-change'](uuid: string, info: AssetInfo) {
-        if (isIllegalFolder(info)) {
-            // moveIllegalFolders([info]);
-            // Editor.Dialog.error(`${info.path}\r\n只允许使用插件App创建的文件夹`, { title: '非法文件夹', buttons: ['确认'] });
-            // Editor.Message.request('asset-db', 'delete-asset', info.path);
-            return;
-        }
         if (!isExecutor(info, false)) return;
         callUpdateExecutor();
     },
@@ -603,12 +524,10 @@ export const methods: { [key: string]: (...any: any) => any } = {
  * @zh 扩展加载完成后触发的钩子
  */
 export function load() {
-    // updateBuilder();
-    Editor.Message.request('asset-db', 'query-ready')
-        .then(ready => {
-            if (!ready) return;
-            updateExecutor();
-        });
+    Editor.Message.request('asset-db', 'query-ready').then(ready => {
+        if (!ready) return;
+        updateExecutor();
+    });
 }
 
 /**
