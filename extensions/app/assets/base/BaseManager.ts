@@ -162,7 +162,7 @@ export default class BaseManager extends Component {
         );
     }
 
-    public emit(event: string | number, ...data) {
+    public emit(event: string | number, ...data: any[]) {
         this._base_event.emit(event as any, ...data);
     }
 
@@ -170,7 +170,7 @@ export default class BaseManager extends Component {
         this._base_event.on(event as any, cb, target);
     }
 
-    public once(event: string | number, cb: () => void, target?: any) {
+    public once(event: string | number, cb: (...any: any[]) => void, target?: any) {
         this._base_event.once(event as any, cb, target);
     }
 
