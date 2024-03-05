@@ -26,16 +26,20 @@ enum ErrorCode {
 }
 
 interface IShowParams<T, IShow = any, IShowReturn = any, IHideReturn = any> {
+    /**UI名 */
     name: T,
+    /**数据 被onShow接收 */
     data?: IShow,
-    /**是否将UI显示在最上 */
+    /**是否将UI显示在最上 默认true*/
     top?: boolean,
     /**队列模式: join-排队 jump-插队 */
     queue?: 'join' | 'jump',
+    /**静默 默认false(不显示加载loading，也不屏蔽触摸) */
+    silent?: boolean,
     onShow?: IShowParamOnShow<IShowReturn>,
     onHide?: IShowParamOnHide<IHideReturn>,
     onError?: (result: string, code: ErrorCode) => true | void,
-    attr?: IShowParamAttr
+    attr?: IShowParamAttr,
 }
 
 interface IHideParams<T, IHide = any, IHideReturn = any> {
@@ -943,7 +947,8 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 return ret;
             } : undefined,
             top: data.top,
-            attr: data.attr
+            attr: data.attr,
+            silent: data.silent
         });
     }
 
@@ -951,15 +956,12 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 展示一个UI
      * 此流程一定是异步的
      */
-    public show<UI extends BaseView>({ name, data, queue, onShow, onHide, onError, top = true, attr = null }
+    public show<UI extends BaseView>({ name, data, queue, onShow, onHide, onError, top = true, attr = null, silent = false }
         // @ts-ignore
         : IShowParams<UIName, Parameters<UI['onShow']>[0], ReturnType<UI['onShow']>, ReturnType<UI['onHide']>>): boolean {
 
         // 加入队列中
-        if (queue) return this.putInShowQueue({ name, data, queue, onShow, onHide, onError, top, attr });
-
-        // 静默模式，不影响触摸也不显示loading
-        const silent = this.isPaper(name);
+        if (queue) return this.putInShowQueue({ name, data, queue, onShow, onHide, onError, top, attr, silent });
 
         this.log('[show]', name);
         const show = () => this.createUI(name, silent, (node, scene) => {
@@ -1034,6 +1036,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
                 // ui无效
                 if (valid === 0) {
+                    this.warn('[show]', `${name} 无效`);
                     this.uninstallUI(name);
                     onError && onError(`${name} 无效`, UIManager.ErrorCode.InvalidError);
                     this.hideLoading(showLoadingUuid);
