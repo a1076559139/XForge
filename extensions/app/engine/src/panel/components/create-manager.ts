@@ -73,7 +73,7 @@ export default Vue.extend({
                 subFolders: [
                     {
                         folder: folderName,
-                        readme: `${managerName}所在文件夹, 通过app.manager.${stringCase(name, true)}的方式调用`
+                        readme: `1、${managerName}所在文件夹, 通过app.manager.${stringCase(name, true)}的方式调用\n2、如不再需要，可以直接删除此文件夹`
                     }
                 ]
             })) {

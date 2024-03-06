@@ -46,7 +46,7 @@ function getScript(type, className) {
     }
 }
 exports.default = vue_1.default.extend({
-    template: (0, utils_1.getResPanel)('create-model'),
+    template: utils_1.getResPanel('create-model'),
     data() {
         return {
             inputName: '',
@@ -78,17 +78,17 @@ exports.default = vue_1.default.extend({
             this.display = '创建中';
             this.showLoading = true;
             // 目录如果不存在则创建
-            if (!await (0, utils_1.createFolderByUrl)(rootPath, { meta: (0, utils_1.getResMeta)('app-model'), readme: (0, utils_1.getResReadme)('app-model') })) {
+            if (!await utils_1.createFolderByUrl(rootPath, { meta: utils_1.getResMeta('app-model'), readme: utils_1.getResReadme('app-model') })) {
                 this.showLoading = false;
                 this.display = `[错误] 创建目录失败\n${rootPath}`;
                 return;
             }
-            if ((0, fs_1.existsSync)((0, utils_1.convertUrlToPath)(scriptUrl))) {
+            if (fs_1.existsSync(utils_1.convertUrlToPath(scriptUrl))) {
                 this.showLoading = false;
                 this.display = `[错误] 文件已存在, 请删除\n${scriptUrl}`;
                 return;
             }
-            const createScriptResult = await Editor.Message.request('asset-db', 'create-asset', scriptUrl, getScript(type, (0, utils_1.stringCase)(name))).catch(_ => null);
+            const createScriptResult = await Editor.Message.request('asset-db', 'create-asset', scriptUrl, getScript(type, utils_1.stringCase(name))).catch(_ => null);
             if (!createScriptResult) {
                 this.showLoading = false;
                 this.display = `[错误] 创建脚本失败\n${scriptUrl}`;

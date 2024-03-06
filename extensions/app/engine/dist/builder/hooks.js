@@ -13,6 +13,6 @@ const onAfterBuild = async function (options, result) {
     if (!options.md5Cache) {
         return;
     }
-    (0, file_1.adaptFileMD5)(path_1.default.join(result.dest, 'index.html'));
+    file_1.adaptFileMD5(path_1.default.join(result.dest, 'index.html'));
 };
 exports.onAfterBuild = onAfterBuild;

@@ -206,16 +206,16 @@ export default Vue.extend({
 
             writeFileSync(join(convertUrlToPath(bundleFolderUrl), '.app-bundle.md'), getResReadme('app-bundle'));
             writeFileSync(join(convertUrlToPath(viewFolderUrl), '.app-view.md'), getResReadme('app-view'));
-            writeFileSync(join(convertUrlToPath(typeFolderUrl), `.${type}.md`), `所有${type}类型UI的根目录`);
+            writeFileSync(join(convertUrlToPath(typeFolderUrl), `.${type}.md`), `1、所有${type}类型UI的根目录\n2、如不再需要，可以直接删除此文件夹`);
             writeFileSync(join(convertUrlToPath(nativeUrl), '.native.md'), getResReadme('view-native'));
             writeFileSync(join(convertUrlToPath(resourcesUrl), '.resources.md'), getResReadme('view-resources'));
             writeFileSync(join(convertUrlToPath(expansionUrl), '.expansion.md'), getResReadme('view-expansion'));
 
             if (isPaper) {
-                writeFileSync(join(convertUrlToPath(`${typeFolderUrl}/${ownerName}`), `.${ownerName}.md`), ownerName === 'all' ? '归属于全体Page' : `归属于Page${stringCase(ownerName)}`);
-                writeFileSync(join(convertUrlToPath(uiFolderUrl), `.${name}.md`), `${uiName}所在文件夹\n1、通过${ownerName === 'all' ? '在任意Page中配置miniViews属性并调用showMiniViews方法' : `在${owner}中配置miniViews属性并调用showMiniViews方法`}的方式加载`);
+                writeFileSync(join(convertUrlToPath(`${typeFolderUrl}/${ownerName}`), `.${ownerName}.md`), (ownerName === 'all' ? '1、归属于全体Page' : `1、归属于Page${stringCase(ownerName)}`) + '\n2、如不再需要，可以直接删除此文件夹');
+                writeFileSync(join(convertUrlToPath(uiFolderUrl), `.${name}.md`), `${uiName}所在文件夹\n1、通过${ownerName === 'all' ? '在任意Page中配置miniViews属性并调用showMiniViews方法' : `在${owner}中配置miniViews属性并调用showMiniViews方法`}的方式加载\n2、如不再需要，可以直接删除此文件夹`);
             } else {
-                writeFileSync(join(convertUrlToPath(uiFolderUrl), `.${name}.md`), `${uiName}所在文件夹\n1、通过app.manager.ui.show({ name:'${uiName}' })的方式加载`);
+                writeFileSync(join(convertUrlToPath(uiFolderUrl), `.${name}.md`), `${uiName}所在文件夹\n1、通过app.manager.ui.show({ name:'${uiName}' })的方式加载\n2、如不再需要，可以直接删除此文件夹`);
             }
 
             // 创建script
@@ -229,7 +229,7 @@ export default Vue.extend({
             }
 
             // 创建view
-            if (!existsSync(convertUrlToPath(prefabUrl))) {
+            if (!existsSync(convertUrlToPath(prefabUrl)) && !existsSync(convertUrlToPath(sceneUrl))) {
                 if (is3D && isPage) {
                     const createSceneResult = await Editor.Message.request('scene', 'execute-scene-script', {
                         name: 'app',
