@@ -36,8 +36,11 @@ interface IShowParams<T, IShow = any, IShowReturn = any, IHideReturn = any> {
     queue?: 'join' | 'jump',
     /**静默 默认false(不显示加载loading，也不屏蔽触摸) */
     silent?: boolean,
+    /**UI触发onShow后 */
     onShow?: IShowParamOnShow<IShowReturn>,
+    /**UI触发onHide后 */
     onHide?: IShowParamOnHide<IHideReturn>,
+    /**当code的值为ErrorCode.LogicError时，如果返回true，则自动重试 */
     onError?: (result: string, code: ErrorCode) => true | void,
     attr?: IShowParamAttr,
 }
@@ -952,26 +955,17 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         });
     }
 
-    /**
-     * 展示一个UI
-     * 此流程一定是异步的
-     */
-    public show<UI extends BaseView>({ name, data, queue, onShow, onHide, onError, top = true, attr = null, silent = false }
-        // @ts-ignore
-        : IShowParams<UIName, Parameters<UI['onShow']>[0], ReturnType<UI['onShow']>, ReturnType<UI['onHide']>>): boolean {
+    private showUI(params: IShowParams<UIName>) {
+        const { name, data, onShow, onHide, onError, top = true, attr = null, silent = false } = params;
 
-        // 加入队列中
-        if (queue) return this.putInShowQueue({ name, data, queue, onShow, onHide, onError, top, attr, silent });
-
-        this.log('[show]', name);
-        const show = () => this.createUI(name, silent, (node, scene) => {
+        this.createUI(name, silent, (node, scene) => {
             if (!node) {
                 this.error('[show]', `${name} 不存在或加载失败`);
                 // 「没有指定onError」或「onError返回true」会自动发起重试
                 if (onError && onError(`${name} 不存在或加载失败`, UIManager.ErrorCode.LoadError) !== true) {
                     return;
                 }
-                this.scheduleOnce(show, 1);
+                this.scheduleOnce(() => this.showUI(params), 1);
                 if (!silent) this.showLoading(1);
                 return;
             }
@@ -997,7 +991,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                         onError && onError(error, UIManager.ErrorCode.LogicError);
                     } else if (this.isPage(name)) {
                         if (isValid(this.currPage, true) && this.currPage !== com && this.currPage.isShow) {
-                            this.currPage.constructor.prototype.hide.call(this.currPage, { name, com });
+                            this.currPage.constructor.prototype.hide.call(this.currPage, name);
                         }
                         this.currPage = com;
                         if (scene) {
@@ -1019,6 +1013,21 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 }
             );
         });
+    }
+
+    /**
+     * 展示一个UI
+     * 此流程一定是异步的
+     */
+    public show<UI extends BaseView>(params
+        // @ts-ignore
+        : IShowParams<UIName, Parameters<UI['onShow']>[0], ReturnType<UI['onShow']>, ReturnType<UI['onHide']>>): boolean {
+        const { name, data, queue, onError, silent = false } = params;
+
+        // 加入队列中
+        if (queue) return this.putInShowQueue(params);
+
+        this.log('[show]', name);
 
         // 判断ui是否有效
         const showLoadingUuid = silent ? '' : this.showLoading();
@@ -1043,7 +1052,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                     return;
                 }
 
-                show();
+                this.showUI(params);
                 this.hideLoading(showLoadingUuid);
             });
         });

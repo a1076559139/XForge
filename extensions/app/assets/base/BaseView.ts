@@ -332,7 +332,7 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
     }
 
     /**
-     * 是否展示了
+     * 是否展示了(不为Hid状态)
      */
     public get isShow(): boolean {
         return this._base_view_state != ViewState.Hid;
@@ -620,7 +620,6 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
                     result = this.onShow(data);
                 } catch (err) {
                     this.onError();
-                    this.error('[onShow]', err);
                     console.error(err);
                 }
 
@@ -630,7 +629,7 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
                     Core.inst.manager.ui.emit(this._base_view_name, { event: 'onShow', result: result });
                     Core.inst.manager.ui.emit('onShow', { name: this._base_view_name, result: result });
                 } catch (err) {
-                    this.error('[onShow]', err);
+                    console.error(err);
                 }
 
                 if (changeState) this._base_view_state = ViewState.Showed;
@@ -669,8 +668,10 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
         // hide流程
         const changeState = this._base_view_state === ViewState.Showed;
         if (changeState) this._base_view_state = ViewState.BeforeHide;
+        this.log('beforeHide');
         const error = this.beforeHide(data);
         if (!error) {
+            this.log('onHide');
             if (changeState) this._base_view_state = ViewState.Hiding;
             this.hideAllMiniViews(data);
 
@@ -678,7 +679,7 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
             try {
                 result = this.onHide(data);
             } catch (error) {
-                this.error('[onHide]', error);
+                console.error(error);
             }
 
             try {
@@ -687,7 +688,7 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
                 Core.inst.manager.ui.emit(this._base_view_name, { event: 'onHide', result: result });
                 Core.inst.manager.ui.emit('onHide', { name: this._base_view_name, result: result });
             } catch (error) {
-                this.error('[hide]', error);
+                console.error(error);
             }
 
             if (changeState) this._base_view_state = ViewState.Hid;
