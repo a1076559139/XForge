@@ -614,6 +614,7 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
             }
             beforeShow && beforeShow(error);
             if (!error) {
+                this.log('onShow');
                 let result = null;
                 try {
                     result = this.onShow(data);
@@ -629,7 +630,7 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
                     Core.inst.manager.ui.emit(this._base_view_name, { event: 'onShow', result: result });
                     Core.inst.manager.ui.emit('onShow', { name: this._base_view_name, result: result });
                 } catch (err) {
-                    this.error('[show]', err);
+                    this.error('[onShow]', err);
                 }
 
                 if (changeState) this._base_view_state = ViewState.Showed;
@@ -646,7 +647,7 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
         this.beforeShow((error) => {
             if (isNextCalled) return this.warn('[beforeShow] next被重复调用');
             isNextCalled = true;
-
+            this.log('beforeShow');
             next(error || null);
         }, data);
     }
