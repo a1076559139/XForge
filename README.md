@@ -1,3 +1,9 @@
+gitee: <br/>
+https://gitee.com/cocos2d-zp/cococs-creator-frame-3d <br/>
+
+QQ群： <br/>
+795231926
+
 # I'm ```XForge```
 
 ```XForge``` 是一个基于 CocosCreator 的前端开发框架。
@@ -35,14 +41,3 @@
 - 不断扩充完善的扩展包生态，让开发者可以快速开发
 - 高阶功能示例项目，让开发者可以快速成长
 - 公司内部项目，基于扩展包可以快速生成私有生态
-
-# 交流
-QQ群： <br/>
-795231926
-
-gitee: <br/>
-https://gitee.com/cocos2d-zp/cococs-creator-frame-3d <br/>
-
-论坛: <br/>
-https://forum.cocos.org/t/topic/150588 <br/>
-https://forum.cocos.org/t/topic/153151<br/>
