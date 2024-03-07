@@ -9,7 +9,7 @@
 6、通过 **扩展** 的方式复用通用模块，同时平滑框架学习难度。<br/>
 
 > ⚠️大部分的框架目录点击后，都会在属性检查器页面生成它的一些说明文字，可以进行查看。<br/>
-> ⚠️尽量不要再assets下自定义文件夹，可以通过菜单栏App来创建。<br/>
+> ⚠️尽量不要在assets下自定义文件夹，可以通过菜单栏App来创建。<br/>
 > ⚠️使用vscode推荐安装 Code Spell Checker 插件。<br/>
 
 <br>
@@ -75,59 +75,7 @@
 <br/>
 
 # 四、快速上手
-框架中有**两个非常关键的点**，一个是脚手架```@gamex/cc-cli```，一个是菜单栏```App```。<br/>
-脚手架用于**创建项目、更新项目框架、管理扩展包**。<br/>
-菜单栏App用于**创建框架的所有目录及内容**，包括页面、管理器、数据等，它是完全自动的。<br/>
-
-接下来通过一个简单的例子来快速上手。
-
-## 1、 创建项目
-在空文件夹下执行：<br/>
-`npx @gamex/cc-cli@latest`<br/>
-如果npm源无法使用，可以尝试使用淘宝源：<br/>
-`npx @gamex/cc-cli@latest --registry=https://registry.npmmirror.com`
-
-选择创建空白项目。
-
-## 2、 创建界面
-**框架中所有内容都可以通过菜单栏中的App来创建**, 比如创建界面，点击菜单栏App->创建。<br/>
-打开创建工具窗口后，选择View菜单，其中类型选择page，模版选择2d，**名字输入main**，点击创建按钮，然后在二次确认框中选择「创建并打开」。
-
-## 3、 编辑界面
-现在Cocos已经自动打开了PageMain，可以在页面中添加Label、Sprite等内容。
-
-## 4、 配置首页
-你需要让框架知道你使用哪个界面是首页。<br/>
-在assets/app/setting.ts文件中编辑：<br/>
-UIManager.setting.preload = ['PageMain']; // 框架会在初始化过程中按数组顺序进行预加载<br/>
-UIManager.setting.defaultUI = 'PageMain'; // 设置首页<br/>
-
-## 5、 预览
-使用Cocos Creator的预览功能，在浏览器中进行预览。
-
-## 6、 创建弹窗
-点击菜单栏App->创建，选择View菜单，其中类型选择pop，**名字输入test**，点击创建按钮，然后在二次确认框中选择「创建并打开」。
-
-## 7、 编辑弹窗
-现在Cocos已经自动打开了PopTest，在页面中添加一个Button，在PopTest.ts中添加按钮点击方法，并与按钮绑定，代码如下：
-```ts
-onClick() {
-  this.hide();
-}
-```
-
-## 8、 在首页中打开弹窗
-在PageMain中添加一个Button，在PageMain.ts中添加按钮点击方法，并与按钮绑定，代码如下：
-```ts
-onClick() {
-  app.manager.ui.show({
-    name: 'PopTest',
-  })
-}
-```
-
-## 9、 预览
-使用Cocos Creator的预览功能，在浏览器中进行预览。
+### [点击查看wiki](https://gitee.com/cocos2d-zp/cococs-creator-frame-3d/wikis/pages?sort_id=9433202&doc_id=5075526)
 
 <br/>
 
