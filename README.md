@@ -1,4 +1,4 @@
-# ```XForge```
+# I'm ```XForge```
 
 ```XForge``` 是一个基于 CocosCreator 的前端开发框架。
 
@@ -13,14 +13,14 @@
 
 开发文档：[快速开始](https://gitee.com/cocos2d-zp/cococs-creator-frame-3d/wikis/pages?sort_id=9433202&doc_id=5075526)
 
-# 功能亮点
+# Highlight
 - 分包自动化：无需过多关心，就可实现首包体积小、大厅子游戏
 - 内置管理器：UI管理、音频管理、事件管理、定时器管理...
 - UI类型抽象：无需过分关心是Prefab还是Scene、无需关心加载方式
 - 扩展包：网络、ECS、定点数、寻路、碰撞优化...
 - 脚手架：方便管理项目
 
-# 示例项目
+# Example
 - ECS打飞机
 - ECS消消乐
 - 2D平台跳跃
@@ -28,7 +28,7 @@
 
 示例项目在逐步开发中，通过脚手架可以创建示例项目，查看开发文档：[快速开始](https://gitee.com/cocos2d-zp/cococs-creator-frame-3d/wikis/pages?sort_id=9433202&doc_id=5075526)
 
-# 为什么选择 ```XForge```
+# Why?
 - 经过数年迭代、数种平台、数十款游戏、数千万日活的稳定性\功能性验证
 - 经过多年与新手开发者的接触，不断打磨框架，让新手开发者可以快速上手
 - 经过多年团队开发模式打磨，多人协同能力出众
