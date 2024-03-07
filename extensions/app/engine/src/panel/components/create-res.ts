@@ -24,7 +24,7 @@ export default Vue.extend({
             const folderPath = `db://assets/${folderName}`;
             const name = stringCase(this.inputName, true);
 
-            if (/^[a-z][a-z0-9-]*[a-z0-9]+$/.test(name) === false) {
+            if (/^[a-z][a-z0-9-]*[a-z0-9]+$/.test(this.inputName) === false) {
                 this.display = '[错误] 名字不合法\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
                 return;
             }
