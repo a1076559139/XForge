@@ -146,7 +146,7 @@ export default abstract class BaseAppInit extends Component {
                     Core.inst.manager.ui.onUIRoot2D(Node.EventType.TOUCH_END, function (event: EventTouch) {
                         if (!event.target.getComponent(Button)) return;
                         Core.inst.manager.sound.playDefaultEffect();
-                    }, this, true);
+                    }, null, true);
                 }
                 // 默认音乐(默认播放)
                 if (Core.inst.Manager.Sound.setting.defaultMusicName) {
