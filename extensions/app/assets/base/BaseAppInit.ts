@@ -7,15 +7,24 @@ const { ccclass } = _decorator;
 const AdminBundleName = 'app-admin';
 const ModelBundleName = 'app-model';
 const ControlBundleName = 'app-control';
+const ManagerBundleName = 'app-manager';
 const DotReWriteFuncs = ['startInit', 'nextInit'];
 
 @ccclass('BaseAppInit')
 export default abstract class BaseAppInit extends Component {
-    private _base_mgr_total = 0;
-    private _base_user_total = 0;
-
-    private _base_total = 0;
+    private get _base_user_total() {
+        return Math.max(0, this.getUserAssetNum());
+    }
+    private get _base_mgr_total() {
+        return Math.max(0, BaseManager.getTotalAssetNum());
+    }
+    private get _base_total() {
+        return this._base_mgr_total + this._base_user_total;
+    }
     private _base_completed = 0;
+    private _base_completed_cache = 0;
+    private _base_inited = false;
+    private _base_finished = false;
 
     constructor() {
         super();
@@ -34,66 +43,100 @@ export default abstract class BaseAppInit extends Component {
     protected startInit() {
         const projectBundles = settings.querySettings(Settings.Category.ASSETS, 'projectBundles') as string[];
         Core.inst.lib.task.createAny()
+            // 预加载model、admin、control、manager
             .add([
                 (next, retry) => {
-                    // 加载model
+                    // 预加载model
                     if (projectBundles.indexOf(ModelBundleName) === -1) return next();
-                    assetManager.loadBundle(ModelBundleName, (err) => {
+                    assetManager.preloadAny({ url: ModelBundleName }, { ext: 'bundle' }, null, (err) => {
                         if (err) return retry(0.1);
                         next();
                     });
                 },
                 (next, retry) => {
-                    // 加载control
-                    if (projectBundles.indexOf(ControlBundleName) === -1) return next();
-                    assetManager.loadBundle(ControlBundleName, (err) => {
-                        if (err) return retry(0.1);
-                        next();
-                    });
-                }
-            ])
-            .add([
-                (next, retry) => {
-                    // 加载admin
+                    // 预加载admin
                     if (projectBundles.indexOf(AdminBundleName) === -1) return next();
-                    assetManager.loadBundle(AdminBundleName, (err) => {
+                    assetManager.preloadAny({ url: AdminBundleName }, { ext: 'bundle' }, null, (err) => {
                         if (err) return retry(0.1);
                         next();
                     });
                 },
-                (next) => {
-                    // 加载manager
-                    BaseManager.init(next);
+                (next, retry) => {
+                    // 预加载control
+                    if (projectBundles.indexOf(ControlBundleName) === -1) return next();
+                    assetManager.preloadAny({ url: ControlBundleName }, { ext: 'bundle' }, null, (err) => {
+                        if (err) return retry(0.1);
+                        next();
+                    });
+                },
+                (next, retry) => {
+                    // 预加载manage
+                    if (projectBundles.indexOf(ManagerBundleName) === -1) return next();
+                    assetManager.preloadAny({ url: ManagerBundleName }, { ext: 'bundle' }, null, (err) => {
+                        if (err) return retry(0.1);
+                        next();
+                    });
                 }
             ])
+            // 加载model
+            .add((next, retry) => {
+                if (projectBundles.indexOf(ModelBundleName) === -1) return next();
+                assetManager.loadBundle(ModelBundleName, (err) => {
+                    if (err) return retry(0.1);
+                    next();
+                });
+            })
+            // 加载admin
+            .add((next, retry) => {
+                if (projectBundles.indexOf(AdminBundleName) === -1) return next();
+                assetManager.loadBundle(AdminBundleName, (err) => {
+                    if (err) return retry(0.1);
+                    next();
+                });
+            })
+            // 加载control
+            .add((next, retry) => {
+                if (projectBundles.indexOf(ControlBundleName) === -1) return next();
+                assetManager.loadBundle(ControlBundleName, (err) => {
+                    if (err) return retry(0.1);
+                    next();
+                });
+            })
+            // 加载manager
+            .add((next) => {
+                BaseManager.init(ManagerBundleName, next);
+            })
             .start(() => {
-                // 获得app初始化所加载的资源总量
-                this._base_user_total = this.getUserAssetNum();
-                this._base_mgr_total = BaseManager.getTotalAssetNum();
-
-                this._base_completed = 0;
-                this._base_total = this._base_mgr_total + this._base_user_total;
-
+                this._base_inited = true;
                 this.onProgress(0, this._base_total);
 
                 // 初始化app, 使用complete来实现onUserInit的切换以确保manager已完全加载
                 BaseManager.initManagers(() => {
                     this.nextInit();
                 }, () => {
+                    if (this._base_user_total <= 0) return;
                     this.onUserInit(this._base_completed - this._base_mgr_total);
                 });
             });
     }
+
     /**
      * [避免重写] 初始化下一步，用户部分每完成一步需要调用一次
      */
     protected nextInit(): any {
-        if (this._base_completed === this._base_total) {
+        if (this._base_finished) return;
+        if (!this._base_inited) {
+            this._base_completed_cache += 1;
             return;
         }
-        this.onProgress(++this._base_completed, this._base_total);
+
+        this._base_completed += 1;
+        // 进度回调
+        this.onProgress(this._base_completed + this._base_completed_cache, this._base_total);
+
         // 全部加载完成
-        if (this._base_completed === this._base_total) {
+        if (this._base_completed + this._base_completed_cache >= this._base_total) {
+            this._base_finished = true;
             Core.emit(Core.EventType.EVENT_APPINIT_FINISHED);
             return Core.inst.manager.ui.showDefault(() => {
                 // 初始化完成
@@ -114,12 +157,12 @@ export default abstract class BaseAppInit extends Component {
                         Core.inst.manager.ui.offUIRoot2D(Node.EventType.TOUCH_START, onTouch, this, true);
                     });
                 }
-
             });
         }
+
         // 系统部分加载完毕，开始加载用户自定义
         if (this._base_completed > this._base_mgr_total) {
-            this.onUserInit(this._base_completed - this._base_mgr_total);
+            this.onUserInit(this._base_completed + this._base_completed_cache - this._base_mgr_total);
         }
     }
 

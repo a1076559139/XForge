@@ -37,9 +37,7 @@ function getScript(type, className) {
             '}';
     }
     else {
-        return '// 🔥切记: 当前文件处于分包中, 由于加载顺序的原因，不可以在「主包」或者「Control」中使用此文件内导出的变量\r\n' +
-            '// 🔥切记: 当前文件处于分包中, 由于加载顺序的原因，不可以在「主包」或者「Control」中使用此文件内导出的变量\r\n' +
-            '// 🔥切记: 当前文件处于分包中, 由于加载顺序的原因，不可以在「主包」或者「Control」中使用此文件内导出的变量\r\n\r\n' +
+        return '// 🔥切记: 当前文件处于分包中, 由于加载顺序的原因，不可以在「主包」中使用此文件内导出的变量\r\n' +
             '// 存放直接导出的interface、type或enum等\r\n\r\n' +
             '// export type IString = string;\r\n' +
             '// export enum Type { None };';

@@ -18,8 +18,6 @@ const uuid = new class UUID {
     }
 };
 
-const BundleName = 'app-manager';
-
 function black(arg1: string, arg2: string) {
     log(
         `%c ${arg1} %c ${arg2} %c`,
@@ -230,14 +228,14 @@ export default class BaseManager extends Component {
     /**
      * 初始化操作
      */
-    public static init(onFinish?: Function) {
+    public static init(bundleName: string, onFinish?: Function) {
         if (this.bundle) return onFinish && onFinish();
         const projectBundles = settings.querySettings('assets', 'projectBundles') as string[];
-        if (projectBundles.indexOf(BundleName) === -1) return onFinish && onFinish();
+        if (projectBundles.indexOf(bundleName) === -1) return onFinish && onFinish();
 
         // 一定会加载成功
         Core.inst.lib.task.execute((retry) => {
-            assetManager.loadBundle(BundleName, (err, bundle) => {
+            assetManager.loadBundle(bundleName, (err, bundle) => {
                 if (err) return retry(0.1);
                 this.bundle = bundle;
                 onFinish && onFinish();
