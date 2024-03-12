@@ -37,8 +37,12 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         effectMuteCacheKey?: string,
         /**默认播放的音乐名 */
         defaultMusicName?: IMusicName | '',
-        /**默认音乐音量: 0-1 */
-        defaultMusicVolume?: number
+        /**默认音乐音量 */
+        defaultMusicVolume?: number,
+        /**默认按钮音效名 */
+        defaultEffectName?: IEffectName | '',
+        /**默认按钮音效音量 */
+        defaultEffectVolume?: number
     } = {};
 
     private musicMuteCacheKey = 'musicMute';
@@ -46,6 +50,8 @@ export default class SoundManager<E extends string, M extends string> extends Ba
 
     private defaultMusicName = '';
     private defaultMusicVolume = 1;
+    private defaultEffectName = '';
+    private defaultEffectVolume = 1;
 
     private audioCache = {};
     private effectInterval: { [key in string]: number } = {};
@@ -58,6 +64,8 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         if (setting.effectMuteCacheKey) this.musicMuteCacheKey = setting.effectMuteCacheKey;
         if (setting.defaultMusicName) this.defaultMusicName = setting.defaultMusicName;
         if (typeof setting.defaultMusicVolume === 'number') this.defaultMusicVolume = setting.defaultMusicVolume;
+        if (setting.defaultEffectName) this.defaultEffectName = setting.defaultEffectName;
+        if (typeof setting.defaultEffectVolume === 'number') this.defaultEffectVolume = setting.defaultEffectVolume;
 
         if (this.musicMuteCacheKey) {
             const musicMute = storage.get(this.musicMuteCacheKey) === true;
@@ -173,6 +181,17 @@ export default class SoundManager<E extends string, M extends string> extends Ba
             this.playMusic({ name: <M>this.defaultMusicName, volume: this.defaultMusicVolume, onPlay });
         } else {
             this.warn('defaultMusicName 不存在');
+        }
+    }
+
+    /**
+     * 播放默认音效
+     */
+    public playDefaultEffect(onPlay?: (audioID: number) => void) {
+        if (this.defaultEffectName) {
+            this.playEffect({ name: <E>this.defaultEffectName, volume: this.defaultEffectVolume, onPlay });
+        } else {
+            this.warn('defaultEffectName 不存在');
         }
     }
 

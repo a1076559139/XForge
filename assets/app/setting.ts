@@ -15,5 +15,7 @@ UIManager.setting.shade = {
 
 // 预加载的音频(按数组顺序依次预加载)
 SoundManager.setting.preload = [];
-// 默认音乐, 会在首屏流程后自动play
+// 默认音乐, 会在首屏流程后自动播放
 SoundManager.setting.defaultMusicName = '';
+// 默认音效, 会在Button被点击后播放
+SoundManager.setting.defaultEffectName = '';

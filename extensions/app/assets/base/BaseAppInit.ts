@@ -1,4 +1,4 @@
-import { Component, Node, Settings, _decorator, assetManager, settings, warn } from 'cc';
+import { Button, Component, EventTouch, Node, Settings, _decorator, assetManager, settings, warn } from 'cc';
 import { EDITOR } from 'cc/env';
 import Core from '../Core';
 import BaseManager from './BaseManager';
@@ -141,7 +141,14 @@ export default abstract class BaseAppInit extends Component {
             return Core.inst.manager.ui.showDefault(() => {
                 // 初始化完成
                 this.onFinish();
-                // 播放默认音乐
+                // 默认音效(Button点击触发)
+                if (Core.inst.Manager.Sound.setting.defaultEffectName) {
+                    Core.inst.manager.ui.onUIRoot2D(Node.EventType.TOUCH_END, function (event: EventTouch) {
+                        if (!event.target.getComponent(Button)) return;
+                        Core.inst.manager.sound.playDefaultEffect();
+                    }, this, true);
+                }
+                // 默认音乐(默认播放)
                 if (Core.inst.Manager.Sound.setting.defaultMusicName) {
                     const onTouch = function () {
                         if (Core.inst.manager.sound.isMusicPlaying && !Core.inst.manager.sound.isMusicPaused) {
