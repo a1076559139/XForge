@@ -3,7 +3,8 @@
     "designResolution": {
       "width": 750,
       "height": 1334
-    }
+    },
+    "downloadMaxConcurrency": 100
   },
   "__version__": "1.0.6",
   "fbx": {
