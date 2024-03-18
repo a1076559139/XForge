@@ -102,7 +102,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
     }
 
     /**
-     * 预加载
+     * 加载声音资源
      * @param {(E|M) | { url: (E|M) }} soundPath sound路径
      * @param {(num:number,total:number)=>any} progress
      * @param {(result: any)=>any} complete

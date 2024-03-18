@@ -1,4 +1,4 @@
-import { Asset, AssetManager, Component, Event, Layers, Node, Prefab, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, error, find, instantiate, isValid, js, settings } from 'cc';
+import { Asset, AssetManager, Component, Event, Layers, Node, Prefab, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, find, instantiate, isValid, js, settings } from 'cc';
 import { DEBUG, DEV } from 'cc/env';
 import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
 import Core from '../../Core';
@@ -359,7 +359,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 onComplete: callback
             });
         } else {
-            const view = this.getBaseView(target.node) || this.getViewInParents(target.node);
+            const view = this.getBaseView(target.node) || this.getViewInParents(target.node) || this.getViewInChildren(director.getScene());
             if (view) {
                 Core.inst.manager.loader.load({
                     bundle: this.getResBundleName(view.viewName as UIName | MiniName),
@@ -368,6 +368,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                     onComplete: callback
                 });
             } else {
+                this.error('[loadRes]', target.name, path);
                 callback && callback(null);
             }
         }
@@ -376,7 +377,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 预加载ui内部资源
      */
-    public preloadRes<T extends typeof Asset>(target: Component, path: string, type: T) {
+    public preloadRes<T extends typeof Asset>(target: Component | UIName | MiniName, path: string, type: T) {
         if (typeof target === 'string') {
             Core.inst.manager.loader.preload({
                 bundle: this.getResBundleName(target),
@@ -384,7 +385,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 type: type
             });
         } else {
-            const view = this.getBaseView(target.node) || this.getViewInParents(target.node);
+            const view = this.getBaseView(target.node) || this.getViewInParents(target.node) || this.getViewInChildren(director.getScene());
             if (view) {
                 Core.inst.manager.loader.preload({
                     bundle: this.getResBundleName(view.viewName as UIName | MiniName),
@@ -409,7 +410,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 onComplete: callback
             });
         } else {
-            const view = this.getBaseView(target.node) || this.getViewInParents(target.node);
+            const view = this.getBaseView(target.node) || this.getViewInParents(target.node) || this.getViewInChildren(director.getScene());
             if (view) {
                 Core.inst.manager.loader.loadDir({
                     bundle: this.getResBundleName(view.viewName as UIName | MiniName),
@@ -418,6 +419,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                     onComplete: callback
                 });
             } else {
+                this.error('[loadResDir]', target.name, path);
                 callback && callback([]);
             }
         }
@@ -426,7 +428,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 预加载ui内部资源
      */
-    public preloadResDir<T extends typeof Asset>(target: Component, path: string, type: T) {
+    public preloadResDir<T extends typeof Asset>(target: Component | UIName | MiniName, path: string, type: T) {
         if (typeof target === 'string') {
             Core.inst.manager.loader.preloadDir({
                 bundle: this.getResBundleName(target),
@@ -434,7 +436,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 type: type
             });
         } else {
-            const view = this.getBaseView(target.node) || this.getViewInParents(target.node);
+            const view = this.getBaseView(target.node) || this.getViewInParents(target.node) || this.getViewInChildren(director.getScene());
             if (view) {
                 Core.inst.manager.loader.preloadDir({
                     bundle: this.getResBundleName(view.viewName as UIName | MiniName),
@@ -495,11 +497,11 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         // 传入字符串是释放所有
         if (typeof nameOrNodeOrCom === 'string') {
             const nodes = this.getUIInScene(uiName, true);
-            nodes.forEach(function (node) {
+            nodes.forEach((node) => {
                 if (!node || !isValid(node, true)) return;
                 if (DEBUG) {
-                    if (this.getBaseView(node).isShowing)
-                        error(`${uiName}正处于showing状态，此处将直接destroy`);
+                    if (this.getBaseView(node).isShow)
+                        this.error('[release]', `${uiName}正处于show状态，此处将直接destroy`);
                 }
                 node.parent = null;
                 node.destroy();
@@ -511,7 +513,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             if (node && isValid(node, true)) {
                 if (DEBUG) {
                     if (this.getBaseView(node).isShow)
-                        error(`${uiName}正处于showing状态，此处将直接destroy`);
+                        this.error('[release]', `${uiName}正处于show状态，此处将直接destroy`);
                 }
                 node.parent = null;
                 node.destroy();
@@ -682,7 +684,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         this.installUI(name, (result) => {
             if (!result) return callback(-1);
             const View = this.getUIClass(name);
-            if (!View) return callback(0);
+            if (!View) return callback(-1);
             if (!View.isViewValid) return callback(1);
             View.isViewValid((valid: boolean) => {
                 callback(valid ? 1 : 0);

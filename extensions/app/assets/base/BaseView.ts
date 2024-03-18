@@ -120,7 +120,6 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
     private _base_show_hide_delays: Function[] = [];
     // 子界面融合相关
     private _base_mini_show: Set<IMiniViewName> = new Set();
-    private _base_mini_showing: Set<IMiniViewName> = new Set();
 
     protected isPage() {
         return this._base_view_name?.indexOf(ViewType.Page) === 0;
@@ -167,7 +166,7 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
     }
     public set hideEvent(value) {
         if (this.is3D() && value !== HideEvent.destroy) {
-            this.log('Page3D只能destroy模式');
+            this.log('3D模式下只能选择destroy模式');
             return;
         }
         this._hideEvent = value;
@@ -209,9 +208,10 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
     private _captureFocus = true;
     @property({
         group: Group,
-        tooltip: '是否捕获焦点<响应onLostFocus和onFocus>\n1、非UI_2D分组下会失效\n2、当一个捕获焦点的UI处于最上层并展示时\n下层的UI永远不会响应focus事件',
+        tooltip: '是否捕获焦点<响应onLostFocus和onFocus>\n1、当一个捕获焦点的UI处于最上层并展示时\n下层的UI永远不会响应focus事件',
         visible(this: BaseView) {
-            return this.is2D();
+            if (this.is3D()) return false;
+            return true;
         }
     })
     protected get captureFocus() {
@@ -220,7 +220,7 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
     }
     protected set captureFocus(value) {
         if (value && this.is3D()) {
-            this.log('只有UI_2D可以捕获焦点');
+            this.log('只有2D模式下才可以捕获焦点');
             return;
         }
         this._captureFocus = value;
@@ -230,9 +230,11 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
     private _shade = true;
     @property({
         group: Group,
-        tooltip: '是否需要底层遮罩\n1、非UI_2D分组下会失效\n2、为Page类型时会失效',
+        tooltip: '是否需要底层遮罩',
         visible(this: BaseView) {
-            return this.is2D();
+            if (this.is3D()) return false;
+            if (this.isPage()) return false;
+            return true;
         }
     })
     protected get shade() {
@@ -243,7 +245,7 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
     protected set shade(value) {
         if (value) {
             if (this.is3D()) {
-                this.log('只有UI_2D可以设置底层遮罩');
+                this.log('只有2D模式下才可以设置底层遮罩');
                 return;
             }
             if (this.isPage()) {
@@ -264,9 +266,10 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
     private _blockInput = true;
     @property({
         group: Group,
-        tooltip: '是否阻断输入\n1、非UI_2D分组下会失效',
+        tooltip: '是否阻断点击事件',
         visible(this: BaseView) {
-            return this.is2D();
+            if (this.is3D()) return false;
+            return true;
         }
     })
     protected get blockInput() {
@@ -275,7 +278,7 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
     }
     protected set blockInput(value) {
         if (value && this.is3D()) {
-            this.log('只有UI_2D可以设置阻断输入');
+            this.log('只有2D模式下才可以设置阻断点击事件');
             return;
         }
         this._blockInput = value;
@@ -424,7 +427,6 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
         this._base_mini_show.forEach((name) => {
             Core.inst.manager.ui.shift({ name, data });
         });
-        this._base_mini_showing.clear();
         this._base_mini_show.clear();
     }
 
@@ -537,13 +539,11 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
                         silent: true,
                         attr: { zIndex: this.miniViews.indexOf(name) - this.miniViews.length },
                         onShow: (result) => {
-                            this._base_mini_showing.add(name);
                             if (onShow) onShow(name, result);
                             next();
                         },
                         onHide: (result) => {
                             this._base_mini_show.delete(name);
-                            this._base_mini_showing.delete(name);
                             if (onHide) onHide(name, result);
                         },
                         onError: (result, code) => {
