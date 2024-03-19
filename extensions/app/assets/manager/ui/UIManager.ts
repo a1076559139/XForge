@@ -1,4 +1,4 @@
-import { Asset, AssetManager, Component, Event, Layers, Node, Prefab, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, find, instantiate, isValid, js, settings } from 'cc';
+import { Asset, AssetManager, Component, Event, Layers, Node, Prefab, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, error, find, instantiate, isValid, js, settings } from 'cc';
 import { DEBUG, DEV } from 'cc/env';
 import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
 import Core from '../../Core';
@@ -225,6 +225,27 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     /**
+     * UI是否是子界面
+     */
+    private isPaper(name: string): boolean {
+        return name.indexOf(ViewType.Paper) === 0;
+    }
+
+    /**
+     * UI是否是页面
+     */
+    private isPage(name: string): boolean {
+        return name.indexOf(ViewType.Page) === 0;
+    }
+
+    /**
+     * UI是否是scene
+     */
+    private isScene(name: string) {
+        return Core.inst.scene.indexOf(name) >= 0;
+    }
+
+    /**
      * 获取一个节点上的BaseView组件, 获取不到返回null
      */
     private getBaseView(node: Node): BaseView {
@@ -267,10 +288,146 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     /**
-     * UI是否是scene
+     * 根据UI名字获取它的脚本类
      */
-    private isScene(name: string) {
-        return Core.inst.scene.indexOf(name) >= 0;
+    private getUIClass(name: string): typeof BaseView {
+        return js.getClassByName(name) as (typeof BaseView);
+    }
+
+    /**
+     * 根据UI名字获取UI路径
+     * @param name ui名字
+     * @returns 
+     */
+    private getUIPath(name: string) {
+        return name;
+    }
+
+    /**
+     * 获取前缀
+     * @param name    ui名字
+     */
+    private getUIPrefix(name: string): ViewType {
+        for (let index = 0; index < ViewTypes.length; index++) {
+            const typeName = ViewTypes[index];
+            if (name.indexOf(typeName) === 0) {
+                return typeName;
+            }
+        }
+        this.error('[getUIPrefix]', `${name}`);
+    }
+
+    /**
+     * 根据UI名字查询父节点
+     * @param name    ui名字
+     */
+    private getUIParent(name: string): Node {
+        if (this.isScene(name)) {
+            return director.getScene();
+        }
+
+        const prefix = this.getUIPrefix(name);
+        for (let index = 0; index < ViewTypes.length; index++) {
+            const viewType = ViewTypes[index];
+            if (viewType === prefix) {
+                return this.UIRoot2D.getChildByName(viewType);
+            }
+        }
+
+        this.error('[getUIParent]', `找不到${name}对应的Parent`);
+        return null;
+    }
+
+    /**
+     * 根据UI名字获取场景内的节点
+     * @param name    ui名字
+     */
+    private getUIInScene(name: string): Node;
+    private getUIInScene(name: string, multiple: false): Node;
+    private getUIInScene(name: string, multiple: true): Node[];
+    private getUIInScene(name: string, multiple = false) {
+        const parent = this.getUIParent(name);
+
+        if (multiple) {
+            const result = parent.children.filter(node => node.name === name);
+            if (result.length) return result.filter(node => isValid(node, true));
+        } else {
+            const result = parent.children.find(node => node.name === name);
+            if (result) return isValid(result, true) ? result : null;
+        }
+
+        return multiple ? [] : null;
+    }
+
+    /**
+     * 根据UI名字获取展示中的节点
+     * @param name    ui名字
+     */
+    private getUIInShowing(name: string): Node;
+    private getUIInShowing(name: string, multiple: false): Node;
+    private getUIInShowing(name: string, multiple: true): Node[];
+    private getUIInShowing(name: string, multiple = false) {
+        if (multiple) {
+            const result: Node[] = [];
+            this.uiShowingMap.forEach((_name, com) => {
+                if (_name === name) result.push(com.node);
+            });
+            return result;
+        } else {
+            let result: Node = null;
+            this.uiShowingMap.forEach((_name, com) => {
+                if (!result && _name === name) result = com.node;
+            });
+            return result;
+        }
+    }
+
+    /**
+    * 获取UI骨架Bundle名字
+    */
+    public getNativeBundleName(uiName: UIName | MiniName) {
+        // 兼容旧版本
+        const oldBundleName = `app-view_${uiName}`;
+        const projectBundles = settings.querySettings(Settings.Category.ASSETS, 'projectBundles') as string[];
+        if (projectBundles && projectBundles.indexOf(oldBundleName) >= 0) {
+            return oldBundleName;
+        }
+
+        return BaseManager.stringCaseNegate(uiName);
+    }
+
+    /**
+     * 获取UI资源Bundle名字
+     */
+    public getResBundleName(uiName: UIName | MiniName) {
+        // 兼容旧版本
+        const oldBundleName = `app-view_${uiName}_Res`;
+        const projectBundles = settings.querySettings(Settings.Category.ASSETS, 'projectBundles') as string[];
+        if (projectBundles && projectBundles.indexOf(oldBundleName) >= 0) {
+            return oldBundleName;
+        }
+
+        return `${BaseManager.stringCaseNegate(uiName)}-res`;
+    }
+
+    /**
+     * 初始化UI的Bundle
+     */
+    private initUIBundle(name: UIName | MiniName, onFinish: (result: [AssetManager.Bundle, AssetManager.Bundle]) => any) {
+        Core.inst.lib.task.createASync<[AssetManager.Bundle, AssetManager.Bundle]>()
+            .add((next) => {
+                Core.inst.manager.loader.loadBundle({
+                    bundle: this.getNativeBundleName(name),
+                    onComplete: next
+                });
+            })
+            .add((next) => {
+                Core.inst.manager.loader.loadBundle({
+                    bundle: this.getResBundleName(name),
+                    onComplete: next
+                });
+            })
+            .start(onFinish);
     }
 
     /**
@@ -295,11 +452,12 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         }
         const task = Core.inst.lib.task.createSync<[[AssetManager.Bundle, AssetManager.Bundle], Prefab | SceneAsset]>()
             .add(next => {
-                this.loadUIBundle(name, next);
+                this.initUIBundle(name, next);
             })
             .add((next) => {
                 // 失败
-                if (!task.results[0] || !task.results[0][1]) return next(null);
+                const uiBundles = task.results[0];
+                if (!uiBundles || !uiBundles[1]) return next(null);
 
                 Core.inst.manager.loader.load({
                     bundle: this.getNativeBundleName(name),
@@ -318,10 +476,10 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 if (!asset) {
                     return complete && complete(null);
                 }
-                this.log('[installUI]', name);
                 // 添加引用计数
                 asset.addRef();
                 cache[name] = asset;
+                this.log('[installUI]', name);
                 return complete && complete(asset);
             });
     }
@@ -450,6 +608,32 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     /**
+     * 预加载UI
+     */
+    public preload(name: UIName | MiniName) {
+        // 验证name是否为真
+        if (!name) {
+            this.error('[preload]', 'fail');
+            return;
+        }
+
+        const isScene = this.isScene(name);
+        if (isScene) {
+            if (this.sceneCache[name]) return;
+        } else {
+            if (this.prefabCache[name]) return;
+        }
+
+        this.initUIBundle(name, () => {
+            Core.inst.manager.loader.preload({
+                bundle: this.getNativeBundleName(name),
+                path: this.getUIPath(name),
+                type: isScene ? SceneAsset : Prefab
+            });
+        });
+    }
+
+    /**
      * 加载UI
      */
     public load(name: UIName | MiniName): void;
@@ -476,10 +660,8 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     /**
-     * 销毁ui，释放ui的资源
-     * 注意：
-     * release会直接销毁UI，不管UI是否是show状态
-     * @param {*} nameOrNodeOrCom 
+     * 销毁ui，释放ui的资源(hideEvent为destroy模式的UI，无需手动调用)
+     * @description release会直接销毁UI，不管UI是否是show状态
      */
     public release(nameOrNodeOrCom: UIName | MiniName | Node | Component | string) {
         let uiName = '';
@@ -501,7 +683,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 if (!node || !isValid(node, true)) return;
                 if (DEBUG) {
                     if (this.getBaseView(node).isShow)
-                        this.error('[release]', `${uiName}正处于show状态，此处将直接destroy`);
+                        error(`${uiName}正处于show状态, 此处将直接destroy`);
                 }
                 node.parent = null;
                 node.destroy();
@@ -513,7 +695,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             if (node && isValid(node, true)) {
                 if (DEBUG) {
                     if (this.getBaseView(node).isShow)
-                        this.error('[release]', `${uiName}正处于show状态，此处将直接destroy`);
+                        error(`${uiName}正处于show状态, 此处将直接destroy`);
                 }
                 node.parent = null;
                 node.destroy();
@@ -528,153 +710,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     /**
-     * 获取UI原生Bundle名字
-     */
-    public getNativeBundleName(uiName: UIName | MiniName) {
-        const oldBundleName = `app-view_${uiName}`;
-        const projectBundles = settings.querySettings(Settings.Category.ASSETS, 'projectBundles') as string[];
-        if (projectBundles && projectBundles.indexOf(oldBundleName) >= 0) {
-            return oldBundleName;
-        }
-        return BaseManager.stringCaseNegate(uiName);
-    }
-
-    /**
-     * 获取UI资源Bundle名字
-     */
-    public getResBundleName(uiName: UIName | MiniName) {
-        const oldBundleName = `app-view_${uiName}_Res`;
-        const projectBundles = settings.querySettings(Settings.Category.ASSETS, 'projectBundles') as string[];
-        if (projectBundles && projectBundles.indexOf(oldBundleName) >= 0) {
-            return oldBundleName;
-        }
-
-        return `${BaseManager.stringCaseNegate(uiName)}-res`;
-    }
-
-    /**
-     * 加载UI前置Bundle
-     */
-    private loadUIBundle(name: UIName | MiniName, onFinish: (result: [AssetManager.Bundle, AssetManager.Bundle]) => any) {
-        Core.inst.lib.task.createASync<[AssetManager.Bundle, AssetManager.Bundle]>()
-            .add((next) => {
-                Core.inst.manager.loader.loadBundle({
-                    bundle: this.getNativeBundleName(name),
-                    onComplete: next
-                });
-            })
-            .add((next) => {
-                Core.inst.manager.loader.loadBundle({
-                    bundle: this.getResBundleName(name),
-                    onComplete: next
-                });
-            })
-            .start(onFinish);
-    }
-
-    /**
-     * 获取前缀
-     * @param uiName    ui名字
-     */
-    private getPrefix(uiName: string): ViewType {
-        for (let index = 0; index < ViewTypes.length; index++) {
-            const name = ViewTypes[index];
-            if (uiName.indexOf(name) === 0) {
-                return name;
-            }
-        }
-        this.error('[getPrefix]', `${uiName}`);
-    }
-
-    // 根据UI名字获取UI路径
-    private getUIPath(name: string) {
-        return name;
-    }
-
-    /**
-     * 根据UI名字查询父节点
-     */
-    private getUIParent(name: string): Node {
-        if (this.isScene(name)) {
-            return director.getScene();
-        }
-
-        const prefix = this.getPrefix(name);
-        for (let index = 0; index < ViewTypes.length; index++) {
-            const viewType = ViewTypes[index];
-            if (viewType === prefix) {
-                return this.UIRoot2D.getChildByName(viewType);
-            }
-        }
-
-        this.error('[getUIParent]', `找不到${name}对应的Parent`);
-        return null;
-    }
-
-    /**
-     * 是否是子界面
-     */
-    private isPaper(name: string): boolean {
-        return name.indexOf(ViewType.Paper) === 0;
-    }
-
-    /**
-     * 是否是页面
-     */
-    private isPage(name: string): boolean {
-        return name.indexOf(ViewType.Page) === 0;
-    }
-
-    /**
-     * 根据UI名字获取场景内的节点
-     */
-    private getUIInScene(name: string): Node;
-    private getUIInScene(name: string, multiple: false): Node;
-    private getUIInScene(name: string, multiple: true): Node[];
-    private getUIInScene(name: string, multiple = false) {
-        const parent = this.getUIParent(name);
-
-        if (multiple) {
-            const result = parent.children.filter(node => node.name === name);
-            if (result.length) return result.filter(node => isValid(node, true));
-        } else {
-            const result = parent.children.find(node => node.name === name);
-            if (result) return isValid(result, true) ? result : null;
-        }
-
-        return multiple ? [] : null;
-    }
-
-    /**
-     * 根据UI名字获取展示中的节点
-     */
-    private getUIInShowing(name: string): Node;
-    private getUIInShowing(name: string, multiple: false): Node;
-    private getUIInShowing(name: string, multiple: true): Node[];
-    private getUIInShowing(name: string, multiple = false) {
-        if (multiple) {
-            const result: Node[] = [];
-            this.uiShowingMap.forEach((_name, com) => {
-                if (_name === name) result.push(com.node);
-            });
-            return result;
-        } else {
-            let result: Node = null;
-            this.uiShowingMap.forEach((_name, com) => {
-                if (!result && _name === name) result = com.node;
-            });
-            return result;
-        }
-    }
-
-    /**
-     * 根据UI名字获取它的脚本类
-     */
-    private getUIClass(name: string): typeof BaseView {
-        return js.getClassByName(name) as (typeof BaseView);
-    }
-
-    /**
      * 检查UI是否有效
      * -1 加载失败
      * 0 UI无效
@@ -684,7 +719,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         this.installUI(name, (result) => {
             if (!result) return callback(-1);
             const View = this.getUIClass(name);
-            if (!View) return callback(-1);
+            if (!View) return callback(0);
             if (!View.isViewValid) return callback(1);
             View.isViewValid((valid: boolean) => {
                 callback(valid ? 1 : 0);
@@ -759,12 +794,15 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     // 解析prefab
     private parsingPrefab(prefab: Prefab, name: string) {
         if (!prefab) return null;
-        let node = instantiate(prefab);
+
+        const node = instantiate(prefab);
+
         node.active = false;
         if (node.name !== name) {
-            this.warn('[parsingPrefab]', `节点名与预制名不一致，已重置为预制名: ${this.getUIPath(name)}`);
+            this.warn('[parsingPrefab]', `节点名与UI名不一致, 已重置为UI名: ${this.getUIPath(name)}`);
             node.name = name;
         }
+
         node.parent = this.getUIParent(name);
         node.getComponent(Widget)?.updateAlignment();
         return node;
@@ -773,6 +811,12 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     // 解析scene
     private parsingScene(asset: SceneAsset, name: string) {
         if (!asset || !asset.scene) return null;
+
+        if (asset.scene.name !== name) {
+            this.warn('[parsingScene]', `场景名与UI名不一致, 已重置为UI名: ${this.getUIPath(name)}`);
+            asset.scene.name = name;
+        }
+
         const view = this.getViewInChildren(asset.scene);
         if (!view) {
             this.error('[parsingScene]', `解析场景时未查询到根节点存在BaseView: ${this.getUIPath(name)}`);
@@ -781,7 +825,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
         view.node.active = false;
         if (view.node.name !== name) {
-            this.warn('[parsingScene]', `节点名与场景名不一致，已重置为场景名: ${this.getUIPath(name)}`);
+            this.warn('[parsingScene]', `节点名与UI名不一致, 已重置为UI名: ${this.getUIPath(name)}`);
             view.node.name = name;
         }
         return view.node;

@@ -11,7 +11,7 @@ import UIManager from '../../../extensions/app/assets/manager/ui/UIManager'
 enum viewNames { 'PageGame','PageHome','PageOver','PopTip'}
 const miniViewNames = {"PaperAllIndex":"PaperAll","PaperGameIndex":"PaperGame","PaperHomeIndex":"PaperHome","PaperOverIndex":"PaperOver"}
 export enum musicNames { 'never'}
-export enum effectNames { 'never'}
+export enum effectNames { 'effect/button'}
 
 export type IViewName = keyof typeof viewNames
 export type IViewNames = IViewName[]

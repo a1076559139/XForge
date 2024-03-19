@@ -102,45 +102,67 @@ export default class SoundManager<E extends string, M extends string> extends Ba
     }
 
     /**
-     * 加载声音资源
-     * @param {(E|M) | { url: (E|M) }} soundPath sound路径
-     * @param {(num:number,total:number)=>any} progress
-     * @param {(result: any)=>any} complete
-     * @example
-     * load(soundPath, complete)
-     * load(soundPath, progress, complete)
+     * 预加载声音资源
+     * @param soundPath sound路径
      */
-    public load(soundPath: (E | M) | { path: (E | M), type: Function }): boolean;
-    public load(soundPath: (E | M) | { path: (E | M), type: Function }, complete: (result: any) => any): boolean;
-    public load(soundPath: (E | M) | { path: (E | M), type: Function }, progress: (finish: number, total: number, item: AssetManager.RequestItem) => void, complete: (result: any) => any): boolean;
-    public load(soundPath: (E | M) | { path: (E | M), type: Function }, ...args: Function[]): boolean {
+    public preload(soundPath: (E | M)) {
+        if (!soundPath) {
+            this.error('[preload]', 'fail');
+            return;
+        }
+
+        if (soundPath.indexOf('effect') !== 0 && soundPath.indexOf('music') !== 0) {
+            this.error('[preload]', 'fail', soundPath);
+            return;
+        }
+
+        // 判断有无缓存
+        const audio = this.audioCache[soundPath as string];
+        if (audio) {
+            return;
+        }
+
+        // 远程加载
+        Core.inst.manager.loader.preload({
+            bundle: BundleName,
+            path: soundPath,
+            type: AudioClip
+        });
+    }
+
+    /**
+     * 加载声音资源
+     * @param soundPath sound路径
+     * @param progress 加载进度回调
+     * @param complete 加载完成回调
+     */
+    public load(soundPath: (E | M)): void;
+    public load(soundPath: (E | M), complete: (result: any) => any): void;
+    public load(soundPath: (E | M), progress: (finish: number, total: number, item: AssetManager.RequestItem) => void, complete: (result: any) => any): void;
+    public load(soundPath: (E | M), ...args: Function[]): void {
         const progress = (args[1] && args[0]) as (finish: number, total: number, item: AssetManager.RequestItem) => void;
         const complete = args[1] || args[0];
 
         if (!soundPath) {
-            this.error(`load ${soundPath} fail`);
-            complete && complete(null);
-            return true;
-        }
-
-        // 兼容setting中传入{path:'', type:AudioClip}结构
-        if (typeof soundPath !== 'string') {
-            soundPath = soundPath.path;
+            this.error('[load]', 'fail');
+            complete && setTimeout(() => complete(null));
+            return;
         }
 
         if (soundPath.indexOf('effect') !== 0 && soundPath.indexOf('music') !== 0) {
-            this.error(`load ${soundPath} fail`);
-            complete && complete(null);
-            return true;
+            this.error('[load]', 'fail', soundPath);
+            complete && setTimeout(() => complete(null));
+            return;
         }
 
         // 判断有无缓存
-        let audio = this.audioCache[soundPath as string];
+        const audio = this.audioCache[soundPath as string];
         if (audio) {
-            complete && complete(audio);
-            return true;
+            complete && setTimeout(() => complete(audio));
+            return;
         }
 
+        // 远程加载
         Core.inst.manager.loader.load({
             bundle: BundleName,
             path: soundPath,
@@ -155,13 +177,11 @@ export default class SoundManager<E extends string, M extends string> extends Ba
                 }
             }
         });
-
-        return false;
     }
 
     /**
      * 释放声音资源
-     * @param {*} soundPath 
+     * @param soundPath 声音路径
      */
     public release(soundPath: E | M) {
         if (soundPath.indexOf('effect') !== 0 && soundPath.indexOf('music') !== 0) {
@@ -196,8 +216,11 @@ export default class SoundManager<E extends string, M extends string> extends Ba
     }
 
     /**
-     * 
-     * @param {Number} interval 多少秒内不会重复播放
+     * 播放音效
+     * @param name 音效
+     * @param loop 循环播放
+     * @param volume 音量
+     * @param interval 多少秒内不会重复播放
      */
     public playEffect({ name, volume = 1, loop = false, interval = 0, onEnded, onPlay, onError }: playEffect<E> = { name: <E>'' }) {
         // 静音不允许播放
@@ -225,30 +248,62 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         });
     }
 
+    /**
+     * 暂停音效
+     * @param id 
+     * @returns 
+     */
     public pauseEffect(id: number) {
         return AudioEngine.inst.pauseEffect(id);
     }
 
+    /**
+     * 暂停所有音效
+     * @returns 
+     */
     public pauseAllEffects() {
         return AudioEngine.inst.pauseAllEffects();
     }
 
+    /**
+     * 恢复音效
+     * @param id 
+     * @returns 
+     */
     public resumeEffect(id: number) {
         return AudioEngine.inst.resumeEffect(id);
     }
 
+    /**
+     * 恢复所有音效
+     * @returns 
+     */
     public resumeAllEffects() {
         return AudioEngine.inst.resumeAllEffects();
     }
 
+    /**
+     * 停止音效
+     * @param id 
+     * @returns 
+     */
     public stopEffect(id: number) {
         return AudioEngine.inst.stopEffect(id);
     }
 
+    /**
+     * 停止所有音效
+     * @returns 
+     */
     public stopAllEffects() {
         return AudioEngine.inst.stopAllEffects();
     }
 
+    /**
+     * 播放音乐
+     * @param volume 音量
+     * @param force 是否强制重新播放
+     */
     public playMusic({ name, volume = 1, force = false, onPlay, onError }: playMusic<M> = { name: <M>'' }) {
         if (!name) return onError && onError();
 
@@ -294,6 +349,9 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         });
     }
 
+    /**
+     * 重新播放音乐
+     */
     public replayMusic(onPlay?: Function) {
         if (!this.playingMusic.playing) return;
         if (!this.playingMusic.name) return;
@@ -305,18 +363,27 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         });
     }
 
+    /**
+     * 暂停音乐
+     */
     public pauseMusic() {
         if (!this.playingMusic.playing) return false;
         this.playingMusic.paused = true;
         return AudioEngine.inst.pauseMusic();
     }
 
+    /**
+     * 恢复音乐
+     */
     public resumeMusic() {
         if (!this.playingMusic.playing) return false;
         this.playingMusic.paused = false;
         return AudioEngine.inst.resumeMusic();
     }
 
+    /**
+     * 停止音乐
+     */
     public stopMusic() {
         this.playingMusic.playing = false;
         this.playingMusic.paused = false;
@@ -327,6 +394,11 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         return AudioEngine.inst.stopMusic();
     }
 
+    /**
+     * 设置音乐静音
+     * @param mute 是否静音
+     * @param isCache 静音状态是否写入缓存(通过localstorage)
+     */
     public setMusicMute(mute: boolean, isCache = false) {
         isCache && storage.set(this.musicMuteCacheKey, mute);
         AudioEngine.inst.setMusicMute(mute);
@@ -350,6 +422,11 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         return AudioEngine.inst.getMusicMute();
     }
 
+    /**
+     * 设置音效静音
+     * @param mute 是否静音
+     * @param isCache 静音状态是否写入缓存(通过localstorage)
+     */
     public setEffectMute(mute: boolean, isCache = false) {
         AudioEngine.inst.setAllEffectsMute(mute);
         isCache && storage.set(this.effectMuteCacheKey, mute);

@@ -5,7 +5,7 @@ const { ccclass } = _decorator;
 @ccclass('LoaderManager')
 export default class LoaderManager extends BaseManager {
 
-    private handle(handle: string, { bundle, path, type, onProgress, onComplete }: { bundle?: string, path: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (result: any) => void }) {
+    private handle(handle: string, { bundle, version, path, type, onProgress, onComplete }: { bundle?: string, version?: string, path: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (result: any) => void }) {
         if (!handle) {
             this.error('handle is empty');
             return onComplete && onComplete(null);
@@ -28,19 +28,23 @@ export default class LoaderManager extends BaseManager {
             }
         });
 
-        assetManager.loadBundle(bundle, (err: string, bundle: AssetManager.Bundle) => {
-            if (err) return onComplete && onComplete(null);
-            bundle[handle](args[0], args[1], args[2], args[3]);
+        this.loadBundle({
+            bundle, version,
+            onComplete(bundle) {
+                if (!bundle) return onComplete && onComplete(null);
+                bundle[handle](args[0], args[1], args[2], args[3]);
+            },
         });
     }
 
     /**
      * 预加载
-     * @param {string} bundle 默认为resources
+     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundel名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
+     * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
      */
-    public preload(params: { path: string, bundle?: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (item: AssetManager.RequestItem[]) => void }) {
+    public preload(params: { path: string, bundle?: string, version?: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (item: AssetManager.RequestItem[]) => void }) {
         if (SceneAsset === params.type as typeof Asset) {
-            this.handle('preloadScene', { path: params.path, bundle: params.bundle, onProgress: params.onProgress, onComplete: params.onComplete });
+            this.handle('preloadScene', { path: params.path, bundle: params.bundle, version: params.version, onProgress: params.onProgress, onComplete: params.onComplete });
         } else {
             this.handle('preload', params);
         }
@@ -48,21 +52,23 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 预加载
-     * @param {string} bundle 默认为resources
+     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundel名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
+     * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
      */
-    public preloadDir(params: { path: string, bundle?: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (items: AssetManager.RequestItem[]) => void }) {
+    public preloadDir(params: { path: string, bundle?: string, version?: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (items: AssetManager.RequestItem[]) => void }) {
         this.handle('preloadDir', params);
     }
 
     /**
      * 加载bundle下的资源
-     * @param params.bundle 默认为resources
+     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundel名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
+     * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
      * @param params.path bundle下的相对路径
      * @param params.type 资源类型
      */
-    public load<T extends typeof Asset>(params: { path: string, bundle?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (item: InstanceType<T>) => void }) {
+    public load<T extends typeof Asset>(params: { path: string, bundle?: string, version?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (item: InstanceType<T>) => void }) {
         if (SceneAsset === params.type as typeof Asset) {
-            this.handle('loadScene', { path: params.path, bundle: params.bundle, onProgress: params.onProgress, onComplete: params.onComplete });
+            this.handle('loadScene', { path: params.path, bundle: params.bundle, version: params.version, onProgress: params.onProgress, onComplete: params.onComplete });
         } else {
             this.handle('load', params);
         }
@@ -70,17 +76,18 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 加载bundle下的资源
-     * @param params.bundle 默认为resources
+     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundel名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
+     * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
      * @param params.path bundle下的相对路径
      * @param params.type 资源类型
      */
-    public loadDir<T extends typeof Asset>(params: { path: string, bundle?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (items: InstanceType<T>[]) => void }) {
+    public loadDir<T extends typeof Asset>(params: { path: string, bundle?: string, version?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (items: InstanceType<T>[]) => void }) {
         this.handle('loadDir', params);
     }
 
     /**
      * 销毁一个bundle中对应path和type的资源
-     * @param params.bundle 默认为resources
+     * @param params.bundle 默认为resources，如果是远程bundle，则使用url末位作为bundel名
      * @param params.path bundle下的相对路径
      * @param params.type 资源类型
      */
@@ -91,7 +98,7 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 销毁一个bundle中所有的资源
-     * @param bundle 默认为resources
+     * @param bundle 默认为resources，如果是远程bundle，则使用url末位作为bundel名
      */
     public releaseAll(bundle?: string) {
         if (!bundle) bundle = 'resources';
@@ -107,7 +114,7 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 销毁一个bundle中未使用的资源
-     * @param bundle 默认为resources
+     * @param bundle 默认为resources，如果是远程bundle，则使用url末位作为bundel名
      */
     public releaseUnused(bundle?: string) {
         if (!bundle) bundle = 'resources';
@@ -117,18 +124,25 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 加载一个bundle
-     * @param params.bundle 默认为resources
+     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundel名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
+     * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
      */
-    public loadBundle({ bundle, onComplete }: { bundle?: string, onComplete?: (bundle: AssetManager.Bundle) => any }) {
+    public loadBundle({ bundle, version, onComplete }: { bundle?: string, version?: string, onComplete?: (bundle: AssetManager.Bundle) => any }) {
         if (!bundle) bundle = 'resources';
-        assetManager.loadBundle(bundle, (err: string, bundle: AssetManager.Bundle) => {
-            onComplete && onComplete(err ? null : bundle);
-        });
+        if (version) {
+            assetManager.loadBundle(bundle, { version }, (err: Error, bundle: AssetManager.Bundle) => {
+                onComplete && onComplete(err ? null : bundle);
+            });
+        } else {
+            assetManager.loadBundle(bundle, (err: Error, bundle: AssetManager.Bundle) => {
+                onComplete && onComplete(err ? null : bundle);
+            });
+        }
     }
 
     /**
      * 获取一个已经加载的bundle
-     * @param bundle 默认为resources
+     * @param bundle 默认为resources，如果是远程bundle，则使用url末位作为bundel名
      */
     public getBundle(bundle?: string) {
         if (!bundle) bundle = 'resources';
@@ -137,7 +151,7 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 移除一个已经加载的bundle
-     * @param bundle 默认为resources
+     * @param bundle 默认为resources，如果是远程bundle，则使用url末位作为bundel名
      */
     public removeBundle(bundle?: string) {
         if (!bundle) bundle = 'resources';
