@@ -33,6 +33,13 @@
 网络请求、ECS架构、定点数、寻路、碰撞等等常用库实现，让开发者可以快速开发。
 > 实践项目：[帧同步联机对战](https://store.cocos.com/app/zh/detail/5987)
 
+# 脚手架
+- 自动创建项目
+- 自动升级项目框架
+- 自动添加/删除/更新扩展包
+
+> 查看文档：[脚手架](https://gitee.com/cocos2d-zp/cococs-creator-frame-3d/wikis/pages?sort_id=9432724&doc_id=5075526)
+
 # 示例项目
 - ECS打飞机
 - 2D平台跳跃
