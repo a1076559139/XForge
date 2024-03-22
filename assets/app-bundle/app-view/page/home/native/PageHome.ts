@@ -1,17 +1,17 @@
 import { _decorator } from 'cc';
 import BaseView from '../../../../../../extensions/app/assets/base/BaseView';
-import { IMiniViewNames } from '../../../../../app-builtin/app-admin/executor';
+import { IMiniViewNames, MiniViewName } from '../../../../../app-builtin/app-admin/executor';
 const { ccclass, property } = _decorator;
 @ccclass('PageHome')
 export class PageHome extends BaseView {
     // 子界面列表，数组顺序为子界面排列顺序
-    protected miniViews: IMiniViewNames = ['PaperHomeIndex', 'PaperAllIndex'];
+    protected miniViews: IMiniViewNames = [MiniViewName.PaperHomeIndex, MiniViewName.PaperAllIndex];
     // 初始化的相关逻辑写在这
     protected onLoad() { }
 
     protected beforeShow(next: (error?: string) => void, data?: any) {
         this.showMiniViews({
-            views: ['PaperHomeIndex'],
+            views: [MiniViewName.PaperHomeIndex],
             onFinish: next
         });
     }
@@ -19,7 +19,7 @@ export class PageHome extends BaseView {
     // 界面打开时的相关逻辑写在这(onShow可被多次调用-它与onHide不成对)
     protected onShow(params: any) {
         this.showMiniViews({
-            views: ['PaperAllIndex']
+            views: [MiniViewName.PaperAllIndex]
         });
     }
 

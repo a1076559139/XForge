@@ -8,18 +8,22 @@ import LoaderManager from '../../../extensions/app/assets/manager/loader/LoaderM
 import SoundManager from '../../../extensions/app/assets/manager/sound/SoundManager'
 import TimerManager from '../../../extensions/app/assets/manager/timer/TimerManager'
 import UIManager from '../../../extensions/app/assets/manager/ui/UIManager'
-enum viewNames { 'PageGame','PageHome','PageOver','PopTip'}
-const miniViewNames = {"PaperAllIndex":"PaperAll","PaperGameIndex":"PaperGame","PaperHomeIndex":"PaperHome","PaperOverIndex":"PaperOver"}
-export enum musicNames { 'never'}
-export enum effectNames { 'effect/button'}
+/**界面名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/
+export enum ViewName {PageGame="PageGame",PageHome="PageHome",PageOver="PageOver",PopTip="PopTip"}
+/**子界面名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/
+export enum MiniViewName {PaperAllIndex="PaperAllIndex",PaperGameIndex="PaperGameIndex",PaperHomeIndex="PaperHomeIndex",PaperOverIndex="PaperOverIndex"}
+/**音乐名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/
+export enum MusicName {"never"="never"}
+/**音效名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/
+export enum EffectName {"effect/button"="effect/button"}
 
-export type IViewName = keyof typeof viewNames
+export type IViewName = keyof typeof ViewName
 export type IViewNames = IViewName[]
-export type IMiniViewName = keyof typeof miniViewNames
+export type IMiniViewName = keyof typeof MiniViewName
 export type IMiniViewNames = IMiniViewName[]
-export type IMusicName = keyof typeof musicNames
+export type IMusicName = keyof typeof MusicName
 export type IMusicNames = IMusicName[]
-export type IEffectName = keyof typeof effectNames
+export type IEffectName = keyof typeof EffectName
 export type IEffectNames = IEffectName[]
 
 if(!EDITOR||DEV) Array.prototype.push.apply(app.scene, ["PageGame"])

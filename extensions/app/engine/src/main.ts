@@ -149,13 +149,13 @@ function isTSDefault(value: string[]) {
 const keyWords = [
     'lib', 'manager', 'Manager', 'data', 'config',
     'IViewName', 'IViewNames', 'IMiniViewName', 'IMiniViewNames', 'IMusicName', 'IMusicNames', 'IEffectName', 'IEffectNames',
-    'viewNames', 'miniViewNames', 'musicNames', 'effectNames'
+    'ViewName', 'MiniViewName', 'MusicName', 'EffectName'
 ];
 
 async function clearExecutor() {
     if (!existsSync(executorFilePath)) return;
 
-    const viewKeys = { never: '' };
+    const viewKeys = { never: false };
     const miniViewKeys = { never: '' };
     const musicKeys = { never: '' };
     const effectKeys = { never: '' };
@@ -165,18 +165,22 @@ async function clearExecutor() {
         'import { app } from \'../../app/app\';\n' +
         'import { DEV, EDITOR } from \'cc/env\';\n\n';
 
-    result += 'enum viewNames { \'' + Object.keys(viewKeys).join('\',\'') + '\'}\n';
-    result += 'const miniViewNames = ' + JSON.stringify(miniViewKeys) + '\n';
-    result += 'enum musicNames { \'' + Object.keys(musicKeys).join('\',\'') + '\'}\n';
-    result += 'enum effectNames { \'' + Object.keys(effectKeys).join('\',\'') + '\'}\n\n';
+    result += '/**界面名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/\n';
+    result += 'export enum ViewName {' + Object.keys(viewKeys).map(v => `${v}="${v}"`).join(',') + '}\n';
+    result += '/**子界面名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/\n';
+    result += 'export enum MiniViewName {' + Object.keys(miniViewKeys).map(v => `${v}="${v}"`).join(',') + '}\n';
+    result += '/**音乐名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/\n';
+    result += 'export enum MusicName {' + Object.keys(musicKeys).map(v => `"${v}"="${v}"`).join(',') + '}\n';
+    result += '/**音效名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/\n';
+    result += 'export enum EffectName {' + Object.keys(effectKeys).map(v => `"${v}"="${v}"`).join(',') + '}\n\n';
 
-    result += 'export type IViewName = keyof typeof viewNames\n';
+    result += 'export type IViewName = keyof typeof ViewName\n';
     result += 'export type IViewNames = IViewName[]\n';
-    result += 'export type IMiniViewName = keyof typeof miniViewNames\n';
+    result += 'export type IMiniViewName = keyof typeof MiniViewName\n';
     result += 'export type IMiniViewNames = IMiniViewName[]\n';
-    result += 'export type IMusicName = keyof typeof musicNames\n';
+    result += 'export type IMusicName = keyof typeof MusicName\n';
     result += 'export type IMusicNames = IMusicName[]\n';
-    result += 'export type IEffectName = keyof typeof effectNames\n';
+    result += 'export type IEffectName = keyof typeof EffectName\n';
     result += 'export type IEffectNames = IEffectName[]\n\n';
 
     // data
@@ -405,18 +409,22 @@ async function updateExecutor() {
     if (Object.keys(musicKeys).length === 0) musicKeys['never'] = '';
     if (Object.keys(effectKeys).length === 0) effectKeys['never'] = '';
 
-    result += 'enum viewNames { \'' + Object.keys(viewKeys).join('\',\'') + '\'}\n';
-    result += 'const miniViewNames = ' + JSON.stringify(miniViewKeys) + '\n';
-    result += 'export enum musicNames { \'' + Object.keys(musicKeys).join('\',\'') + '\'}\n';
-    result += 'export enum effectNames { \'' + Object.keys(effectKeys).join('\',\'') + '\'}\n\n';
+    result += '/**界面名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/\n';
+    result += 'export enum ViewName {' + Object.keys(viewKeys).map(v => `${v}="${v}"`).join(',') + '}\n';
+    result += '/**子界面名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/\n';
+    result += 'export enum MiniViewName {' + Object.keys(miniViewKeys).map(v => `${v}="${v}"`).join(',') + '}\n';
+    result += '/**音乐名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/\n';
+    result += 'export enum MusicName {' + Object.keys(musicKeys).map(v => `"${v}"="${v}"`).join(',') + '}\n';
+    result += '/**音效名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/\n';
+    result += 'export enum EffectName {' + Object.keys(effectKeys).map(v => `"${v}"="${v}"`).join(',') + '}\n\n';
 
-    result += 'export type IViewName = keyof typeof viewNames\n';
+    result += 'export type IViewName = keyof typeof ViewName\n';
     result += 'export type IViewNames = IViewName[]\n';
-    result += 'export type IMiniViewName = keyof typeof miniViewNames\n';
+    result += 'export type IMiniViewName = keyof typeof MiniViewName\n';
     result += 'export type IMiniViewNames = IMiniViewName[]\n';
-    result += 'export type IMusicName = keyof typeof musicNames\n';
+    result += 'export type IMusicName = keyof typeof MusicName\n';
     result += 'export type IMusicNames = IMusicName[]\n';
-    result += 'export type IEffectName = keyof typeof effectNames\n';
+    result += 'export type IEffectName = keyof typeof EffectName\n';
     result += 'export type IEffectNames = IEffectName[]\n\n';
 
     // scene
