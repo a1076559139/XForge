@@ -289,7 +289,7 @@
 **store类型的引入是借鉴了Web前端框架中全局状态管理的思路，意图是让数据更安全，更可控。同时框架中还提供了数据绑定的扩展包，可以通过pkg的方式安装，实现「数据->视图」的单向绑定。**
 
 ## 5、音频
-**音频位于assets/app-builtin/app-sound中。**
+**音频位于assets/app-bundle/app-sound中。**
 > 不需要也不建议手动去创建目录，可以通过菜单栏App->创建->Sound选项来进行创建目录。
 
 其中：
@@ -300,7 +300,7 @@
 
 ## 6、界面
 
-**UI位于assets/app-builtin/app-view中。**
+**UI位于assets/app-bundle/app-view中。**
 > 不需要也不建议手动去创建，可以通过菜单栏App->创建->View选项来进行创建。
 
 **UI目录包含native和resources两个文件夹。**
