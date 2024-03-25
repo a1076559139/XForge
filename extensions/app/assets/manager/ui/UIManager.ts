@@ -1037,7 +1037,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                         onError && onError(error, UIManager.ErrorCode.LogicError);
                     } else if (this.isPage(name)) {
                         if (isValid(this.currPage, true) && this.currPage !== com && this.currPage.isShow) {
-                            this.currPage.constructor.prototype.hide.call(this.currPage, name);
+                            this.currPage.constructor.prototype.hide.call(this.currPage, { name });
                         }
                         this.currPage = com;
                         if (scene) {
