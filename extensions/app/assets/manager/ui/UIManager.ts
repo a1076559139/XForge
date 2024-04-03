@@ -1,4 +1,4 @@
-import { Asset, AssetManager, Component, Event, Layers, Node, Prefab, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, error, find, instantiate, isValid, js, settings } from 'cc';
+import { Asset, AssetManager, Component, Event, Layers, Node, Prefab, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, error, find, instantiate, isValid, js, settings, sys } from 'cc';
 import { DEBUG, DEV } from 'cc/env';
 import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
 import Core from '../../Core';
@@ -148,7 +148,13 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     protected onLoad() {
-        director.addPersistRootNode(find(Root2DPath));
+        const root2D = find(Root2DPath);
+        if (sys.isNative) {
+            // cc在处理UI双相机时，在native环境下目前有BUG
+            const cameraCleaner = root2D.getChildByName('CameraCleaner');
+            if (cameraCleaner) cameraCleaner.active = false;
+        }
+        director.addPersistRootNode(root2D);
 
         this.UIRoot2D = find(UIRoot2DPath);
 
