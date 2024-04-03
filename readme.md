@@ -9,7 +9,6 @@
 6、通过 **扩展** 的方式复用通用模块，同时平滑框架学习难度。<br/>
 
 > ⚠️大部分的框架目录点击后，都会在属性检查器页面生成它的一些说明文字，可以进行查看。<br/>
-> ⚠️尽量不要在assets下自定义文件夹，可以通过菜单栏App来创建。<br/>
 > ⚠️使用vscode推荐安装 Code Spell Checker 插件。<br/>
 
 <br>
@@ -218,7 +217,7 @@
     console.log('8点01点到9点整之间每帧触发') 
   })
   // 取消每日触发器
-  timer.registerDailyTrigger
+  timer.unregisterDailyTrigger
 
   // 删除定时器
   app.manager.timer.delete(自定义标识);
@@ -408,30 +407,8 @@ export class PageHome extends BaseView {
   - 勾选后，会使触摸无法穿透此UI。
 
 ## 7、扩展包
-目前共有21个扩展包(扩展包更新可能会与文档不一致，实际以脚手架展示的为准)：
-```
-  01) 模块 | @gamex/cc-expand                  | 属性扩展: node.x、node.scaleX等 
-  02) 模块 | @gamex/cc-store                   | 状态管理，数据变化自动更新UI 
-  03) 模块 | @gamex/cc-request                 | POST|GET网络请求 
-  04) 模块 | @gamex/cc-decimal                 | 定点数学运算 
-  05) 模块 | @gamex/cc-number                  | 防内存挂数字类型 
-  06) 模块 | @gamex/cc-astar                   | A星巡路，支持4/6/8方向及路径平滑 
-  07) 模块 | @gamex/cc-ecs                     | 实体-组件-系统
-  08) 模块 | @gamex/cc-quadtree                | 四叉碰撞树 
-  09) 模块 | @gamex/cc-sat                     | SAT碰撞检测 
-  10) 模块 | @gamex/cc-rvo2                    | 动态避障 
-  11) 模块 | @gamex/cc-xml-parser              | XML解析 
-  12) 模块 | @gamex/cc-minisdk                 | 小游戏SDK模块 
-  13) 组件 | @gamex/cc-comp-toggle             | Toggle组件 
-  14) 组件 | @gamex/cc-comp-rich-text          | RichText组件
-  15) 组件 | @gamex/cc-comp-animation          | Animation组件 
-  16) 组件 | @gamex/cc-comp-skeleton           | Spine组件 
-  17) 组件 | @gamex/cc-comp-skeletal-animation | 3D骨骼动画组件 
-  18) 组件 | @gamex/cc-comp-movie-animation    | MovieClip播放组件 
-  19) 组件 | @gamex/cc-comp-frame-animation    | 帧动画播放组件 
-  20) 组件 | @gamex/cc-comp-rewardfly          | 奖励飞行动画组件 
-  21) 控件 | @gamex/cc-ctrl-toast              | 消息提示控件 
-```
+
+### [点击查看wiki](https://gitee.com/cocos2d-zp/cococs-creator-frame-3d/wikis/pages?sort_id=9949228&doc_id=5075526)
 
 **扩展包的使用可以精简框架初始的代码量，平滑学习成本，另一方面也为各项目后续的升级维护工作带来极大的便利。**
 
