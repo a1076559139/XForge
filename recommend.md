@@ -64,6 +64,7 @@
 - [SAT碰撞检测(定点数)](https://gitee.com/cocos2d-zp/cococs-creator-frame-3d/wikis/pages?sort_id=9949321&doc_id=5075526)
 - [XML解析](https://gitee.com/cocos2d-zp/cococs-creator-frame-3d/wikis/pages?sort_id=10065695&doc_id=5075526)
 - [富文本组件](https://gitee.com/cocos2d-zp/cococs-creator-frame-3d/wikis/pages?sort_id=9991392&doc_id=5075526)
+- 持续更新中...
 
 > 实践项目：[帧同步联机对战](https://store.cocos.com/app/zh/detail/5987)
 
