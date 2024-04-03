@@ -1,4 +1,4 @@
-import { Asset, AssetManager, Camera, Canvas, Component, Event, Layers, Node, Prefab, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, error, find, instantiate, isValid, js, settings } from 'cc';
+import { Asset, AssetManager, Component, Event, Layers, Node, Prefab, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, error, find, instantiate, isValid, js, settings } from 'cc';
 import { DEBUG, DEV } from 'cc/env';
 import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
 import Core from '../../Core';
@@ -90,7 +90,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     private toastPre: Prefab = null;
 
     // 根结点
-    private Root2D: Node = null;
     private UIRoot2D: Node = null;
 
     // 加载和遮罩节点
@@ -149,8 +148,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     protected onLoad() {
-        this.Root2D = find(Root2DPath);
-        director.addPersistRootNode(this.Root2D);
+        director.addPersistRootNode(find(Root2DPath));
 
         this.UIRoot2D = find(UIRoot2DPath);
 
@@ -1047,19 +1045,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                                 this.currScene = name;
                                 director.runSceneImmediate(scene, null, () => {
                                     this.log('[scene]', name);
-                                    // 自动修改默认UI摄像机的clearFlags
-                                    const defaultCamera = this.Root2D.getComponent(Canvas)?.cameraComponent;
-                                    if (defaultCamera) {
-                                        const cameraList = scene.getComponentsInChildren(Camera);
-                                        const result = cameraList.some(camera => camera.priority < defaultCamera.priority);
-                                        if (result) {
-                                            defaultCamera.clearFlags = Camera.ClearFlag.DEPTH_ONLY;
-                                            this.log('自动调整默认UI摄像机的clearFlags为DEPTH_ONLY');
-                                        } else {
-                                            defaultCamera.clearFlags = Camera.ClearFlag.SOLID_COLOR;
-                                            this.log('自动调整默认UI摄像机的clearFlags为SOLID_COLOR');
-                                        }
-                                    }
                                 });
                             }
                         } else if (this.currScene !== UIScene) {
@@ -1068,12 +1053,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                             scene.autoReleaseAssets = true;
                             director.runSceneImmediate(scene, null, () => {
                                 this.log('[scene]', UIScene);
-                                // 自动修改默认UI摄像机的clearFlags
-                                const defaultCamera = this.Root2D.getComponent(Canvas)?.cameraComponent;
-                                if (defaultCamera) {
-                                    defaultCamera.clearFlags = Camera.ClearFlag.SOLID_COLOR;
-                                    this.log('自动调整默认UI摄像机的clearFlags为SOLID_COLOR');
-                                }
                             });
                         }
                     }
