@@ -9,13 +9,13 @@ import SoundManager from '../../../extensions/app/assets/manager/sound/SoundMana
 import TimerManager from '../../../extensions/app/assets/manager/timer/TimerManager'
 import UIManager from '../../../extensions/app/assets/manager/ui/UIManager'
 /**界面名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/
-export enum ViewName {PageGame="PageGame",PageHome="PageHome",PageOver="PageOver",PopTip="PopTip"}
+export enum ViewName {never="never"}
 /**子界面名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/
-export enum MiniViewName {PaperAllIndex="PaperAllIndex",PaperGameIndex="PaperGameIndex",PaperHomeIndex="PaperHomeIndex",PaperOverIndex="PaperOverIndex"}
+export enum MiniViewName {never="never"}
 /**音乐名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/
 export enum MusicName {"never"="never"}
 /**音效名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/
-export enum EffectName {"effect/button"="effect/button"}
+export enum EffectName {"never"="never"}
 
 export type IViewName = keyof typeof ViewName
 export type IViewNames = IViewName[]
@@ -26,7 +26,7 @@ export type IMusicNames = IMusicName[]
 export type IEffectName = keyof typeof EffectName
 export type IEffectNames = IEffectName[]
 
-if(!EDITOR||DEV) Array.prototype.push.apply(app.scene, ["PageGame"])
+if(!EDITOR||DEV) Array.prototype.push.apply(app.scene, [])
 if(!EDITOR||DEV) Object.assign(app.data, {})
 if(!EDITOR||DEV) Object.assign(app.config, {})
 if(!EDITOR||DEV) Object.assign(app.store, {})

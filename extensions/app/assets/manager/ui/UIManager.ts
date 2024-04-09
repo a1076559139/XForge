@@ -934,6 +934,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 onShow
             });
         } else {
+            Core.inst.manager.ui.showToast('请先设置首界面', 100);
             onShow && onShow();
             this.warn('defaultUI 不存在');
         }
