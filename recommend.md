@@ -1,6 +1,6 @@
 # XForge：CocosCreator 前端开发框架
 
-### 简介
+### 概览
 
 **XForge** 是一个专为 CocosCreator 设计的前端开发框架，自 2019 年初问世以来，经历了 CocosCreator 众多版本更新，以及多次精心重构。每次重构都是对框架功能的深思熟虑和严格验证。
 
