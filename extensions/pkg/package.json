@@ -3,6 +3,7 @@
     "name": "pkg",
     "version": "1.0.0",
     "author": "张鹏",
+    "license": "MIT",
     "editor": ">=3.6.0",
     "description": "用于存放扩展包",
     "contributions": {
@@ -14,8 +15,8 @@
         }
     },
     "scripts": {
-      "add": "node ./index.js add",
-      "remove": "node ./index.js remove",
-      "update": "node ./index.js update"
+        "add": "node ./index.js add",
+        "remove": "node ./index.js remove",
+        "update": "node ./index.js update"
     }
 }

@@ -4,6 +4,7 @@
     "version": "2.0.0",
     "author": "张鹏",
     "editor": ">=3.8.0",
+    "license": "MIT",
     "description": "i18n:app.description",
     "main": "./engine/dist/main.js",
     "contributions": {
