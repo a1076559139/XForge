@@ -1,4 +1,4 @@
-import { AssetManager, AudioClip, Game, _decorator, game, sys } from 'cc';
+import { AssetManager, AudioClip, Game, _decorator, game, isValid, sys } from 'cc';
 import { IEffectName, IMusicName } from '../../../../../assets/app-builtin/app-admin/executor';
 import Core from '../../Core';
 import BaseManager from '../../base/BaseManager';
@@ -145,20 +145,29 @@ export default class SoundManager<E extends string, M extends string> extends Ba
 
         if (!soundPath) {
             this.error('[load]', 'fail');
-            complete && setTimeout(() => complete(null));
+            complete && setTimeout(() => {
+                if (!isValid(this)) return;
+                complete(null);
+            });
             return;
         }
 
         if (soundPath.indexOf('effect') !== 0 && soundPath.indexOf('music') !== 0) {
             this.error('[load]', 'fail', soundPath);
-            complete && setTimeout(() => complete(null));
+            complete && setTimeout(() => {
+                if (!isValid(this)) return;
+                complete(null);
+            });
             return;
         }
 
         // 判断有无缓存
         const audio = this.audioCache[soundPath as string];
         if (audio) {
-            complete && setTimeout(() => complete(audio));
+            complete && setTimeout(() => {
+                if (!isValid(this)) return;
+                complete(audio);
+            });
             return;
         }
 
@@ -169,6 +178,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
             type: AudioClip,
             onProgress: progress,
             onComplete: (audioClip) => {
+                if (!isValid(this)) return;
                 if (audioClip) {
                     this.audioCache[soundPath as string] = audioClip;
                     complete && complete(audioClip);
@@ -230,6 +240,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
 
         // 加载音乐
         this.load(name, (audioClip) => {
+            if (!isValid(this)) return;
             // 静音不允许播放
             if (this.isEffectMute) return;
             // 正在播放中，不允许重复播放
@@ -332,6 +343,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
 
         // 加载音乐
         this.load(name, (audioClip) => {
+            if (!isValid(this)) return;
             // 不合法
             if (this.playingMusic.id !== -1) return onError && onError();
             if (this.playingMusic.name !== name) return onError && onError();

@@ -537,7 +537,7 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
                     Core.inst.manager.ui.show({
                         name, data,
                         silent: true,
-                        attr: { zIndex: this.miniViews.indexOf(name) - this.miniViews.length },
+                        attr: { zIndex: this.miniViews.indexOf(name) },
                         onShow: (result) => {
                             if (onShow) onShow(name, result);
                             next();

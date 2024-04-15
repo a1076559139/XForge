@@ -1,4 +1,4 @@
-import { Button, Component, EventTouch, Node, Settings, _decorator, assetManager, settings, warn } from 'cc';
+import { Button, Component, EventTouch, Node, Settings, _decorator, assetManager, isValid, settings, warn } from 'cc';
 import { EDITOR } from 'cc/env';
 import Core from '../Core';
 import BaseManager from './BaseManager';
@@ -146,6 +146,7 @@ export default abstract class BaseAppInit extends Component {
                     Core.inst.manager.ui.onUIRoot2D(Node.EventType.TOUCH_END, function (event: EventTouch) {
                         if (!event.target.getComponent(Button)) return;
                         setTimeout(() => {
+                            if (!isValid(Core.inst.manager.sound)) return;
                             // 如果是scroolview中的button，在滑动后不播放点击音效
                             if (event.eventPhase === EventTouch.CAPTURING_PHASE) return;
                             Core.inst.manager.sound.playDefaultEffect();
@@ -155,6 +156,7 @@ export default abstract class BaseAppInit extends Component {
                 // 默认音乐(默认播放)
                 if (Core.inst.Manager.Sound.setting.defaultMusicName) {
                     const onTouch = function () {
+                        if (!isValid(Core.inst.manager.sound)) return;
                         if (Core.inst.manager.sound.isMusicPlaying && !Core.inst.manager.sound.isMusicPaused) {
                             Core.inst.manager.sound.replayMusic(() => {
                                 Core.inst.manager.ui.offUIRoot2D(Node.EventType.TOUCH_START, onTouch, this, true);

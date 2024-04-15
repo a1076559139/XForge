@@ -220,6 +220,7 @@ export default class BaseManager extends Component {
 
     /**
      * 系统内置manager的数量
+     * @private
      */
     public static get sysMgrCount() {
         return 5;
@@ -227,16 +228,19 @@ export default class BaseManager extends Component {
 
     /**
      * 初始化操作
+     * @private
      */
     public static init(bundleName: string, onFinish?: Function) {
-        if (this.bundle) return onFinish && onFinish();
+        // 避免game.restart()时读取错误的缓存
+        // if (this.bundle) return onFinish && onFinish();
+        this.bundle = null;
         const projectBundles = settings.querySettings('assets', 'projectBundles') as string[];
         if (projectBundles.indexOf(bundleName) === -1) return onFinish && onFinish();
 
         // 一定会加载成功
         Core.inst.lib.task.execute((retry) => {
             assetManager.loadBundle(bundleName, (err, bundle) => {
-                if (err) return retry(0.1);
+                if (err) return retry(1);
                 this.bundle = bundle;
                 onFinish && onFinish();
             });
@@ -245,6 +249,7 @@ export default class BaseManager extends Component {
 
     /**
      * 获得初始化资源的数量(包括sysMgrCount)
+     * @private
      */
     public static getTotalAssetNum() {
         let count = this.sysMgrCount;
@@ -264,6 +269,7 @@ export default class BaseManager extends Component {
 
     /**
      * 获得初始化资源的数量
+     * @private
      */
     public static getUserAssetUrls() {
         const pathArr: string[] = [];
@@ -281,14 +287,11 @@ export default class BaseManager extends Component {
         return pathArr;
     }
 
-    private static inited = false;
     /**
      * 静态方法，初始化manager，该方法必须在场景初始化完毕之后调用
+     * @private
      */
     public static initManagers(progress: (completeAsset: Number, totalAsset: Number) => any, complete: (totalAsset: Number) => any) {
-        if (this.inited) return warn('不允许重复初始化');
-        this.inited = true;
-
         const bundle = this.bundle;
         const urls = this.getUserAssetUrls();
 
@@ -341,7 +344,7 @@ export default class BaseManager extends Component {
                     bundle.load(url, Prefab, function (err, prefab: Prefab) {
                         if (err || !prefab) {
                             red('BaseManager', `[initManager] load ${url} fail, retry...`);
-                            retry(0.1);
+                            retry(1);
                         } else {
                             const endTime = window?.performance?.now ? performance.now() : Date.now();
                             orange(managerName, `[下载完成] ${(endTime - startTime).toFixed(6)} ms`);
@@ -357,7 +360,7 @@ export default class BaseManager extends Component {
                 bundle.load(url, Prefab, function (err, prefab: Prefab) {
                     if (err || !prefab) {
                         red('BaseManager', `[initManager] load ${url} fail, retry...`);
-                        retry(0.1);
+                        retry(1);
                     } else {
                         const node = instantiate(prefab);
                         node.parent = userManagerRoot;

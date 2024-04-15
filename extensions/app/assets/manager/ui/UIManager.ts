@@ -444,6 +444,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         if (isScene) {
             if (this.sceneCache[name]) {
                 complete && setTimeout(() => {
+                    if (!isValid(this)) return;
                     complete(this.sceneCache[name]);
                 });
                 return;
@@ -451,6 +452,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         } else {
             if (this.prefabCache[name]) {
                 complete && setTimeout(() => {
+                    if (!isValid(this)) return;
                     complete(this.prefabCache[name]);
                 });
                 return;
@@ -474,6 +476,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 });
             })
             .start((results) => {
+                if (!isValid(this)) return;
                 const cache = isScene ? this.sceneCache : this.prefabCache;
                 if (cache[name]) {
                     return complete && complete(cache[name]);
@@ -653,6 +656,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         if (!name) {
             this.error('[load]', 'fail');
             complete && setTimeout(function () {
+                if (!isValid(this)) return;
                 complete(null);
             });
             return;
@@ -864,6 +868,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
         if (!name) {
             setTimeout(() => {
+                if (!isValid(this)) return;
                 // 移除触摸屏蔽
                 this.removeTouchMask(maskUUID);
                 callback(null);
@@ -878,6 +883,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         const node = this.getUIInScene(name);
         if (isValid(node, true) && this.getBaseView(node).isSingleton === true) {
             setTimeout(() => {
+                if (!isValid(this)) return;
                 // 移除触摸屏蔽
                 this.removeTouchMask(maskUUID);
                 // 验证本次加载是否有效
@@ -895,6 +901,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         // 加载prefab
         const loadingUuid = silent ? '' : this.showLoading();
         this.load(name, (asset) => {
+            if (!isValid(this)) return;
             // 移除触摸屏蔽
             this.removeTouchMask(maskUUID);
 
