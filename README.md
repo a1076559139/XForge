@@ -1,6 +1,9 @@
 gitee: <br/>
 https://gitee.com/cocos2d-zp/cococs-creator-frame-3d <br/>
 
+论坛: <br/>
+https://forum.cocos.org/t/topic/157242 <br/>
+
 QQ群： <br/>
 欢迎加入 QQ 群：795231926，一起探讨和交流 XForge 开发经验。
 
