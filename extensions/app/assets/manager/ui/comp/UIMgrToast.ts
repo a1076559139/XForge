@@ -44,7 +44,7 @@ export default class UIMgrToast extends Component {
         const children = this.node.children;
         for (let index = children.length - 1; index >= 0; index--) {
             Tween.stopAllByTarget(children[index].getComponent(UIOpacity));
-            this.pool.put(children[index]);
+            children[index].destroy();
         }
     }
 
