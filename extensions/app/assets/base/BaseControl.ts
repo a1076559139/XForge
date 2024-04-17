@@ -21,6 +21,9 @@ class CallbackInfo {
     }
 }
 
+type Parameters<T extends (...args: any) => any> = T extends (...args: infer P) => any ? P : any;
+type AnyFunc = (...args: any[]) => any;
+
 class CallbackList {
     private callbacks: CallbackInfo[] = [];
 
@@ -128,28 +131,27 @@ class EventEmitter {
     }
 }
 
-export interface IBaseControl<T, E> {
-    new(): SuperBaseControl<E>
-    readonly inst: Readonly<T>
-    readonly Event: E
+export interface IBaseControl<C, E, T extends { [key in keyof E]?: AnyFunc }> {
+    readonly inst: Readonly<C>
+
+    //用于类型提示推导////////////////
+    new(): SuperBaseControl<E, T>//
+    ///////////////////////////////
 }
 
-class SuperBaseControl<E> {
-    private static _base_inst = null;
-    public static get inst() {
-        if (this._base_inst === null) {
-            this._base_inst = new this() as any;
-        }
-        return this._base_inst;
-    }
+class SuperBaseControl<E, T extends { [key in keyof E]?: AnyFunc }> {
+    //用于类型提示推导//
+    private e: E;////
+    private t: T;////
+    /////////////////
 
     private event = new EventEmitter();
 
-    protected call(key: E[keyof E], ...args: any[]): any {
+    protected call<K extends keyof E>(key: E[K], ...args: Parameters<T[K]>): ReturnType<T[K]> {
         return this.event.call.call(this.event, key, args);
     }
 
-    protected emit(key: E[keyof E], ...args: any[]): void {
+    protected emit<K extends keyof E>(key: E[K], ...args: Parameters<T[K]>): void {
         return this.event.emit.call(this.event, key, args);
     }
 
@@ -170,8 +172,16 @@ class SuperBaseControl<E> {
     }
 }
 
-export default function BaseControl<T, E>(Event?: E) {
-    return class BaseControl extends SuperBaseControl<E> {
-        public static Event: E = Event;
-    } as IBaseControl<T, E>;
+export default function BaseControl<C, E = any, T extends { [key in string & keyof E]?: AnyFunc } = any>(Event?: E) {
+    return class BaseControl extends SuperBaseControl<E, T> {
+        public static Event = Event;
+
+        private static _base_inst: Readonly<C> = null;
+        public static get inst() {
+            if (this._base_inst === null) {
+                this._base_inst = new this() as C;
+            }
+            return this._base_inst;
+        }
+    };
 }

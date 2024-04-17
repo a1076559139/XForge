@@ -17,13 +17,6 @@ const HideEvent = Enum({
     active: 2
 });
 
-interface IEvent<E> {
-    on(type: E[keyof E], callback: (arg1?: any, arg2?: any, arg3?: any, arg4?: any, arg5?: any) => void, target?: any): void;
-    once(type: E[keyof E], callback: (arg1?: any, arg2?: any, arg3?: any, arg4?: any, arg5?: any) => void, target?: any): void;
-    off(type: E[keyof E], callback?: Function, target?: any): void;
-    targetOff(target: any): void;
-}
-
 export type IShade = {
     /**等待 默认0秒 */
     delay?: number,
@@ -92,12 +85,16 @@ enum ViewState {
 const Group = { id: 'BaseView', name: 'settings', displayOrder: -Infinity };
 
 @ccclass('BaseView')
-export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Component {
-    static BindControl<SHOW_DATA = any, HIDE_DATA = any, T = any, E = any>(control: IBaseControl<T, E>) {
-        return class BindControl extends BaseView<SHOW_DATA, HIDE_DATA> {
-            private _base_view_control: IBaseControl<T, E> = control;
-            protected get control(): Pick<T, keyof T> & Readonly<IEvent<E>> {
-                return this._base_view_control ? this._base_view_control.inst as any : null;
+export default class BaseView extends Component {
+    static BindControl<C, E, T extends { [key in keyof E]?: any }>(control: IBaseControl<C, E, T>) {
+        return class BindControl extends BaseView {
+            protected get control(): Pick<C, keyof C> & Readonly<{
+                on<K extends keyof E>(key: E[K], callback: (...args: Parameters<T[K]>) => ReturnType<T[K]>, target?: any): void;
+                once<K extends keyof E>(key: E[K], callback: (...args: Parameters<T[K]>) => ReturnType<T[K]>, target?: any): void;
+                off(key: E[keyof E], callback?: Function, target?: any): void;
+                targetOff(target: any): void;
+            }> {
+                return control ? control.inst as any : null;
             }
         };
     }
@@ -576,7 +573,7 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
         }
     }
 
-    private show(data?: SHOW_DATA, attr?: IShowParamAttr, onShow?: IShowParamOnShow, onHide?: IShowParamOnHide, beforeShow?: IShowParamBeforeShow) {
+    private show(data?: any, attr?: IShowParamAttr, onShow?: IShowParamOnShow, onHide?: IShowParamOnHide, beforeShow?: IShowParamBeforeShow) {
         // 当前show操作需要等待其它流程
         if (this._base_view_state !== ViewState.Showed &&
             this._base_view_state !== ViewState.Hid) {
@@ -790,11 +787,11 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
     }
 
     // 以下为可重写
-    protected onShow(data?: SHOW_DATA): any {
+    protected onShow(data?: any): any {
         return data;
     }
 
-    protected onHide(data?: HIDE_DATA): any {
+    protected onHide(data?: any): any {
         return data;
     }
 
@@ -806,11 +803,11 @@ export default class BaseView<SHOW_DATA = any, HIDE_DATA = any> extends Componen
         return true;
     }
 
-    protected beforeShow(next: (error?: string) => void, data?: SHOW_DATA): any {
+    protected beforeShow(next: (error?: string) => void, data?: any): any {
         next(null);
     }
 
-    protected beforeHide(data?: HIDE_DATA): string {
+    protected beforeHide(data?: any): string {
         return null;
     }
 

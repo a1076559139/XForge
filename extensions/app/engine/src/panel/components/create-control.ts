@@ -10,13 +10,19 @@ function getScript(name: string) {
     return 'import BaseControl from \'' + basePath + '\';\r\n' +
         '// 事件名(首字母大写),可以通过 ' + name + '.Event 调用\r\n' +
         'enum Event { \r\n' +
-        '    // Refresh\r\n' +
+        '    Refresh\r\n' +
         '}\r\n' +
-        'export class ' + name + ' extends BaseControl<' + name + ', typeof Event>(Event) {\r\n' +
+        'export class ' + name + ' extends BaseControl<' + name + ', typeof Event, {\r\n' +
+        '    // 定义了监听Refresh时函数的参数列表和返回值(类型检查可省略不写，但建议补全)\r\n' +
+        '    Refresh: (a: number) => any\r\n' +
+        '}>(Event) {\r\n' +
         '    // control中发射事件, view中监听事件:\r\n' +
-        '    // 1、view中需要将 「class ' + name.slice(0, -7) + ' extends BaseView」 改为=> 「class ' + name.slice(0, -7) + ' extends BaseView.bindControl(' + name + ')」\r\n' +
+        '    // 1、view中需要将 「extends BaseView」 改为=> 「extends BaseView.bindControl(' + name + ')」\r\n' +
         '    // 2、view中使用this.control.on监听事件\r\n' +
-        '    // refresh() { this.emit(Event.Refresh) }\r\n' +
+        '    refresh() {\r\n' +
+        '        this.emit(Event.Refresh, 1000); //正确\r\n' +
+        '        this.emit(Event.Refresh, true); //参数类型错误\r\n' +
+        '    }\r\n' +
         '}';
 }
 
