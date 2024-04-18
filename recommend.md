@@ -37,10 +37,11 @@
 
 > 查看文档：[微信小游戏分包策略最佳实践](https://gitee.com/cocos2d-zp/cococs-creator-frame-3d/wikis/pages?sort_id=9794871&doc_id=5075526) 
 
-### UI类型抽象
+### UI类型与安全
 - 简化 UI 管理，支持 多Scene 和 多Prefab 配置。
+- 格外强调UI安全，避免UI被外部因素无意修改或破坏。
 
-> 详细文档：[界面](https://gitee.com/cocos2d-zp/cococs-creator-frame-3d/wikis/pages?sort_id=9432731&doc_id=5075526) 与 [管理器](https://gitee.com/cocos2d-zp/cococs-creator-frame-3d/wikis/pages?sort_id=9433095&doc_id=5075526) 
+> 详细文档：[界面](https://gitee.com/cocos2d-zp/cococs-creator-frame-3d/wikis/pages?sort_id=9432731&doc_id=5075526)  [管理器](https://gitee.com/cocos2d-zp/cococs-creator-frame-3d/wikis/pages?sort_id=9433095&doc_id=5075526) [控制器](https://gitee.com/cocos2d-zp/cococs-creator-frame-3d/wikis/pages?sort_id=9433094&doc_id=5075526)
 
 ### 实用扩展包
 - [网络请求](https://gitee.com/cocos2d-zp/cococs-creator-frame-3d/wikis/pages?sort_id=9949228&doc_id=5075526)
