@@ -1,14 +1,3 @@
-/**
- * 所有Control的父类
- * 
- * 作用：
- * 1、作为对外输出，Control内部可以新建变量和方法，在外部(通过XXXControl.inst调用)变量和方法会自动变为只读。
- * 2、Control内部额外有一个emit和call方法，用来发射事件，这个方法在其它任何地方都是无法访问的。区别在于call方法只会执行第一个注册的事件并获得返回值。
- * 每个View可以通过继承BaseView.BindControl(Control)来绑定一个Control，
- * 绑定后在View脚本内部可以通过this.control访问到这个Control实例，与inst调用不同的是，它是不受限的(属性等都不是只读)，
- * 而且可以通过this.control中的on、once、off来接收和关闭接收Control中emit或call的事件
- */
-
 class CallbackInfo {
     public callback: Function = null;
     public target: unknown = null;
@@ -147,11 +136,11 @@ class SuperBaseControl<E, T extends { [key in keyof E]?: AnyFunc }> {
 
     private event = new EventEmitter();
 
-    protected call<K extends keyof E>(key: E[K], ...args: Parameters<T[K]>): ReturnType<T[K]> {
+    protected call<K extends keyof E & keyof T>(key: E[K], ...args: Parameters<T[K]>): ReturnType<T[K]> {
         return this.event.call.call(this.event, key, args);
     }
 
-    protected emit<K extends keyof E>(key: E[K], ...args: Parameters<T[K]>): void {
+    protected emit<K extends keyof E & keyof T>(key: E[K], ...args: Parameters<T[K]>): void {
         return this.event.emit.call(this.event, key, args);
     }
 
@@ -172,7 +161,7 @@ class SuperBaseControl<E, T extends { [key in keyof E]?: AnyFunc }> {
     }
 }
 
-export default function BaseControl<C, E = any, T extends { [key in string & keyof E]?: AnyFunc } = any>(Event?: E) {
+export default function BaseControl<C, E = any, T extends { [key in keyof E & string]?: AnyFunc } = any>(Event?: E) {
     return class BaseControl extends SuperBaseControl<E, T> {
         public static Event = Event;
 
