@@ -1,6 +1,7 @@
 {
   "userData": {
     "isBundle": true,
-    "bundleConfigID": "default"
+    "bundleConfigID": "default",
+    "priority": 1
   }
 }

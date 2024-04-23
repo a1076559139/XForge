@@ -389,8 +389,9 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     /**
-    * 获取UI骨架Bundle名字
-    */
+     * 获取UI骨架Bundle名字
+     * @deprecated 将会移除，请改为其它方案
+     */
     public getNativeBundleName(uiName: UIName | MiniName) {
         // 兼容旧版本
         const oldBundleName = `app-view_${uiName}`;
@@ -404,6 +405,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     /**
      * 获取UI资源Bundle名字
+     * @deprecated 将会移除，请改为其它方案
      */
     public getResBundleName(uiName: UIName | MiniName) {
         // 兼容旧版本

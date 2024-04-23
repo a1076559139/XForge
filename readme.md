@@ -265,7 +265,7 @@
 
 - 控制器内部可以新建变量和方法，在外部通过XXXControl.inst调用时，变量和方法会显示为只读属性。
 
-- 控制器内部有emit和call方法，用来发射事件，这个方法在其它任何地方都是无法访问的。两个方法区别在于call方法只会执行第一个注册的事件并获得返回值。
+- 控制器内部有emit和call方法，用来发射事件，这两个个方法只能在内部或绑定了控制器的UI内部使用。两个方法区别在于call方法只会执行第一个注册的事件并获得返回值。
 
 - UI需要通过继承BaseView.BindControl(XXXControl)来绑定一个控制器，并通过this.control访问到这个控制器实例，与inst调用不同的是，它是不受限的(属性等都不是只读)，而且可以通过this.control中的on、once、off、targetOff来接收和关闭emit或call的事件。
 

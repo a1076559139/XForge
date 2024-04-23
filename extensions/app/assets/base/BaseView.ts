@@ -89,6 +89,8 @@ export default class BaseView extends Component {
     static BindControl<C, E, T extends { [key in keyof E]?: any }>(control: IBaseControl<C, E, T>) {
         return class BindControl extends BaseView {
             protected get control(): Pick<C, keyof C> & Readonly<{
+                call<K extends keyof E>(key: E[K], ...args: Parameters<T[K]>): ReturnType<T[K]>;
+                emit<K extends keyof E>(key: E[K], ...args: Parameters<T[K]>): void;
                 on<K extends keyof E>(key: E[K], callback: (...args: Parameters<T[K]>) => ReturnType<T[K]>, target?: any): void;
                 once<K extends keyof E>(key: E[K], callback: (...args: Parameters<T[K]>) => ReturnType<T[K]>, target?: any): void;
                 off(key: E[keyof E], callback?: Function, target?: any): void;
