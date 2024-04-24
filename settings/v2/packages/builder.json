@@ -177,7 +177,35 @@
           },
           "miniGame": {
             "configMode": "fallback",
-            "overwriteSettings": {},
+            "overwriteSettings": {
+              "xiaomi-quick-game": {
+                "compressionType": "subpackage"
+              },
+              "wechatgame": {
+                "compressionType": "subpackage"
+              },
+              "vivo-mini-game": {
+                "compressionType": "subpackage"
+              },
+              "taobao-mini-game": {
+                "compressionType": "subpackage"
+              },
+              "oppo-mini-game": {
+                "compressionType": "subpackage"
+              },
+              "huawei-quick-game": {
+                "compressionType": "subpackage"
+              },
+              "fb-instant-games": {
+                "isRemote": true
+              },
+              "bytedance-mini-game": {
+                "compressionType": "subpackage"
+              },
+              "alipay-mini-game": {
+                "compressionType": "subpackage"
+              }
+            },
             "fallbackOptions": {
               "isRemote": true
             }
