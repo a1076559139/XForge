@@ -194,6 +194,7 @@ async function clearExecutor() {
     result += '    manager: {},\n';
     result += '    data: {},\n';
     result += '    config: {}\n';
+    result += '    store: {}\n';
     result += '    scene: IViewName[]\n';
     result += '}\n';
 
@@ -449,7 +450,7 @@ async function updateExecutor() {
     result += `    data: {${dataList.map(varname => `${varname.slice(5)}:${varname}`).join(',')}},\n`;
     result += `    config: {${confList.map(varname => `${varname.slice(7)}:IReadOnly<${varname}>`).join(',')}}\n`;
     result += `    store: {${storeList.map(varname => `${varname.slice(6)}:IReadOnly<${varname}>`).join(',')}}\n`;
-    result += '    scene: IViewName[]\n';
+    result += '    scene: IReadOnly<IViewName[]>\n';
     result += '}\n';
 
     // 修正windows系统中的\为/
