@@ -190,8 +190,7 @@ export default class LoaderManager extends BaseManager {
      * @param params.path bundle下的相对路径
      * 
      * @example
-     * const bundle = app.manager.ui.getResBundleName('PageGame')
-     * setFont({target:label, path:'font/num', bundle:bundle, onSuccess:()=>{}})
+     * setFont({target:label, path:'font/num', bundle:'resources', onSuccess:()=>{}})
      */
     public setFont(params: { target: Label, path: string, bundle?: string, onSuccess?: () => void, onFail?: () => void }) {
         this.load({
@@ -214,8 +213,7 @@ export default class LoaderManager extends BaseManager {
      * @param params.path bundle下的相对路径
      * 
      * @example
-     * const bundle = app.manager.ui.getResBundleName('PageGame')
-     * setSpine({target:spine, path:'spine/role', bundle:bundle, onSuccess:()=>{}})
+     * setSpine({target:spine, path:'spine/role', bundle:'resources', onSuccess:()=>{}})
      */
     public setSpine(params: { target: sp.Skeleton, path: string, bundle?: string, onSuccess?: () => void, onFail?: () => void }) {
         this.load({
@@ -238,8 +236,7 @@ export default class LoaderManager extends BaseManager {
      * @param params.path bundle下的相对路径
      * 
      * @example
-     * const bundle = app.manager.ui.getResBundleName('PageGame')
-     * setSprite({target:sprite, path:'img/a/spriteFrame', bundle:bundle, onSuccess:()=>{}})
+     * setSprite({target:sprite, path:'img/a/spriteFrame', bundle:'resources', onSuccess:()=>{}})
      */
     public setSprite(params: { target: Sprite, path: string, bundle?: string, onSuccess?: () => void, onFail?: () => void }) {
         this.load({
