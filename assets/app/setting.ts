@@ -17,5 +17,5 @@ UIManager.setting.shade = {
 SoundManager.setting.preload = [];
 // 默认音乐, 会在首屏流程后自动播放
 SoundManager.setting.defaultMusicName = '';
-// 默认音效, 会在Button被点击后播放(由于node点击事件的优先级比input点击事件高，所以配置了默认音效后，input点击事件会无法触发)
+// 默认音效, 会在Button被点击后播放
 SoundManager.setting.defaultEffectName = '';

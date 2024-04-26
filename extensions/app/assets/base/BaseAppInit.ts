@@ -155,12 +155,10 @@ export default abstract class BaseAppInit extends Component {
         if (this._base_completed + this._base_completed_cache >= this._base_total) {
             this._base_finished = true;
             Core.emit(Core.EventType.EVENT_APPINIT_FINISHED);
-            return Core.inst.manager.ui.showDefault(() => {
-                // 初始化完成
-                this.onFinish();
-                // 默认音效(Button点击触发)
-                if (Core.inst.Manager.Sound.setting.defaultEffectName) {
-                    Core.inst.manager.ui.onUIRoot2D(Node.EventType.TOUCH_END, function (event: EventTouch) {
+            // 默认音效(Button点击触发, 这个方案可以正常触发input事件)
+            if (Core.inst.Manager.Sound.setting.defaultEffectName) {
+                const playDefaultEffect = function () {
+                    Core.inst.manager.ui.onceUIRoot2D(Node.EventType.TOUCH_END, function (event: EventTouch) {
                         if (!event.target.getComponent(Button)) return;
                         setTimeout(() => {
                             if (!isValid(Core.inst.manager.sound)) return;
@@ -169,7 +167,33 @@ export default abstract class BaseAppInit extends Component {
                             Core.inst.manager.sound.playDefaultEffect();
                         });
                     }, null, true);
-                }
+                };
+                const onEnable = Button.prototype.onEnable;
+                Button.prototype.onEnable = function () {
+                    onEnable.call(this);
+                    this.node.on(Node.EventType.TOUCH_START, playDefaultEffect);
+                };
+                const onDisable = Button.prototype.onDisable;
+                Button.prototype.onDisable = function () {
+                    this.node.off(Node.EventType.TOUCH_START, playDefaultEffect);
+                    onDisable.call(this);
+                };
+            }
+            return Core.inst.manager.ui.showDefault(() => {
+                // 初始化完成
+                this.onFinish();
+                // 默认音效(Button点击触发, 这个方案会阻挡input事件)
+                // if (Core.inst.Manager.Sound.setting.defaultEffectName) {
+                //     Core.inst.manager.ui.onUIRoot2D(Node.EventType.TOUCH_END, function (event: EventTouch) {
+                //         if (!event.target.getComponent(Button)) return;
+                //         setTimeout(() => {
+                //             if (!isValid(Core.inst.manager.sound)) return;
+                //             // 如果是scrollView中的button，在滑动后不播放点击音效
+                //             if (event.eventPhase === EventTouch.CAPTURING_PHASE) return;
+                //             Core.inst.manager.sound.playDefaultEffect();
+                //         });
+                //     }, null, true);
+                // }
                 // 默认音乐(默认播放)
                 if (Core.inst.Manager.Sound.setting.defaultMusicName) {
                     const onTouch = function () {
