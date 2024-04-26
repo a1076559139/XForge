@@ -120,27 +120,26 @@ class EventEmitter {
     }
 }
 
-export interface IBaseControl<C, E, T extends { [key in keyof E]?: AnyFunc }> {
+export interface IBaseController<C, T extends { [key in string]?: AnyFunc }> {
     readonly inst: Readonly<C>
 
     //用于类型提示推导////////////////
-    new(): SuperBaseControl<E, T>//
+    new(): SuperBaseController<T>//
     ///////////////////////////////
 }
 
-class SuperBaseControl<E, T extends { [key in keyof E]?: AnyFunc }> {
+class SuperBaseController<T extends { [key in string]?: AnyFunc }> {
     //用于类型提示推导//
-    private e: E;////
     private t: T;////
     /////////////////
 
     private event = new EventEmitter();
 
-    protected call<K extends keyof E & keyof T>(key: E[K], ...args: Parameters<T[K]>): ReturnType<T[K]> {
+    protected call<K extends keyof T>(key: K, ...args: Parameters<T[K]>): ReturnType<T[K]> {
         return this.event.call.call(this.event, key, args);
     }
 
-    protected emit<K extends keyof E & keyof T>(key: E[K], ...args: Parameters<T[K]>): void {
+    protected emit<K extends keyof T>(key: K, ...args: Parameters<T[K]>): void {
         return this.event.emit.call(this.event, key, args);
     }
 
@@ -161,12 +160,15 @@ class SuperBaseControl<E, T extends { [key in keyof E]?: AnyFunc }> {
     }
 }
 
-/**
- * @deprecated 废弃，请使用Controller代替Control
- */
-export default function BaseControl<C, E = any, T extends { [key in keyof E & string]?: AnyFunc } = any>(Event?: E) {
-    return class BaseControl extends SuperBaseControl<E, T> {
-        public static Event = Event;
+export default function BaseController<C, T extends { [key in string]?: AnyFunc } = any>() {
+    return class BaseController extends SuperBaseController<T> {
+        public static Event: { [key in keyof T]: key } = new Proxy({} as any, {
+            get: function (target, key) {
+                if (target[key]) return target[key];
+                target[key] = key;
+                return key;
+            }
+        });
 
         private static _base_inst: Readonly<C> = null;
         public static get inst() {

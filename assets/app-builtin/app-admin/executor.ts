@@ -38,5 +38,5 @@ export type IApp = {
     data: {},
     config: {}
     store: {}
-    scene: IViewName[]
+    scene: IReadOnly<IViewName[]>
 }

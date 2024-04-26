@@ -7,12 +7,12 @@ export function getResJson(name: 'builder'): { bundleConfig: object, textureComp
     return str ? JSON.parse(str) : null;
 }
 
-export function getResReadme(name: 'resources' | 'app' | 'app-appinit' | 'app-scene' | 'app-builtin' | 'app-bundle' | 'app-view' | 'app-admin' | 'app-control' | 'app-manager' | 'app-model' | 'app-sound' | 'sound-effect' | 'sound-music' | 'view-expansion' | 'view-native' | 'res-bundle' | 'res-native' | 'view-resources') {
+export function getResReadme(name: 'resources' | 'app' | 'app-appinit' | 'app-scene' | 'app-builtin' | 'app-bundle' | 'app-view' | 'app-admin' | 'app-controller' | 'app-manager' | 'app-model' | 'app-sound' | 'sound-effect' | 'sound-music' | 'view-expansion' | 'view-native' | 'res-bundle' | 'res-native' | 'view-resources') {
     const Assets = join(__dirname, '../res/readme');
     return readFileSync(join(Assets, `${name}.md`), 'utf-8');
 }
 
-export function getResMeta(name: 'resources' | 'custom-bundle' | 'app-admin' | 'app-control' | 'app-manager' | 'app-model' | 'app-sound' | 'view-native' | 'view-resources'): { userData: object } {
+export function getResMeta(name: 'resources' | 'custom-bundle' | 'app-admin' | 'app-controller' | 'app-manager' | 'app-model' | 'app-sound' | 'view-native' | 'view-resources'): { userData: object } {
     const Assets = join(__dirname, '../res/meta');
     const str = readFileSync(join(Assets, `${name}.meta`), 'utf-8');
     return str ? JSON.parse(str) : null;

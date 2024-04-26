@@ -3,6 +3,7 @@ import { EDITOR } from 'cc/env';
 import { IMiniViewName, IMiniViewNames, IViewName } from '../../../../assets/app-builtin/app-admin/executor';
 import Core from '../Core';
 import { IBaseControl } from './BaseControl';
+import { IBaseController } from './BaseController';
 
 const { ccclass, property } = _decorator;
 
@@ -86,6 +87,9 @@ const Group = { id: 'BaseView', name: 'settings', displayOrder: -Infinity };
 
 @ccclass('BaseView')
 export default class BaseView extends Component {
+    /**
+     * @deprecated 废弃，请使用Controller代替Control
+     */
     static BindControl<C, E, T extends { [key in keyof E]?: any }>(control: IBaseControl<C, E, T>) {
         return class BindControl extends BaseView {
             protected get control(): Pick<C, keyof C> & Readonly<{
@@ -97,6 +101,21 @@ export default class BaseView extends Component {
                 targetOff(target: any): void;
             }> {
                 return control ? control.inst as any : null;
+            }
+        };
+    }
+
+    static BindController<C, T extends { [key in string]: any }>(controller: IBaseController<C, T>) {
+        return class BindController extends BaseView {
+            protected get controller(): Pick<C, keyof C> & Readonly<{
+                emit<K extends keyof T>(key: K, ...args: Parameters<T[K]>): void;
+                call<K extends keyof T & keyof T>(key: K, ...args: Parameters<T[K]>): ReturnType<T[K]>;
+                on<K extends keyof T>(key: K, callback: (...args: Parameters<T[K]>) => ReturnType<T[K]>, target?: any): void;
+                once<K extends keyof T>(key: K, callback: (...args: Parameters<T[K]>) => ReturnType<T[K]>, target?: any): void;
+                off(key: keyof T, callback?: Function, target?: any): void;
+                targetOff(target: any): void;
+            }> {
+                return controller ? controller.inst as any : null;
             }
         };
     }
@@ -641,11 +660,11 @@ export default class BaseView extends Component {
             }
         };
 
+        this.log('beforeShow');
         let isNextCalled = false;
         this.beforeShow((error) => {
-            if (isNextCalled) return this.warn('[beforeShow] next被重复调用');
+            if (isNextCalled) return this.error('beforeShow', 'next被重复调用');
             isNextCalled = true;
-            this.log('beforeShow');
             next(error || null);
         }, data);
     }

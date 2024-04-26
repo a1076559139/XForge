@@ -6,28 +6,29 @@ import { convertUrlToPath, createFolderByUrl, getResMeta, getResPanel, getResRea
  * 根据语言获取脚本内容
  */
 function getScript(name: string) {
-    const basePath = '../../../extensions/app/assets/base/BaseControl';
-    return 'import BaseControl from \'' + basePath + '\';\r\n' +
+    const basePath = '../../../extensions/app/assets/base/BaseController';
+    return 'import BaseController from \'' + basePath + '\';\r\n' +
         '// 事件名(首字母大写),可以通过 ' + name + '.Event 调用\r\n' +
         'enum Event { \r\n' +
         '    Refresh\r\n' +
         '}\r\n' +
-        'export class ' + name + ' extends BaseControl<' + name + ', typeof Event, {\r\n' +
-        '    // 定义了监听Refresh时函数的参数列表和返回值(类型检查可省略不写，但建议补全)\r\n' +
-        '    Refresh: (a: number) => any\r\n' +
+        'export class ' + name + ' extends BaseController<' + name + ', {\r\n' +
+        '    // 定义了事件，并同时定义参数列表和返回值\r\n' +
+        '    Refresh: (a: number) => boolean\r\n' +
         '}>(Event) {\r\n' +
-        '    // control中发射事件, view中监听事件:\r\n' +
-        '    // 1、view中需要将 「extends BaseView」 改为=> 「extends BaseView.bindControl(' + name + ')」\r\n' +
-        '    // 2、view中使用this.control.on监听事件\r\n' +
+        '    // controller中发射事件, view中监听事件:\r\n' +
+        '    // 1、view中需要将 「extends BaseView」 改为=> 「extends BaseView.bindController(' + name + ')」\r\n' +
+        '    // 2、view中使用this.controller.on监听事件\r\n' +
         '    refresh() {\r\n' +
-        '        this.emit(Event.Refresh, 1000); //正确\r\n' +
-        '        this.emit(Event.Refresh, true); //参数类型错误\r\n' +
+        '        this.emit(' + name + '.Event.Refresh, 1000); // 正确\r\n' +
+        '        const result = this.call(' + name + '.Event.Refresh, 1000); // 自动推导返回值类型\r\n' +
+        '        this.emit(' + name + '.Event.Refresh, true); // 参数类型错误\r\n' +
         '    }\r\n' +
         '}';
 }
 
 export default Vue.extend({
-    template: getResPanel('create-control'),
+    template: getResPanel('create-controller'),
     data() {
         return {
             inputName: '',
@@ -45,8 +46,8 @@ export default Vue.extend({
                 return;
             }
 
-            const rootPath = 'db://assets/app-builtin/app-control';
-            const controlName = `${stringCase(name)}Control`;
+            const rootPath = 'db://assets/app-builtin/app-controller';
+            const controlName = `${stringCase(name)}Controller`;
             const scriptUrl = `${rootPath}/${controlName}.ts`;
 
             // 创建前确认
@@ -65,7 +66,7 @@ export default Vue.extend({
             }
 
             // 目录如果不存在则创建
-            if (!await createFolderByUrl(rootPath, { meta: getResMeta('app-control'), readme: getResReadme('app-control') })) {
+            if (!await createFolderByUrl(rootPath, { meta: getResMeta('app-controller'), readme: getResReadme('app-controller') })) {
                 this.showLoading = false;
                 this.display = `[错误] 创建目录失败\n${rootPath}`;
                 return;
