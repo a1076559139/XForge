@@ -164,7 +164,7 @@ export default abstract class BaseAppInit extends Component {
                         if (!event.target.getComponent(Button)) return;
                         setTimeout(() => {
                             if (!isValid(Core.inst.manager.sound)) return;
-                            // 如果是scroolview中的button，在滑动后不播放点击音效
+                            // 如果是scrollView中的button，在滑动后不播放点击音效
                             if (event.eventPhase === EventTouch.CAPTURING_PHASE) return;
                             Core.inst.manager.sound.playDefaultEffect();
                         });
