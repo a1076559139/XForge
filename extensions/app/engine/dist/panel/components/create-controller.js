@@ -1,11 +1,15 @@
-import { existsSync } from 'fs';
-import Vue from 'vue/dist/vue';
-import { convertUrlToPath, createFolderByUrl, getResMeta, getResPanel, getResReadme, stringCase } from '../../utils';
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = require("fs");
+const vue_1 = __importDefault(require("vue/dist/vue"));
+const utils_1 = require("../../utils");
 /**
  * 根据语言获取脚本内容
  */
-function getScript(name: string) {
+function getScript(name) {
     const basePath = '../../../extensions/app/assets/base/BaseController';
     return 'import BaseController from \'' + basePath + '\';\r\n' +
         'export class ' + name + ' extends BaseController<' + name + ', {\r\n' +
@@ -22,52 +26,43 @@ function getScript(name: string) {
         '    }\r\n' +
         '}';
 }
-
-export default Vue.extend({
-    template: getResPanel('create-controller'),
+exports.default = vue_1.default.extend({
+    template: utils_1.getResPanel('create-controller'),
     data() {
         return {
             inputName: '',
             display: '',
-
             showLoading: false
         };
     },
     methods: {
         async onClickCreate() {
             const name = this.inputName;
-
             if (/^[a-z][a-z0-9-]*[a-z0-9]+$/.test(name) === false) {
                 this.display = '[错误] 名字不合法\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
                 return;
             }
-
             const rootPath = 'db://assets/app-builtin/app-controller';
-            const controlName = `${stringCase(name)}Controller`;
+            const controlName = `${utils_1.stringCase(name)}Controller`;
             const scriptUrl = `${rootPath}/${controlName}.ts`;
-
             // 创建前确认
             const createResponse = await Editor.Dialog.info('请确认', { detail: controlName, buttons: ['创建并打开', '仅创建', '取消'], default: 0, cancel: 2 });
             if (createResponse.response == 2) {
                 return;
             }
-
             this.display = '创建中';
             this.showLoading = true;
-
-            if (existsSync(convertUrlToPath(scriptUrl))) {
+            if (fs_1.existsSync(utils_1.convertUrlToPath(scriptUrl))) {
                 this.showLoading = false;
                 this.display = `[错误] 文件已存在, 请删除\n${scriptUrl}`;
                 return;
             }
-
             // 目录如果不存在则创建
-            if (!await createFolderByUrl(rootPath, { meta: getResMeta('app-controller'), readme: getResReadme('app-controller') })) {
+            if (!await utils_1.createFolderByUrl(rootPath, { meta: utils_1.getResMeta('app-controller'), readme: utils_1.getResReadme('app-controller') })) {
                 this.showLoading = false;
                 this.display = `[错误] 创建目录失败\n${rootPath}`;
                 return;
             }
-
             // 创建script
             const createScriptResult = await Editor.Message.request('asset-db', 'create-asset', scriptUrl, getScript(controlName)).catch(_ => null);
             if (!createScriptResult) {
@@ -75,10 +70,8 @@ export default Vue.extend({
                 this.display = `[错误] 创建脚本失败\n${scriptUrl}`;
                 return;
             }
-
             this.showLoading = false;
             this.display = `[成功] 创建成功\n${rootPath}`;
-
             // 是否打开
             if (createResponse.response == 0) {
                 Editor.Message.request('asset-db', 'open-asset', scriptUrl);

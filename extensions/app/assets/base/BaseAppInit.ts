@@ -7,6 +7,7 @@ const { ccclass } = _decorator;
 const AdminBundleName = 'app-admin';
 const ModelBundleName = 'app-model';
 const ControlBundleName = 'app-control';
+const ControllerBundleName = 'app-controller';
 const ManagerBundleName = 'app-manager';
 const DotReWriteFuncs = ['startInit', 'nextInit'];
 
@@ -62,9 +63,17 @@ export default abstract class BaseAppInit extends Component {
                     });
                 },
                 (next, retry) => {
-                    // 预加载control
+                    // 预加载control(废弃)
                     if (projectBundles.indexOf(ControlBundleName) === -1) return next();
                     assetManager.preloadAny({ url: ControlBundleName }, { ext: 'bundle' }, null, (err) => {
+                        if (err) return retry(0.1);
+                        next();
+                    });
+                },
+                (next, retry) => {
+                    // 预加载controller
+                    if (projectBundles.indexOf(ControllerBundleName) === -1) return next();
+                    assetManager.preloadAny({ url: ControllerBundleName }, { ext: 'bundle' }, null, (err) => {
                         if (err) return retry(0.1);
                         next();
                     });
@@ -94,10 +103,18 @@ export default abstract class BaseAppInit extends Component {
                     next();
                 });
             })
-            // 加载control
+            // 加载control(废弃)
             .add((next, retry) => {
                 if (projectBundles.indexOf(ControlBundleName) === -1) return next();
                 assetManager.loadBundle(ControlBundleName, (err) => {
+                    if (err) return retry(0.1);
+                    next();
+                });
+            })
+            // 加载controller
+            .add((next, retry) => {
+                if (projectBundles.indexOf(ControllerBundleName) === -1) return next();
+                assetManager.loadBundle(ControllerBundleName, (err) => {
                     if (err) return retry(0.1);
                     next();
                 });
