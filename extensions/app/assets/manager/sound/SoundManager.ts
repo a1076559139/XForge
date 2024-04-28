@@ -231,32 +231,51 @@ export default class SoundManager<E extends string, M extends string> extends Ba
      * @param loop 循环播放
      * @param volume 音量
      * @param interval 多少秒内不会重复播放
+     * @returns 如果Promise返回值是null(非真)，则播放失败
      */
-    public playEffect({ name, volume = 1, loop = false, interval = 0, onEnded, onPlay, onError }: playEffect<E> = { name: <E>'' }) {
+    public async playEffect({ name, volume = 1, loop = false, interval = 0, onEnded, onPlay, onError }: playEffect<E> = { name: <E>'' }): Promise<number> {
+        if (!name) {
+            onError && onError();
+            return null;
+        }
         // 静音不允许播放
-        if (this.isEffectMute) return;
+        if (this.isEffectMute) {
+            onError && onError();
+            return null;
+        }
         // 正在播放中，不允许重复播放
-        if (this.effectInterval[name] && Date.now() < this.effectInterval[name]) return;
+        if (this.effectInterval[name] && Date.now() < this.effectInterval[name]) {
+            onError && onError();
+            return null;
+        }
 
         // 加载音乐
-        this.load(name, (audioClip) => {
-            if (!isValid(this)) return;
+        return new Promise((resolve) => this.load(name, (audioClip) => {
+            if (!isValid(this)) {
+                onError && onError();
+                return resolve(null);
+            }
             // 静音不允许播放
-            if (this.isEffectMute) return;
+            if (this.isEffectMute) {
+                onError && onError();
+                return resolve(null);
+            }
             // 正在播放中，不允许重复播放
-            if (this.effectInterval[name] && Date.now() < this.effectInterval[name]) return;
-
-            if (audioClip) {
-                AudioEngine.inst.playEffect(audioClip, volume, loop, onPlay, onEnded);
-
-                if (interval > 0) {
-                    this.effectInterval[name] = Date.now() + interval * 1000;
-                }
-            } else {
+            if (this.effectInterval[name] && Date.now() < this.effectInterval[name]) {
+                onError && onError();
+                return resolve(null);
+            }
+            if (!audioClip) {
                 this.error(`playEffect ${name} 不存在或加载失败`);
                 onError && onError();
+                return resolve(null);
             }
-        });
+
+            if (interval > 0) {
+                this.effectInterval[name] = Date.now() + interval * 1000;
+            }
+            resolve(AudioEngine.inst.playEffect(audioClip, volume, loop, onPlay, onEnded));
+        }));
     }
 
     /**
@@ -314,14 +333,19 @@ export default class SoundManager<E extends string, M extends string> extends Ba
      * 播放音乐
      * @param volume 音量
      * @param force 是否强制重新播放
+     * @returns 如果Promise返回值是false，则播放失败
      */
-    public playMusic({ name, volume = 1, force = false, onPlay, onError }: playMusic<M> = { name: <M>'' }) {
-        if (!name) return onError && onError();
+    public async playMusic({ name, volume = 1, force = false, onPlay, onError }: playMusic<M> = { name: <M>'' }): Promise<boolean> {
+        if (!name) {
+            onError && onError();
+            return false;
+        }
 
         // 该音乐正在播放中
         if (!force && this.playingMusic.id !== -1 && this.playingMusic.name === name) {
             AudioEngine.inst.setMusicVolume(volume);
-            return onPlay && onPlay();
+            onPlay && onPlay();
+            return true;
         }
 
         // 先停止当前音乐
@@ -339,26 +363,45 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         this.playingMusic.paused = false;
 
         // 静音
-        if (this.isMusicMute) return onPlay && onPlay();
+        if (this.isMusicMute) {
+            onPlay && onPlay();
+            return true;
+        }
 
         // 加载音乐
-        this.load(name, (audioClip) => {
-            if (!isValid(this)) return;
+        return new Promise((resolve) => this.load(name, (audioClip) => {
+            if (!isValid(this)) {
+                onError && onError();
+                return resolve(false);
+            }
             // 不合法
-            if (this.playingMusic.id !== -1) return onError && onError();
-            if (this.playingMusic.name !== name) return onError && onError();
-            if (this.playingMusic.uuid !== this.playingMusic.uuid) return onError && onError();
-            // 静音
-            if (this.isMusicMute) return onPlay && onPlay();
-
+            if (this.playingMusic.id !== -1) {
+                onError && onError();
+                return resolve(false);
+            }
+            if (this.playingMusic.name !== name) {
+                onError && onError();
+                return resolve(false);
+            }
+            if (this.playingMusic.uuid !== this.playingMusic.uuid) {
+                onError && onError();
+                return resolve(false);
+            }
+            // 不存在
             if (!audioClip) {
                 this.error(`playMusic ${name} 不存在或加载失败`);
                 onError && onError();
-                return;
+                return resolve(false);
+            }
+            // 静音
+            if (this.isMusicMute) {
+                onPlay && onPlay();
+                return resolve(true);
             }
 
             this.playingMusic.id = AudioEngine.inst.playMusic(audioClip, volume, onPlay);
-        });
+            resolve(true);
+        }));
     }
 
     /**
