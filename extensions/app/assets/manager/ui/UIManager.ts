@@ -1,4 +1,4 @@
-import { Asset, AssetManager, Component, Event, Layers, Node, Prefab, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, error, find, instantiate, isValid, js, settings, sys } from 'cc';
+import { Asset, AssetManager, Component, Event, Layers, Node, Prefab, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, find, instantiate, isValid, js, settings, sys } from 'cc';
 import { DEBUG, DEV } from 'cc/env';
 import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
 import Core from '../../Core';
@@ -672,27 +672,27 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 销毁ui，释放ui的资源(hideEvent为destroy模式的UI，无需手动调用)
      * @description release会直接销毁UI，不管UI是否是show状态
      */
-    public release(nameOrNodeOrCom: UIName | MiniName | Node | Component | string) {
+    public release(nameOrCom: UIName | MiniName | BaseView) {
         let uiName = '';
-        if (typeof nameOrNodeOrCom === 'string') {
-            uiName = nameOrNodeOrCom;
-        } else if (nameOrNodeOrCom != null && typeof nameOrNodeOrCom === 'object') {
-            uiName = nameOrNodeOrCom instanceof Node ? nameOrNodeOrCom.name : nameOrNodeOrCom.node.name;
+        if (typeof nameOrCom === 'string') {
+            uiName = nameOrCom;
+        } else {
+            uiName = nameOrCom.viewName;
         }
 
         if (!uiName) {
-            this.error('[release]', `${nameOrNodeOrCom} fail`);
+            this.error('[release]', `${nameOrCom} fail`);
             return;
         }
 
         // 传入字符串是释放所有
-        if (typeof nameOrNodeOrCom === 'string') {
+        if (typeof nameOrCom === 'string') {
             const nodes = this.getUIInScene(uiName, true);
             nodes.forEach((node) => {
                 if (!node || !isValid(node, true)) return;
                 if (DEBUG) {
                     if (this.getBaseView(node).isShow)
-                        error(`${uiName}正处于show状态, 此处将直接destroy`);
+                        this.warn('[release]', `${uiName}正处于show状态, 此处将直接destroy`);
                 }
                 node.parent = null;
                 node.destroy();
@@ -700,11 +700,11 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         }
         // 传入节点或组件是释放单个
         else {
-            const node = nameOrNodeOrCom instanceof Node ? nameOrNodeOrCom : nameOrNodeOrCom.node;
+            const node = nameOrCom.node;
             if (node && isValid(node, true)) {
                 if (DEBUG) {
                     if (this.getBaseView(node).isShow)
-                        error(`${uiName}正处于show状态, 此处将直接destroy`);
+                        this.warn('[release]', `${uiName}正处于show状态, 此处将直接destroy`);
                 }
                 node.parent = null;
                 node.destroy();
@@ -715,6 +715,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         const nodes = this.getUIInScene(uiName, true);
         if (nodes.length === 0 || nodes.every(node => !isValid(node, true))) {
             this.uninstallUI(uiName as UIName | MiniName);
+            this.log('[release]', uiName);
         }
     }
 
