@@ -7,6 +7,8 @@ const { ccclass } = _decorator;
 
 interface playMusic<T> { name: T, volume?: number, force?: boolean, onPlay?: Function, onError?: Function }
 interface playEffect<T> { name: T, volume?: number, loop?: boolean, interval?: number, onPlay?: (audioID: number) => any, onError?: Function, onEnded?: Function }
+interface playMusicAsync<T> { name: T, volume?: number, force?: boolean }
+interface playEffectAsync<T> { name: T, volume?: number, loop?: boolean, interval?: number, onEnded?: Function }
 
 const storage = {
     set(key: string, value: any) {
@@ -231,51 +233,73 @@ export default class SoundManager<E extends string, M extends string> extends Ba
      * @param loop 循环播放
      * @param volume 音量
      * @param interval 多少秒内不会重复播放
-     * @returns 如果Promise返回值是null(非真)，则播放失败
      */
-    public async playEffect({ name, volume = 1, loop = false, interval = 0, onEnded, onPlay, onError }: playEffect<E> = { name: <E>'' }): Promise<number> {
+    public playEffect({ name, volume = 1, loop = false, interval = 0, onEnded, onPlay, onError }: playEffect<E> = { name: <E>'' }) {
         if (!name) {
             onError && onError();
-            return null;
+            return;
         }
         // 静音不允许播放
         if (this.isEffectMute) {
             onError && onError();
-            return null;
+            return;
         }
         // 正在播放中，不允许重复播放
         if (this.effectInterval[name] && Date.now() < this.effectInterval[name]) {
             onError && onError();
-            return null;
+            return;
         }
 
         // 加载音乐
-        return new Promise((resolve) => this.load(name, (audioClip) => {
+        this.load(name, (audioClip) => {
             if (!isValid(this)) {
                 onError && onError();
-                return resolve(null);
+                return;
             }
             // 静音不允许播放
             if (this.isEffectMute) {
                 onError && onError();
-                return resolve(null);
+                return;
             }
             // 正在播放中，不允许重复播放
             if (this.effectInterval[name] && Date.now() < this.effectInterval[name]) {
                 onError && onError();
-                return resolve(null);
+                return;
             }
             if (!audioClip) {
                 this.error(`playEffect ${name} 不存在或加载失败`);
                 onError && onError();
-                return resolve(null);
+                return;
             }
 
             if (interval > 0) {
                 this.effectInterval[name] = Date.now() + interval * 1000;
             }
-            resolve(AudioEngine.inst.playEffect(audioClip, volume, loop, onPlay, onEnded));
-        }));
+
+            AudioEngine.inst.playEffect(audioClip, volume, loop, onPlay, onEnded);
+        });
+    }
+
+    /**
+     * 播放音效
+     * @param name 音效
+     * @param loop 循环播放
+     * @param volume 音量
+     * @param interval 多少秒内不会重复播放
+     * @returns 如果Promise返回值是null(非真)，则播放失败
+     */
+    public async playEffectAsync(params: playEffectAsync<E> = { name: <E>'' }): Promise<number> {
+        return new Promise((resolve) => {
+            this.playEffect({
+                ...params,
+                onPlay: (audioID) => {
+                    resolve(audioID);
+                },
+                onError: () => {
+                    resolve(null);
+                }
+            });
+        });
     }
 
     /**
@@ -333,19 +357,18 @@ export default class SoundManager<E extends string, M extends string> extends Ba
      * 播放音乐
      * @param volume 音量
      * @param force 是否强制重新播放
-     * @returns 如果Promise返回值是false，则播放失败
      */
-    public async playMusic({ name, volume = 1, force = false, onPlay, onError }: playMusic<M> = { name: <M>'' }): Promise<boolean> {
+    public playMusic({ name, volume = 1, force = false, onPlay, onError }: playMusic<M> = { name: <M>'' }): Promise<boolean> {
         if (!name) {
             onError && onError();
-            return false;
+            return;
         }
 
         // 该音乐正在播放中
         if (!force && this.playingMusic.id !== -1 && this.playingMusic.name === name) {
             AudioEngine.inst.setMusicVolume(volume);
             onPlay && onPlay();
-            return true;
+            return;
         }
 
         // 先停止当前音乐
@@ -365,43 +388,62 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         // 静音
         if (this.isMusicMute) {
             onPlay && onPlay();
-            return true;
+            return;
         }
 
         // 加载音乐
-        return new Promise((resolve) => this.load(name, (audioClip) => {
+        this.load(name, (audioClip) => {
             if (!isValid(this)) {
                 onError && onError();
-                return resolve(false);
+                return;
             }
             // 不合法
             if (this.playingMusic.id !== -1) {
                 onError && onError();
-                return resolve(false);
+                return;
             }
             if (this.playingMusic.name !== name) {
                 onError && onError();
-                return resolve(false);
+                return;
             }
             if (this.playingMusic.uuid !== this.playingMusic.uuid) {
                 onError && onError();
-                return resolve(false);
+                return;
             }
             // 不存在
             if (!audioClip) {
                 this.error(`playMusic ${name} 不存在或加载失败`);
                 onError && onError();
-                return resolve(false);
+                return;
             }
             // 静音
             if (this.isMusicMute) {
                 onPlay && onPlay();
-                return resolve(true);
+                return;
             }
 
             this.playingMusic.id = AudioEngine.inst.playMusic(audioClip, volume, onPlay);
-            resolve(true);
-        }));
+        });
+    }
+
+    /**
+     * 播放音乐
+     * @param volume 音量
+     * @param force 是否强制重新播放
+     * @returns 如果Promise返回值是false，则播放失败
+     */
+    public playMusicAsync(params: playMusicAsync<M> = { name: <M>'' }): Promise<boolean> {
+        return new Promise((resolve) => {
+            this.playMusic({
+                ...params,
+                onPlay: () => {
+                    resolve(true);
+                },
+                onError: () => {
+                    resolve(false);
+                }
+            });
+        });
     }
 
     /**
