@@ -245,13 +245,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     /**
-     * UI是否是scene
-     */
-    private isScene(name: string) {
-        return Core.inst.scene.indexOf(name) >= 0;
-    }
-
-    /**
      * 获取一个节点上的BaseView组件, 获取不到返回null
      */
     private getBaseView(node: Node): BaseView {
@@ -328,7 +321,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * @param name    ui名字
      */
     private getUIParent(name: string): Node {
-        if (this.isScene(name)) {
+        if (this.currScene === name) {
             return director.getScene();
         }
 
@@ -442,24 +435,20 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 安装UI
      */
     private installUI(name: UIName | MiniName, complete?: (result: Prefab | SceneAsset) => any, progress?: (finish: number, total: number, item: AssetManager.RequestItem) => void) {
-        const isScene = this.isScene(name);
-        if (isScene) {
-            if (this.sceneCache[name]) {
-                complete && setTimeout(() => {
-                    if (!isValid(this)) return;
-                    complete(this.sceneCache[name]);
-                });
-                return;
-            }
-        } else {
-            if (this.prefabCache[name]) {
-                complete && setTimeout(() => {
-                    if (!isValid(this)) return;
-                    complete(this.prefabCache[name]);
-                });
-                return;
-            }
+        if (this.sceneCache[name]) {
+            complete && setTimeout(() => {
+                if (!isValid(this)) return;
+                complete(this.sceneCache[name]);
+            });
+            return;
+        } else if (this.prefabCache[name]) {
+            complete && setTimeout(() => {
+                if (!isValid(this)) return;
+                complete(this.prefabCache[name]);
+            });
+            return;
         }
+
         const task = Core.inst.lib.task.createSync<[[AssetManager.Bundle, AssetManager.Bundle], Prefab | SceneAsset]>()
             .add(next => {
                 this.initUIBundle(name, next);
@@ -467,8 +456,9 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             .add((next) => {
                 // 失败
                 const uiBundles = task.results[0];
-                if (!uiBundles || !uiBundles[1]) return next(null);
+                if (!uiBundles || !uiBundles[0] || !uiBundles[1]) return next(null);
 
+                const isScene = uiBundles[0].getSceneInfo(name);
                 Core.inst.manager.loader.load({
                     bundle: this.getNativeBundleName(name),
                     path: this.getUIPath(name),
@@ -479,17 +469,24 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             })
             .start((results) => {
                 if (!isValid(this)) return;
-                const cache = isScene ? this.sceneCache : this.prefabCache;
-                if (cache[name]) {
-                    return complete && complete(cache[name]);
+                // 验证缓存
+                const cache = this.sceneCache[name] || this.prefabCache[name];
+                if (cache) {
+                    return complete && complete(cache);
                 }
+                // 验证有效
                 const asset = results[1];
                 if (!asset) {
                     return complete && complete(null);
                 }
                 // 添加引用计数
                 asset.addRef();
-                cache[name] = asset;
+                // 添加缓存
+                if (asset instanceof Prefab) {
+                    this.prefabCache[name] = asset;
+                } else {
+                    this.sceneCache[name] = asset;
+                }
                 this.log('[installUI]', name);
                 return complete && complete(asset);
             });
@@ -499,15 +496,18 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 卸载UI
      */
     private uninstallUI(name: UIName | MiniName) {
-        const isScene = this.isScene(name);
-        const cache = isScene ? this.sceneCache : this.prefabCache;
-
-        const asset = cache[name];
-        if (asset) {
+        if (this.sceneCache[name]) {
             // 释放引用计数
-            asset.decRef();
-            delete cache[name];
+            this.sceneCache[name].decRef();
+            // 删除缓存
+            delete this.sceneCache[name];
+        } else if (this.prefabCache[name]) {
+            // 释放引用计数
+            this.prefabCache[name].decRef();
+            // 删除缓存
+            delete this.prefabCache[name];
         }
+
         const resBundle = this.getResBundleName(name);
         const naBundle = this.getNativeBundleName(name);
         Core.inst.manager.loader.releaseAll(resBundle);
@@ -628,14 +628,11 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             return;
         }
 
-        const isScene = this.isScene(name);
-        if (isScene) {
-            if (this.sceneCache[name]) return;
-        } else {
-            if (this.prefabCache[name]) return;
-        }
+        if (this.sceneCache[name]) return;
+        if (this.prefabCache[name]) return;
 
-        this.initUIBundle(name, () => {
+        this.initUIBundle(name, ([naBundle]) => {
+            const isScene = naBundle.getSceneInfo(name);
             Core.inst.manager.loader.preload({
                 bundle: this.getNativeBundleName(name),
                 path: this.getUIPath(name),

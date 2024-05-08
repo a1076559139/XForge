@@ -26,7 +26,6 @@ export type IMusicNames = IMusicName[]
 export type IEffectName = keyof typeof EffectName
 export type IEffectNames = IEffectName[]
 
-if(!EDITOR||DEV) Array.prototype.push.apply(app.scene, [])
 if(!EDITOR||DEV) Object.assign(app.data, {})
 if(!EDITOR||DEV) Object.assign(app.config, {})
 if(!EDITOR||DEV) Object.assign(app.store, {})
@@ -38,5 +37,4 @@ export type IApp = {
     data: {},
     config: {}
     store: {}
-    scene: IReadOnly<IViewName[]>
 }

@@ -81,8 +81,40 @@ export default class LoaderManager extends BaseManager {
      * @param params.path bundle下的相对路径
      * @param params.type 资源类型
      */
+    public loadAsync<T extends typeof Asset>(params: { path: string, bundle?: string, version?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void }): Promise<InstanceType<T>> {
+        return new Promise((resolve) => {
+            this.load({
+                ...params,
+                onComplete: resolve
+            });
+        });
+    }
+
+    /**
+     * 加载bundle下的资源
+     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundel名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
+     * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
+     * @param params.path bundle下的相对路径
+     * @param params.type 资源类型
+     */
     public loadDir<T extends typeof Asset>(params: { path: string, bundle?: string, version?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (items: InstanceType<T>[]) => void }) {
         this.handle('loadDir', params);
+    }
+
+    /**
+     * 加载bundle下的资源
+     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundel名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
+     * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
+     * @param params.path bundle下的相对路径
+     * @param params.type 资源类型
+     */
+    public loadDirAsync<T extends typeof Asset>(params: { path: string, bundle?: string, version?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void }): Promise<InstanceType<T>[]> {
+        return new Promise((resolve) => {
+            this.loadDir({
+                ...params,
+                onComplete: resolve
+            });
+        });
     }
 
     /**
@@ -141,6 +173,20 @@ export default class LoaderManager extends BaseManager {
     }
 
     /**
+     * 加载一个bundle
+     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundel名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
+     * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
+     */
+    public loadBundleAsync(params: { bundle?: string, version?: string }): Promise<AssetManager.Bundle> {
+        return new Promise((resolve) => {
+            this.loadBundle({
+                ...params,
+                onComplete: resolve
+            });
+        });
+    }
+
+    /**
      * 获取一个已经加载的bundle
      * @param bundle 默认为resources，如果是远程bundle，则使用url末位作为bundel名
      */
@@ -164,7 +210,7 @@ export default class LoaderManager extends BaseManager {
      * @example
      * loadRemote({url:'', ext:'.png', onComplete:(){result}})
      */
-    public loadRemote({ url, ext, onComplete }: { url: string, ext?: string, onComplete?: (result: any) => void }) {
+    public loadRemote({ url, ext, onComplete }: { url: string, ext?: string, onComplete?: (result: Asset) => void }) {
         if (ext) {
             assetManager.loadRemote(url, { ext }, (error, res) => {
                 if (error) {
@@ -182,6 +228,20 @@ export default class LoaderManager extends BaseManager {
                 onComplete && onComplete(res);
             });
         }
+    }
+
+    /**
+     * 加载远程资源
+     * @example
+     * await loadRemoteAsync({url:'', ext:'.png'})
+     */
+    public loadRemoteAsync(params: { url: string, ext?: string }): Promise<Asset> {
+        return new Promise((resolve) => {
+            this.loadRemote({
+                ...params,
+                onComplete: resolve
+            });
+        });
     }
 
     /**

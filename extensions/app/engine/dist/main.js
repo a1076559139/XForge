@@ -185,7 +185,7 @@ async function clearExecutor() {
     result += '    data: {},\n';
     result += '    config: {}\n';
     result += '    store: {}\n';
-    result += '    scene: IViewName[]\n';
+    // result += '    scene: IViewName[]\n';
     result += '}\n';
     // 修正windows系统中的\为/
     result = result.replace(/\\/g, '/');
@@ -423,7 +423,7 @@ async function updateExecutor() {
     result += 'export type IEffectName = keyof typeof EffectName\n';
     result += 'export type IEffectNames = IEffectName[]\n\n';
     // scene
-    result += `if(!EDITOR||DEV) Array.prototype.push.apply(app.scene, ${JSON.stringify(Object.keys(viewKeys).filter(key => viewKeys[key]))})\n`;
+    // result += `if(!EDITOR||DEV) Array.prototype.push.apply(app.scene, ${JSON.stringify(Object.keys(viewKeys).filter(key => viewKeys[key]))})\n`;
     // data
     handle(dataList, false);
     result += `if(!EDITOR||DEV) Object.assign(app.data, {${dataList.map(varname => `${varname.slice(5)}:new ${varname}()`).join(',')}})\n`;
@@ -440,7 +440,7 @@ async function updateExecutor() {
     result += `    data: {${dataList.map(varname => `${varname.slice(5)}:${varname}`).join(',')}},\n`;
     result += `    config: {${confList.map(varname => `${varname.slice(7)}:IReadOnly<${varname}>`).join(',')}}\n`;
     result += `    store: {${storeList.map(varname => `${varname.slice(6)}:IReadOnly<${varname}>`).join(',')}}\n`;
-    result += '    scene: IReadOnly<IViewName[]>\n';
+    // result += '    scene: IReadOnly<IViewName[]>\n';
     result += '}\n';
     // 修正windows系统中的\为/
     result = result.replace(/\\/g, '/');
