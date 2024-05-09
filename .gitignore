@@ -2,16 +2,19 @@
 # Fireball Projects
 #/////////////////////////////////////////////////////////////////////////////
 
-/library/
+!/profiles/v2/packages/builder.json
+!/extensions/app/
+!/extensions/pkg/
+
 /temp/
 /build/
+/library/
+/profiles/
 /local/logs/
 /local/local.json
 /local/layout.editor.json
-/profiles/
 /settings/wechatgame.json
 /settings/bytedance.json
-!profiles/v2/packages/builder.json
 #/////////////////////////////////////////////////////////////////////////////
 # npm files
 #/////////////////////////////////////////////////////////////////////////////
@@ -54,3 +57,4 @@ Thumbs.db
 #//////////////////////////
 
 .vscode/
+!.vscode/settings.json
