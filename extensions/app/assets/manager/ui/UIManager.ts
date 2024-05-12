@@ -42,6 +42,9 @@ interface IShowParams<T, IShow = any, IShowReturn = any, IHideReturn = any> {
     onHide?: IShowParamOnHide<IHideReturn>,
     /**当code的值为ErrorCode.LogicError时，如果返回true，则自动重试 */
     onError?: (result: string, code: ErrorCode) => true | void,
+    /**
+     * @private
+     */
     attr?: IShowParamAttr,
 }
 
@@ -984,7 +987,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         if (this.showQueue.length === 1) {
             this.consumeShowQueue();
         }
-        return true;
     }
 
     /**
@@ -1081,11 +1083,14 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      */
     public show<UI extends BaseView>(params
         // @ts-ignore
-        : IShowParams<UIName, Parameters<UI['onShow']>[0], ReturnType<UI['onShow']>, ReturnType<UI['onHide']>>): boolean {
+        : IShowParams<UIName, Parameters<UI['onShow']>[0], ReturnType<UI['onShow']>, ReturnType<UI['onHide']>>) {
         const { name, data, queue, onError, silent = false } = params;
 
         // 加入队列中
-        if (queue) return this.putInShowQueue(params);
+        if (queue) {
+            this.putInShowQueue(params);
+            return;
+        }
 
         this.log('[show]', name);
 
@@ -1114,6 +1119,28 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
                 this.showUI(params);
                 this.hideLoading(showLoadingUuid);
+            });
+        });
+    }
+
+    /**
+     * 展示一个UI
+     * 此流程一定是异步的
+     */
+    public showAsync<UI extends BaseView>(params
+        // @ts-ignore
+        : IShowParams<UIName, Parameters<UI['onShow']>[0], ReturnType<UI['onShow']>, ReturnType<UI['onHide']>>): Promise<boolean> {
+        return new Promise((resolve) => {
+            this.show({
+                ...params,
+                onShow: (...args) => {
+                    params.onShow && params.onShow(...args);
+                    resolve(true);
+                },
+                onError: (...args) => {
+                    params.onError && params.onError(...args);
+                    resolve(false);
+                }
             });
         });
     }
