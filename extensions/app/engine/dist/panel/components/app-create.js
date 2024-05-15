@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = require("fs");
 const path_1 = require("path");
-const vue_1 = __importDefault(require("vue/dist/vue"));
+const vue_1 = __importDefault(require("../../../../vue"));
 const create_controller_1 = __importDefault(require("./create-controller"));
 const create_manager_1 = __importDefault(require("./create-manager"));
 const create_model_1 = __importDefault(require("./create-model"));

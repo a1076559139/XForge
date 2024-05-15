@@ -1,4 +1,4 @@
-import Vue from 'vue/dist/vue';
+import Vue from '../../../../vue';
 import { createFolderByUrl, getResMeta, getResPanel, getResReadme } from '../../utils';
 
 export default Vue.extend({

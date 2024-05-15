@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import Vue from 'vue/dist/vue';
+import Vue from '../../../../vue';
 
 import ControllerComponent from './create-controller';
 import ManagerComponent from './create-manager';

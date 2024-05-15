@@ -1,4 +1,4 @@
-import Vue from 'vue/dist/vue';
+import Vue from '../../../../vue';
 import { createFolderByUrl, getResMeta, getResPanel, getResReadme, stringCase } from '../../utils';
 
 const typeNames: ('res-bundle' | 'res-native' | 'resources')[] = ['res-native', 'res-bundle', 'resources'];

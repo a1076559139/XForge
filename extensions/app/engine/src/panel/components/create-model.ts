@@ -1,5 +1,5 @@
 import { existsSync } from 'fs';
-import Vue from 'vue/dist/vue';
+import Vue from '../../../../vue';
 import { convertUrlToPath, createFolderByUrl, getResMeta, getResPanel, getResReadme, stringCase } from '../../utils';
 
 /**

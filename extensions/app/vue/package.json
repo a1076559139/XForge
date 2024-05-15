@@ -1,0 +1,19 @@
+{
+  "name": "vue",
+  "version": "2.6.14",
+  "main": "dist/vue.js",
+  "module": "dist/vue.js",
+  "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./dist/vue.js",
+      "default": "./dist/vue.js"
+    }
+  },
+  "keywords": [
+    "vue"
+  ],
+  "author": "Evan You",
+  "license": "MIT"
+}
