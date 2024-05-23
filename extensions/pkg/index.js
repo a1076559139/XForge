@@ -9,9 +9,9 @@ const spawn = require('child_process').spawn;
  * @param {SpawnOptionsWithoutStdio} options 
  * @returns 
  */
-async function spawnCmd(cmd, args, options) {
+async function executeCmd(cmd, args/**,options */) {
     return new Promise(function (resolve, reject) {
-        var result = spawn(cmd, args, options);
+        let result = spawn(cmd, args, { shell: true });
         result.on('close', function (code) {
             resolve(code);
         });
@@ -131,13 +131,13 @@ async function main() {
 
     if (cmd === 'update') {
         const cmd = ['--registry=https://registry.npmmirror.com', 'update', '--prefix', packageDir];
-        const code = await spawnCmd(npm, cmd);
+        const code = await executeCmd(npm, cmd);
         if (code !== 0) console.error(`[失败]: ${code}`);
     } else if (cmd === 'add') {
         const pkgName = process.argv[3].trim();
         const args = ['--registry=https://registry.npmmirror.com', 'install', '--prefix', packageDir];
         if (pkgName) args.push(pkgName);
-        const code = await spawnCmd(npm, args);
+        const code = await executeCmd(npm, args);
         if (code !== 0) {
             console.error(`[失败]: ${code}`);
         } else {
@@ -160,7 +160,7 @@ async function main() {
         const args = ['--registry=https://registry.npmmirror.com', 'uninstall', '--prefix', packageDir];
         if (!pkgName) return console.error('[失败]: 输入要卸载的名字');
         args.push(pkgName);
-        const code = await spawnCmd(npm, args);
+        const code = await executeCmd(npm, args);
         if (code !== 0) {
             console.error(`[失败]: ${code}`);
         } else {
