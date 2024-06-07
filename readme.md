@@ -258,18 +258,18 @@
 
 ## 3、控制器
 
-**管理器位于assets/app-builtin/app-control中。**
-> 不需要也不建议手动去创建，可以通过菜单栏App->创建->Control选项来进行创建。
+**管理器位于assets/app-builtin/app-controller中。**
+> 不需要也不建议手动去创建，可以通过菜单栏App->创建->Controller选项来进行创建。
 
-**控制器继承自BaseControl。**
+**控制器继承自BaseController。**
 
-- 控制器内部可以新建变量和方法，在外部通过XXXControl.inst调用时，变量和方法会显示为只读属性。
+- 控制器内部可以新建变量和方法，在外部通过XXXController.inst调用时，变量和方法会显示为只读属性。
 
-- 控制器内部有emit和call方法，用来发射事件，这两个个方法只能在内部或绑定了控制器的UI内部使用。两个方法区别在于call方法只会执行第一个注册的事件并获得返回值。
+- 控制器内部有emit和call方法，用来发射事件，这两个方法只能在内部或绑定了控制器的UI内部使用。两个方法区别在于call方法只会执行第一个注册的事件并获得返回值。
 
-- UI需要通过继承BaseView.BindControl(XXXControl)来绑定一个控制器，并通过this.control访问到这个控制器实例，与inst调用不同的是，它是不受限的(属性等都不是只读)，而且可以通过this.control中的on、once、off、targetOff来接收和关闭emit或call的事件。
+- UI需要通过继承BaseView.BindController(XXXController)来绑定一个控制器，并通过this.controller访问到这个控制器实例，与inst调用不同的是，它是不受限的(属性等都不是只读)，而且可以通过this.controller中的on、once、off、targetOff来接收和关闭emit或call的事件。
 
-- **与cc.Node的事件不同，通过control注册的事件，需要通过off或targetOff手动销毁**
+- **与cc.Node的事件不同，通过controller注册的事件，需要通过off或targetOff手动销毁**
 
 **控制器负责维护外部与UI内部的联系。**
 
