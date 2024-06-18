@@ -1,4 +1,4 @@
-import { AssetManager, AudioClip, Game, _decorator, game, isValid, sys } from 'cc';
+import { AssetManager, AudioClip, Button, Game, _decorator, game, isValid, sys } from 'cc';
 import { IEffectName, IMusicName } from '../../../../../assets/app-builtin/app-admin/executor';
 import Core from '../../Core';
 import BaseManager from '../../base/BaseManager';
@@ -224,6 +224,31 @@ export default class SoundManager<E extends string, M extends string> extends Ba
             this.playEffect({ name: <E>this.defaultEffectName, volume: this.defaultEffectVolume, onPlay });
         } else {
             this.warn('defaultEffectName 不存在');
+        }
+    }
+
+    /**
+     * 设置按钮点击播放的音效，优先级高于默认音效
+     * @param name 音效(如果为空，则使用默认音效)
+     * @param opts.volume 音量
+     * @param opts.interval 多少秒内不会重复播放
+     */
+    public setButtonEffect(target: Button, name?: E, opts?: {
+        volume: number,
+        interval: number
+    }) {
+        if (name) {
+            const { volume = 1, interval = 0 } = opts || {};
+            //@ts-ignore
+            target.node['useDefaultEffect'] = false;
+            target.node.targetOff(this);
+            target.node.on(Button.EventType.CLICK, function (this: SoundManager<E, M>) {
+                this.playEffect({ name, volume, interval });
+            }, this);
+        } else {
+            //@ts-ignore
+            target.node['useDefaultEffect'] = true;
+            target.node.targetOff(this);
         }
     }
 

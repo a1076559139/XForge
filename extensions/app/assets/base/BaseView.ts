@@ -1,4 +1,4 @@
-import { Asset, Component, Enum, EventTouch, Node, Scene, UITransform, Widget, _decorator, director, error, js, log } from 'cc';
+import { Asset, Component, Enum, EventTouch, Font, Label, Node, Scene, Sprite, SpriteFrame, UITransform, Widget, _decorator, director, error, isValid, js, log, sp } from 'cc';
 import { EDITOR } from 'cc/env';
 import { IMiniViewName, IMiniViewNames, IViewName } from '../../../../assets/app-builtin/app-admin/executor';
 import Core from '../Core';
@@ -775,6 +775,48 @@ export default class BaseView extends Component {
      */
     protected preloadResDir<T extends typeof Asset>(path: string, type: T) {
         Core.inst.manager.ui.preloadResDir(this, path, type);
+    }
+
+    /**
+     * 设置字体资源
+     * @param path UI的resources目录下的相对路径
+     */
+    protected setFont(target: Label, path: string, onComplete?: (success: boolean) => any) {
+        this.loadRes(path, Font, (font) => {
+            if (!font || !isValid(target)) {
+                return onComplete && onComplete(false);
+            }
+            target.font = font;
+            onComplete && onComplete(true);
+        });
+    }
+
+    /**
+     * 设置Spine资源
+     * @param path UI的resources目录下的相对路径
+     */
+    protected setSpine(target: sp.Skeleton, path: string, onComplete?: (success: boolean) => any) {
+        this.loadRes(path, sp.SkeletonData, (skeletonData) => {
+            if (!skeletonData || !isValid(target)) {
+                return onComplete && onComplete(false);
+            }
+            target.skeletonData = skeletonData;
+            onComplete && onComplete(true);
+        });
+    }
+
+    /**
+     * 设置图片资源
+     * @param path UI的resources目录下的相对路径
+     */
+    protected setSprite(target: Sprite, path: string, onComplete?: (success: boolean) => any) {
+        this.loadRes(path, SpriteFrame, (spriteFrame) => {
+            if (!spriteFrame || !isValid(target)) {
+                return onComplete && onComplete(false);
+            }
+            target.spriteFrame = spriteFrame;
+            onComplete && onComplete(true);
+        });
     }
 
     protected log(...args: any[]) {

@@ -157,7 +157,9 @@ export default abstract class BaseAppInit extends Component {
             Core.emit(Core.EventType.EVENT_APPINIT_FINISHED);
             // 默认音效(Button点击触发, 这个方案可以正常触发input事件)
             if (Core.inst.Manager.Sound.setting.defaultEffectName) {
-                const playDefaultEffect = function () {
+                const playDefaultEffect = function (e: EventTouch) {
+                    // SoundManager.setButtonEffect会将Button所在节点的useDefaultEffect设为false
+                    if (e.target['useDefaultEffect'] === false) return;
                     Core.inst.manager.ui.onceUIRoot2D(Node.EventType.TOUCH_END, function (event: EventTouch) {
                         if (!event.target.getComponent(Button)) return;
                         setTimeout(() => {

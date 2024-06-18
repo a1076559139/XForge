@@ -250,19 +250,22 @@ export default class LoaderManager extends BaseManager {
      * @param params.path bundle下的相对路径
      * 
      * @example
-     * setFont({target:label, path:'font/num', bundle:'resources', onSuccess:()=>{}})
+     * setFont({target:label, path:'font/num', bundle:'resources', onComplete:(succ)=>{}})
      */
-    public setFont(params: { target: Label, path: string, bundle?: string, onSuccess?: () => void, onFail?: () => void }) {
+    public setFont(params: { target: Label, path: string, bundle?: string, onComplete?: (success: boolean) => any, onSuccess?: () => void, onFail?: () => void }) {
         this.load({
             path: params.path,
             bundle: params.bundle,
             type: Font,
             onComplete: (font) => {
                 if (!font || !isValid(params.target)) {
-                    return params.onFail && params.onFail();
+                    params.onFail && params.onFail();
+                    params.onComplete && params.onComplete(false);
+                    return;
                 }
                 params.target.font = font;
                 params.onSuccess && params.onSuccess();
+                params.onComplete && params.onComplete(true);
             }
         });
     }
@@ -273,19 +276,22 @@ export default class LoaderManager extends BaseManager {
      * @param params.path bundle下的相对路径
      * 
      * @example
-     * setSpine({target:spine, path:'spine/role', bundle:'resources', onSuccess:()=>{}})
+     * setSpine({target:spine, path:'spine/role', bundle:'resources', onComplete:(succ)=>{}})
      */
-    public setSpine(params: { target: sp.Skeleton, path: string, bundle?: string, onSuccess?: () => void, onFail?: () => void }) {
+    public setSpine(params: { target: sp.Skeleton, path: string, bundle?: string, onComplete?: (success: boolean) => any, onSuccess?: () => void, onFail?: () => void }) {
         this.load({
             path: params.path,
             bundle: params.bundle,
             type: sp.SkeletonData,
             onComplete: (skeletonData) => {
                 if (!skeletonData || !isValid(params.target)) {
-                    return params.onFail && params.onFail();
+                    params.onFail && params.onFail();
+                    params.onComplete && params.onComplete(false);
+                    return;
                 }
                 params.target.skeletonData = skeletonData;
                 params.onSuccess && params.onSuccess();
+                params.onComplete && params.onComplete(true);
             }
         });
     }
@@ -296,19 +302,22 @@ export default class LoaderManager extends BaseManager {
      * @param params.path bundle下的相对路径
      * 
      * @example
-     * setSprite({target:sprite, path:'img/a/spriteFrame', bundle:'resources', onSuccess:()=>{}})
+     * setSprite({target:sprite, path:'img/a/spriteFrame', bundle:'resources', onComplete:(succ)=>{}})
      */
-    public setSprite(params: { target: Sprite, path: string, bundle?: string, onSuccess?: () => void, onFail?: () => void }) {
+    public setSprite(params: { target: Sprite, path: string, bundle?: string, onComplete?: (success: boolean) => any, onSuccess?: () => void, onFail?: () => void }) {
         this.load({
             path: params.path,
             bundle: params.bundle,
             type: SpriteFrame,
             onComplete: (spriteFrame) => {
                 if (!spriteFrame || !isValid(params.target)) {
-                    return params.onFail && params.onFail();
+                    params.onFail && params.onFail();
+                    params.onComplete && params.onComplete(false);
+                    return;
                 }
                 params.target.spriteFrame = spriteFrame;
                 params.onSuccess && params.onSuccess();
+                params.onComplete && params.onComplete(true);
             }
         });
     }

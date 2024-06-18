@@ -28,11 +28,21 @@ enum ErrorCode {
 interface IShowParams<T, IShow = any, IShowReturn = any, IHideReturn = any> {
     /**UI名 */
     name: T,
-    /**数据 被onShow接收 */
+    /**
+     * 数据
+     * - 被onShow接收
+     */
     data?: IShow,
-    /**是否将UI显示在最上 默认true*/
+    /**
+     * 是否将UI显示在最上 
+     * - 默认true
+     */
     top?: boolean,
-    /**队列模式: join-排队 jump-插队 */
+    /**
+     * 队列模式，一个UI关闭后，是否展示下一个UI
+     * - join: 排队 
+     * - jump: 插队(到首位)
+     */
     queue?: 'join' | 'jump',
     /**静默 默认false(不显示加载loading，也不屏蔽触摸) */
     silent?: boolean,
@@ -673,7 +683,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     /**
      * 销毁ui，释放ui的资源(hideEvent为destroy模式的UI，无需手动调用)
-     * @description release会直接销毁UI，不管UI是否是show状态
+     * - release会直接销毁UI，不管UI是否是show状态
      */
     public release(nameOrCom: UIName | MiniName | BaseView) {
         let uiName = '';
@@ -724,9 +734,9 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     /**
      * 检查UI是否有效
-     * -1 加载失败
-     * 0 UI无效
-     * 1 UI有效
+     * - -1: 加载失败
+     * - 0: UI无效
+     * - 1: UI有效
      */
     private checkUIValid(name: UIName | MiniName, data: any, callback: (valid: -1 | 0 | 1) => any) {
         this.installUI(name, (result) => {
@@ -934,7 +944,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     /**
      * 展示默认View
-     * @param {*} param0 
      */
     public showDefault(onShow?: (result?: any) => any) {
         if (this.defaultUI) {
@@ -952,8 +961,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     /**
      * 是否展示了(包括加载中和队列中)
-     * @param name 
-     * @returns 
      */
     public isShow(name: UIName) {
         return !!this.getUIInShowing(name) ||
@@ -991,7 +998,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     /**
      * 消耗队列
-     * @returns 
      */
     private consumeShowQueue() {
         if (this.showQueue.length === 0) return;
@@ -1079,7 +1085,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     /**
      * 展示一个UI
-     * 此流程一定是异步的
+     * - 此流程一定是异步的
      */
     public show<UI extends BaseView>(params
         // @ts-ignore
@@ -1125,7 +1131,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     /**
      * 展示一个UI
-     * 此流程一定是异步的
+     * - 此流程一定是异步的
      */
     public showAsync<UI extends BaseView>(params
         // @ts-ignore
@@ -1147,7 +1153,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     /**
      * 关闭View
-     * 此流程一定是同步的
+     * - 此流程一定是同步的
      */
     public hide<UI extends BaseView>({ name, data, onHide }
         // @ts-ignore
@@ -1178,7 +1184,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     /**
      * 从顶部关闭一个View(不会重复关闭节点)
-     * 此流程一定是同步的
+     * - 此流程一定是同步的
      */
     public pop<UI extends BaseView>({ name, data, onHide }
         // @ts-ignore
@@ -1207,7 +1213,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     /**
      * 从底部关闭一个View(不会重复关闭节点)
-     * 此流程一定是同步的
+     * - 此流程一定是同步的
      */
     public shift<UI extends BaseView>({ name, data, onHide }
         // @ts-ignore
@@ -1236,9 +1242,9 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     /**
      * 关闭全部View
-     * 1、不关闭展示中的Page(加载中的会停止)
-     * 2、不关闭paper
-     * 此流程一定是同步的
+     * - 不关闭展示中的Page(加载中的会停止)
+     * - 不关闭paper
+     * - 此流程一定是同步的
      */
     public hideAll({ data, exclude }: { data?: any, exclude?: UIName[] } = {}): void {
         // 展示中的
@@ -1321,7 +1327,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     /**
      * 设置触摸是否启用
-     * @param {*} enabled 
+     * @param enabled 是否启用
      */
     public setTouchEnabled(enabled: boolean) {
         if (enabled) {
