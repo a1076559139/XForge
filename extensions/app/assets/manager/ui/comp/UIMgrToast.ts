@@ -1,8 +1,9 @@
 import { Component, NodePool, Prefab, Tween, UIOpacity, UITransform, _decorator, instantiate, tween, view } from 'cc';
 import UIMgrToastCell from './UIMgrToastCell';
-const { property, ccclass } = _decorator;
+const { property, ccclass, requireComponent } = _decorator;
 
 @ccclass('UIMgrToast')
+@requireComponent(UITransform)
 export default class UIMgrToast extends Component {
     @property(Prefab)
     private cell: Prefab = null;

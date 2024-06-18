@@ -1,7 +1,9 @@
-import { Component, Label, UITransform, _decorator } from 'cc';
-const { ccclass, property } = _decorator;
+import { Component, Label, UIOpacity, UITransform, _decorator } from 'cc';
+const { ccclass, property, requireComponent } = _decorator;
 
 @ccclass('UIMgrToastCell')
+@requireComponent(UIOpacity)
+@requireComponent(UITransform)
 export default class UIMgrToastCell extends Component {
     @property(Label)
     private title: Label = null;
