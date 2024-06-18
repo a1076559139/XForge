@@ -34,7 +34,7 @@ exports.methods = {
         return Editor.Message.request('asset-db', 'create-asset', fileUrl, info.prefabData || info);
     },
     async createScene(fileName, fileUrl) {
-        const { SceneAsset, Scene, Node, js, Layers } = require('cc');
+        const { SceneAsset, Scene, Node, js, Layers, Camera, DirectionalLight } = require('cc');
         while (true) {
             const result = js.getClassByName(fileName);
             if (result)
@@ -44,14 +44,27 @@ exports.methods = {
             });
         }
         const scene = new Scene(fileName);
+        // 根节点
         const node = new Node(fileName);
-        node.parent = scene;
         node.layer = Layers.Enum.DEFAULT;
+        node.parent = scene;
+        // 相机
+        const camera = new Node('Camera');
+        camera.addComponent(Camera);
+        camera.layer = Layers.Enum.DEFAULT;
+        camera.parent = node;
+        // 灯光
+        const light = new Node('Light');
+        light.addComponent(DirectionalLight);
+        light.layer = Layers.Enum.DEFAULT;
+        light.parent = node;
         const com = node.addComponent(fileName);
         com.resetInEditor && com.resetInEditor();
         const sceneAsset = new SceneAsset();
         sceneAsset.scene = scene;
         const info = EditorExtends.serialize(sceneAsset);
+        camera.destroy();
+        light.destroy();
         node.destroy();
         scene.destroy();
         sceneAsset.destroy();

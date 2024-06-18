@@ -645,25 +645,15 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             return;
         }
 
-        const task = Core.inst.lib.task.createSync<[[AssetManager.Bundle, AssetManager.Bundle], Prefab | SceneAsset]>()
-            .add(next => {
-                this.initBundle(name, next);
-            })
-            .start(() => {
-                // 失败
-                const uiBundles = task.results[0];
-                if (!uiBundles || !uiBundles[0] || !uiBundles[1]) {
-                    return complete && complete(null);
-                }
-
-                const isScene = uiBundles[0].getSceneInfo(name);
-                Core.inst.manager.loader.preload({
-                    bundle: this.getNativeBundleName(name),
-                    path: this.getUIPath(name),
-                    type: isScene ? SceneAsset : Prefab,
-                    onComplete: complete
-                });
+        this.initBundle(name, ([naBundle]) => {
+            const isScene = naBundle.getSceneInfo(name);
+            Core.inst.manager.loader.preload({
+                bundle: this.getNativeBundleName(name),
+                path: this.getUIPath(name),
+                type: isScene ? SceneAsset : Prefab,
+                onComplete: complete
             });
+        });
     }
 
     /**
