@@ -107,20 +107,22 @@ export default class SoundManager<E extends string, M extends string> extends Ba
      * 预加载声音资源
      * @param soundPath sound路径
      */
-    public preload(soundPath: (E | M)) {
+    public preload(soundPath: (E | M), complete?: (item: AssetManager.RequestItem[]) => any) {
         if (!soundPath) {
             this.error('[preload]', 'fail');
+            complete && setTimeout(function () {
+                if (!isValid(this)) return;
+                complete(null);
+            });
             return;
         }
 
         if (soundPath.indexOf('effect') !== 0 && soundPath.indexOf('music') !== 0) {
             this.error('[preload]', 'fail', soundPath);
-            return;
-        }
-
-        // 判断有无缓存
-        const audio = this.audioCache[soundPath as string];
-        if (audio) {
+            complete && setTimeout(function () {
+                if (!isValid(this)) return;
+                complete(null);
+            });
             return;
         }
 
@@ -128,7 +130,8 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         Core.inst.manager.loader.preload({
             bundle: BundleName,
             path: soundPath,
-            type: AudioClip
+            type: AudioClip,
+            onComplete: complete
         });
     }
 

@@ -150,10 +150,10 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             setting.preload.forEach((preload) => {
                 if (preload instanceof Array) {
                     task.add(preload.map(name => {
-                        return next => this.installUI(name as any, next);
+                        return next => this.preload(name as any, next);
                     }));
                 } else {
-                    task.add(next => this.installUI(preload as any, next));
+                    task.add(next => this.preload(preload as any, next));
                 }
             });
             task.start();
@@ -425,9 +425,9 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     /**
-     * 初始化UI的Bundle
+     * 初始化Bundle
      */
-    private initUIBundle(name: UIName | MiniName, onFinish: (result: [AssetManager.Bundle, AssetManager.Bundle]) => any) {
+    private initBundle(name: UIName | MiniName, onFinish: (result: [AssetManager.Bundle, AssetManager.Bundle]) => any) {
         Core.inst.lib.task.createASync<[AssetManager.Bundle, AssetManager.Bundle]>()
             .add((next) => {
                 Core.inst.manager.loader.loadBundle({
@@ -464,7 +464,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
         const task = Core.inst.lib.task.createSync<[[AssetManager.Bundle, AssetManager.Bundle], Prefab | SceneAsset]>()
             .add(next => {
-                this.initUIBundle(name, next);
+                this.initBundle(name, next);
             })
             .add((next) => {
                 // 失败
@@ -634,24 +634,36 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 预加载UI
      */
-    public preload(name: UIName | MiniName) {
+    public preload(name: UIName | MiniName, complete?: (item: AssetManager.RequestItem[]) => any) {
         // 验证name是否为真
         if (!name) {
             this.error('[preload]', 'fail');
+            complete && setTimeout(function () {
+                if (!isValid(this)) return;
+                complete(null);
+            });
             return;
         }
 
-        if (this.sceneCache[name]) return;
-        if (this.prefabCache[name]) return;
+        const task = Core.inst.lib.task.createSync<[[AssetManager.Bundle, AssetManager.Bundle], Prefab | SceneAsset]>()
+            .add(next => {
+                this.initBundle(name, next);
+            })
+            .start(() => {
+                // 失败
+                const uiBundles = task.results[0];
+                if (!uiBundles || !uiBundles[0] || !uiBundles[1]) {
+                    return complete && complete(null);
+                }
 
-        this.initUIBundle(name, ([naBundle]) => {
-            const isScene = naBundle.getSceneInfo(name);
-            Core.inst.manager.loader.preload({
-                bundle: this.getNativeBundleName(name),
-                path: this.getUIPath(name),
-                type: isScene ? SceneAsset : Prefab
+                const isScene = uiBundles[0].getSceneInfo(name);
+                Core.inst.manager.loader.preload({
+                    bundle: this.getNativeBundleName(name),
+                    path: this.getUIPath(name),
+                    type: isScene ? SceneAsset : Prefab,
+                    onComplete: complete
+                });
             });
-        });
     }
 
     /**
