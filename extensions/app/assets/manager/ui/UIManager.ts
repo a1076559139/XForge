@@ -66,7 +66,7 @@ interface IHideParams<T, IHide = any, IHideReturn = any> {
 
 const UIScene = 'UIRoot';
 const Root2DPath = 'Root2D';
-const UIRoot2DPath = 'Root2D/UserInterface';
+const UserInterfacePath = 'Root2D/UserInterface';
 const ViewTypes = [ViewType.Page, ViewType.Paper, ViewType.Pop, ViewType.Top];
 
 type IPreload = (IViewName | IMiniViewName | Array<IViewName | IMiniViewName>)[];
@@ -102,8 +102,10 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     })
     private toastPre: Prefab = null;
 
-    // 根结点
-    private UIRoot2D: Node = null;
+    // 2D根节点
+    private Root2D: Node = null;
+    // UI根节点
+    private UserInterface: Node = null;
 
     // 加载和遮罩节点
     private loading: Node = null;
@@ -138,7 +140,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     /**默认相机 */
     public get defaultCamera() {
-        return this.UIRoot2D.getComponent(Canvas).cameraComponent;
+        return this.Root2D.getComponent(Canvas).cameraComponent;
     }
 
     protected init(finish: Function) {
@@ -166,29 +168,29 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     protected onLoad() {
-        const root2D = find(Root2DPath);
+        this.Root2D = find(Root2DPath);
         if (sys.isNative) {
             // cc在处理UI双相机时，在native环境下目前有BUG
-            const cameraCleaner = root2D.getChildByName('CameraCleaner');
+            const cameraCleaner = this.Root2D.getChildByName('CameraCleaner');
             if (cameraCleaner) cameraCleaner.active = false;
         }
-        director.addPersistRootNode(root2D);
+        director.addPersistRootNode(this.Root2D);
 
-        this.UIRoot2D = find(UIRoot2DPath);
+        this.UserInterface = find(UserInterfacePath);
 
         this.initUITypes();
 
         this.shade = instantiate(this.shadePre);
         this.loading = instantiate(this.loadingPre);
-        this.shade.parent = this.UIRoot2D;
-        this.loading.parent = this.UIRoot2D;
+        this.shade.parent = this.UserInterface;
+        this.loading.parent = this.UserInterface;
         this.shade.active = false;
         this.loading.active = false;
 
         // toast是后面加的，需要做容错
         if (this.toastPre) {
             this.toast = instantiate(this.toastPre);
-            this.toast.parent = this.UIRoot2D;
+            this.toast.parent = this.UserInterface;
         }
     }
 
@@ -197,7 +199,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             const d2 = new Node(type);
             d2.layer = Layers.Enum.UI_2D;
             d2.addComponent(UIMgrZOrder);
-            d2.parent = this.UIRoot2D;
+            d2.parent = this.UserInterface;
             d2.addComponent(UITransform);
             const widget = d2.addComponent(Widget);
             widget.isAlignBottom = true;
@@ -215,7 +217,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                     if (!child) return;
                     if (child === this.shade) return;
                     if (this.getBaseView(child)) return;
-                    this.warn(`${UIRoot2DPath}/${type}下非必要请不要添加非UI节点:`, child?.name);
+                    this.warn(`${UserInterfacePath}/${type}下非必要请不要添加非UI节点:`, child?.name);
                 }, this);
             }
         });
@@ -226,7 +228,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         if (this.touchMaskMap.size > 0) return;
 
         for (let i = 0; i < BlockEvents.length; i++) {
-            this.UIRoot2D.on(BlockEvents[i], this.stopPropagation, this, true);
+            this.UserInterface.on(BlockEvents[i], this.stopPropagation, this, true);
         }
     }
 
@@ -235,7 +237,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         if (this.touchMaskMap.size > 0) return;
 
         for (let i = 0; i < BlockEvents.length; i++) {
-            this.UIRoot2D.off(BlockEvents[i], this.stopPropagation, this, true);
+            this.UserInterface.off(BlockEvents[i], this.stopPropagation, this, true);
         }
     }
 
@@ -347,7 +349,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         for (let index = 0; index < ViewTypes.length; index++) {
             const viewType = ViewTypes[index];
             if (viewType === prefix) {
-                return this.UIRoot2D.getChildByName(viewType);
+                return this.UserInterface.getChildByName(viewType);
             }
         }
 
@@ -764,7 +766,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         // 借助refreshShade实现onFocus、onLostFocus(onFocus不会被每次都触发，只有产生变化时才触发)
         let onFocus = false;
         // 倒序遍历uiRoots
-        let uiRoots = this.UIRoot2D.children;
+        let uiRoots = this.UserInterface.children;
         for (let index = uiRoots.length - 1; index >= 0; index--) {
             const uiRoot = uiRoots[index];
             if (uiRoot !== this.shade && uiRoot !== this.loading) {
@@ -1350,36 +1352,68 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 在2DUI根节点上处理事件
      */
-    public onUIRoot2D(...args: Parameters<Node['on']>) {
-        Node.prototype.on.apply(this.UIRoot2D, args);
+    public onUserInterface(...args: Parameters<Node['on']>) {
+        Node.prototype.on.apply(this.UserInterface, args);
     }
 
     /**
      * 在2DUI根节点上处理事件
+     */
+    public onceUserInterface(...args: Parameters<Node['once']>) {
+        Node.prototype.once.apply(this.UserInterface, args);
+    }
+
+    /**
+     * 在2DUI根节点上处理事件
+     */
+    public offUserInterface(...args: Parameters<Node['off']>) {
+        Node.prototype.off.apply(this.UserInterface, args);
+    }
+
+    /**
+     * 在2DUI根节点上处理事件
+     */
+    public targetOffUserInterface(...args: Parameters<Node['targetOff']>) {
+        Node.prototype.targetOff.apply(this.UserInterface, args);
+    }
+
+    /**
+     * 在2DUI根节点上处理事件
+     * @deprecated 
+     */
+    public onUIRoot2D(...args: Parameters<Node['on']>) {
+        Node.prototype.on.apply(this.UserInterface, args);
+    }
+
+    /**
+     * 在2DUI根节点上处理事件
+     * @deprecated 
      */
     public onceUIRoot2D(...args: Parameters<Node['once']>) {
-        Node.prototype.once.apply(this.UIRoot2D, args);
+        Node.prototype.once.apply(this.UserInterface, args);
     }
 
     /**
      * 在2DUI根节点上处理事件
+     * @deprecated 
      */
     public offUIRoot2D(...args: Parameters<Node['off']>) {
-        Node.prototype.off.apply(this.UIRoot2D, args);
+        Node.prototype.off.apply(this.UserInterface, args);
     }
 
     /**
      * 在2DUI根节点上处理事件
+     * @deprecated 
      */
     public targetOffUIRoot2D(...args: Parameters<Node['targetOff']>) {
-        Node.prototype.targetOff.apply(this.UIRoot2D, args);
+        Node.prototype.targetOff.apply(this.UserInterface, args);
     }
 
     /**
      * 立即给2DUI的子节点排序
      */
-    public sortUIRoot2D(name: IViewType) {
-        this.UIRoot2D
+    public sortUserInterface(name: IViewType) {
+        this.UserInterface
             ?.getChildByName(name)
             ?.getComponent(UIMgrZOrder)
             ?.updateZOrder();

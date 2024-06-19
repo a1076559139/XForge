@@ -160,7 +160,7 @@ export default abstract class BaseAppInit extends Component {
                 const playDefaultEffect = function (e: EventTouch) {
                     // SoundManager.setButtonEffect会将Button所在节点的useDefaultEffect设为false
                     if (e.target['useDefaultEffect'] === false) return;
-                    Core.inst.manager.ui.onceUIRoot2D(Node.EventType.TOUCH_END, function (event: EventTouch) {
+                    Core.inst.manager.ui.onceUserInterface(Node.EventType.TOUCH_END, function (event: EventTouch) {
                         if (!event.target.getComponent(Button)) return;
                         setTimeout(() => {
                             if (!isValid(Core.inst.manager.sound)) return;
@@ -202,15 +202,15 @@ export default abstract class BaseAppInit extends Component {
                         if (!isValid(Core.inst.manager.sound)) return;
                         if (Core.inst.manager.sound.isMusicPlaying && !Core.inst.manager.sound.isMusicPaused) {
                             Core.inst.manager.sound.replayMusic(() => {
-                                Core.inst.manager.ui.offUIRoot2D(Node.EventType.TOUCH_START, onTouch, this, true);
+                                Core.inst.manager.ui.offUserInterface(Node.EventType.TOUCH_START, onTouch, this, true);
                             });
                         } else {
-                            Core.inst.manager.ui.offUIRoot2D(Node.EventType.TOUCH_START, onTouch, this, true);
+                            Core.inst.manager.ui.offUserInterface(Node.EventType.TOUCH_START, onTouch, this, true);
                         }
                     };
-                    Core.inst.manager.ui.onUIRoot2D(Node.EventType.TOUCH_START, onTouch, this, true);
+                    Core.inst.manager.ui.onUserInterface(Node.EventType.TOUCH_START, onTouch, this, true);
                     Core.inst.manager.sound.playDefaultMusic(() => {
-                        Core.inst.manager.ui.offUIRoot2D(Node.EventType.TOUCH_START, onTouch, this, true);
+                        Core.inst.manager.ui.offUserInterface(Node.EventType.TOUCH_START, onTouch, this, true);
                     });
                 }
             });
