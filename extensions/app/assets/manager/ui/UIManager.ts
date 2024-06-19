@@ -1,4 +1,4 @@
-import { Asset, AssetManager, Component, Event, Layers, Node, Prefab, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, find, instantiate, isValid, js, settings, sys } from 'cc';
+import { Asset, AssetManager, Canvas, Component, Event, Layers, Node, Prefab, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, find, instantiate, isValid, js, settings, sys } from 'cc';
 import { DEBUG, DEV } from 'cc/env';
 import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
 import Core from '../../Core';
@@ -135,6 +135,11 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     private uiShowingMap: Map<BaseView, UIName> = new Map();
 
     private showQueue: IShowParams<UIName>[] = [];
+
+    /**默认相机 */
+    public get defaultCamera() {
+        return this.UIRoot2D.getComponent(Canvas).cameraComponent;
+    }
 
     protected init(finish: Function) {
         const setting = UIManager.setting;
