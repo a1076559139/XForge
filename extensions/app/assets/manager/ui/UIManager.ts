@@ -54,6 +54,39 @@ interface IShowParams<T, IShow = any, IShowReturn = any, IHideReturn = any> {
     onError?: (result: string, code: ErrorCode) => true | void,
     /**
      * @private
+     * @deprecated
+     */
+    attr?: IShowParamAttr,
+}
+
+interface IShowAsyncParams<T, IShow = any, IShowReturn = any> {
+    /**UI名 */
+    name: T,
+    /**
+     * 数据
+     * - 被onShow接收
+     */
+    data?: IShow,
+    /**
+     * 是否将UI显示在最上 
+     * - 默认true
+     */
+    top?: boolean,
+    /**
+     * 队列模式，一个UI关闭后，是否展示下一个UI
+     * - join: 排队 
+     * - jump: 插队(到首位)
+     */
+    queue?: 'join' | 'jump',
+    /**静默 默认false(不显示加载loading，也不屏蔽触摸) */
+    silent?: boolean,
+    /**UI触发onShow后 */
+    onShow?: IShowParamOnShow<IShowReturn>,
+    /**当code的值为ErrorCode.LogicError时，如果返回true，则自动重试 */
+    onError?: (result: string, code: ErrorCode) => true | void,
+    /**
+     * @private
+     * @deprecated
      */
     attr?: IShowParamAttr,
 }
@@ -1144,17 +1177,12 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      */
     public showAsync<UI extends BaseView>(params
         // @ts-ignore
-        : IShowParams<UIName, Parameters<UI['onShow']>[0], ReturnType<UI['onShow']>, ReturnType<UI['onHide']>>): Promise<boolean> {
+        : IShowAsyncParams<UIName, Parameters<UI['onShow']>[0], ReturnType<UI['onShow']>>): Promise<ReturnType<UI['onHide']>> {
         return new Promise((resolve) => {
             this.show({
                 ...params,
-                onShow: (...args) => {
-                    params.onShow && params.onShow(...args);
-                    resolve(true);
-                },
-                onError: (...args) => {
-                    params.onError && params.onError(...args);
-                    resolve(false);
+                onHide(result) {
+                    resolve(result);
                 }
             });
         });
