@@ -16,10 +16,10 @@ async function executeCmd(cmd, args/**,options */) {
             resolve(code);
         });
         result.stdout.on('data', function (data) {
-            console.log('[log]: ' + data);
+            console.log(data.toString());
         });
         result.stderr.on('error', function (data) {
-            console.log('[err]: ' + data);
+            reject(data.toString());
         });
     });
 }
@@ -132,14 +132,15 @@ async function main() {
     if (cmd === 'update') {
         const cmd = ['--registry=https://registry.npmmirror.com', 'update', '--prefix', packageDir];
         const code = await executeCmd(npm, cmd);
-        if (code !== 0) console.error(`[失败]: ${code}`);
+        if (code !== 0)
+            throw new Error(`错误码: ${code}`);
     } else if (cmd === 'add') {
         const pkgName = process.argv[3].trim();
         const args = ['--registry=https://registry.npmmirror.com', 'install', '--prefix', packageDir];
         if (pkgName) args.push(pkgName);
         const code = await executeCmd(npm, args);
         if (code !== 0) {
-            console.error(`[失败]: ${code}`);
+            throw new Error(`错误码: ${code}`);
         } else {
             // 如果不存在文件夹则创建
             if (!fs.existsSync(assetsDir)) {
@@ -158,11 +159,12 @@ async function main() {
         const pkgName = process.argv[3].trim();
         const pkgDir = path.join(modulesDir, pkgName);
         const args = ['--registry=https://registry.npmmirror.com', 'uninstall', '--prefix', packageDir];
-        if (!pkgName) return console.error('[失败]: 输入要卸载的名字');
+        if (!pkgName)
+            throw new Error('输入要卸载的名字');
         args.push(pkgName);
         const code = await executeCmd(npm, args);
         if (code !== 0) {
-            console.error(`[失败]: ${code}`);
+            throw new Error(`错误码: ${code}`);
         } else {
             // 如果文件夹未删除成功 则 强制删除
             if (fs.existsSync(pkgDir)) {
@@ -176,7 +178,7 @@ async function main() {
             }
         }
     } else {
-        return console.error('[未知指令]');
+        throw new Error('请输入正确的指令');
     }
 
     // 同步文件
