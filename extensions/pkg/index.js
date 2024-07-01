@@ -122,7 +122,9 @@ function deleteDirectory(dir) {
 const assetsDir = path.join(__dirname, 'node_modules');
 const packageDir = path.join(__dirname, 'package');
 const modulesDir = path.join(packageDir, 'node_modules');
-const executorPath = path.join(__dirname, '../../assets/app-builtin/app-admin/executor.ts');
+
+const exportDirName = 'pkg-export';
+const exportDir = path.join(__dirname, '../../assets', exportDirName);
 
 async function main() {
     // npm指令
@@ -134,10 +136,13 @@ async function main() {
         const code = await executeCmd(npm, cmd);
         if (code !== 0)
             throw new Error(`错误码: ${code}`);
+        else
+            console.log('✅: 已更新安装包');
     } else if (cmd === 'add') {
         const pkgName = process.argv[3].trim();
-        const args = ['--registry=https://registry.npmmirror.com', 'install', '--prefix', packageDir];
-        if (pkgName) args.push(pkgName);
+        if (!pkgName)
+            throw new Error('输入要安装的包名字');
+        const args = ['--registry=https://registry.npmmirror.com', 'install', '--prefix', packageDir, pkgName];
         const code = await executeCmd(npm, args);
         if (code !== 0) {
             throw new Error(`错误码: ${code}`);
@@ -146,22 +151,26 @@ async function main() {
             if (!fs.existsSync(assetsDir)) {
                 fs.mkdirSync(assetsDir);
             }
-            // 直接更新executor.ts避免安装后直接在vscode中无法触发智能提示
-            if (fs.existsSync(executorPath)) {
-                const str = fs.readFileSync(executorPath, 'utf-8');
-                const reg = new RegExp(`import\\s+['"]db://pkg/${pkgName}['"]`);
-                if (str.search(reg) === -1) {
-                    fs.writeFileSync(executorPath, str + `\nimport 'db://pkg/${pkgName}'`, 'utf-8');
-                }
+            if (!fs.existsSync(exportDir)) {
+                fs.mkdirSync(exportDir);
             }
+            fs.writeFileSync(path.join(exportDir, '.' + exportDirName + '.md'), '用于辅助触发扩展包的自动import', 'utf-8');
+            if (!fs.existsSync(path.join(exportDir, pkgName + '.ts'))) {
+                if (pkgName.indexOf('/') !== -1) {
+                    const dir = path.join(exportDir, pkgName.split('/')[0]);
+                    if (!fs.existsSync(dir))
+                        fs.mkdirSync(dir);
+                }
+                fs.writeFileSync(path.join(exportDir, pkgName + '.ts'), `export * from 'db://pkg/${pkgName}'`, 'utf-8');
+            }
+            console.log(`✅: 已成功安装包 ${pkgName}`);
         }
     } else if (cmd === 'remove') {
         const pkgName = process.argv[3].trim();
-        const pkgDir = path.join(modulesDir, pkgName);
-        const args = ['--registry=https://registry.npmmirror.com', 'uninstall', '--prefix', packageDir];
         if (!pkgName)
-            throw new Error('输入要卸载的名字');
-        args.push(pkgName);
+            throw new Error('输入要卸载的包名字');
+        const pkgDir = path.join(modulesDir, pkgName);
+        const args = ['--registry=https://registry.npmmirror.com', 'uninstall', '--prefix', packageDir, pkgName];
         const code = await executeCmd(npm, args);
         if (code !== 0) {
             throw new Error(`错误码: ${code}`);
@@ -170,12 +179,13 @@ async function main() {
             if (fs.existsSync(pkgDir)) {
                 deleteDirectory(pkgDir);
             }
-            // 直接更新executor.ts避免返回编辑器报错
-            if (fs.existsSync(executorPath)) {
-                const str = fs.readFileSync(executorPath, 'utf-8');
-                const reg = new RegExp(`import\\s+['"]db://pkg/${pkgName}['"]`);
-                fs.writeFileSync(executorPath, str.replace(reg, ''), 'utf-8');
+            if (fs.existsSync(path.join(exportDir, pkgName + '.ts'))) {
+                fs.unlinkSync(path.join(exportDir, pkgName + '.ts'));
             }
+            if (fs.existsSync(path.join(exportDir, pkgName + '.ts.meta'))) {
+                fs.unlinkSync(path.join(exportDir, pkgName + '.ts.meta'));
+            }
+            console.log(`✅: 已卸载安装包 ${pkgName}`);
         }
     } else {
         throw new Error('请输入正确的指令');
