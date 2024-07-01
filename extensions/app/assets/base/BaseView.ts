@@ -608,6 +608,7 @@ export default class BaseView extends Component {
         const changeState = this._base_view_state === ViewState.Hid;
         if (changeState) this._base_view_state = ViewState.BeforeShow;
         const next = (error: string) => {
+            beforeShow && beforeShow(error);
             if (!error) {
                 // 设置展示中
                 if (changeState) this._base_view_state = ViewState.Showing;
@@ -619,19 +620,15 @@ export default class BaseView extends Component {
                     this.onCreate();
                 }
 
-                // 正式显示ui并触发系统生命周期函数
-                // 触发onLoad、onEnable
-                if (this.node.active !== true) { this.node.active = true; }
-
                 // 设置属性
                 this.setNodeAttr(attr);
 
-                // 设置遮罩
-                // 触发focus逻辑
+                // 触发onLoad、onEnable
+                if (this.node.active !== true) { this.node.active = true; }
+
+                // 设置遮罩，触发focus逻辑
                 Core.inst.manager.ui.refreshShade();
-            }
-            beforeShow && beforeShow(error);
-            if (!error) {
+
                 this.log('onShow');
                 let result = null;
                 try {
