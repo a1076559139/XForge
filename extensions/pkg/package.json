@@ -1,22 +1,22 @@
 {
-    "package_version": 2,
-    "name": "pkg",
-    "version": "1.0.0",
-    "author": "张鹏",
-    "license": "MIT",
-    "editor": ">=3.6.0",
-    "description": "用于存放扩展包",
-    "contributions": {
-        "asset-db": {
-            "mount": {
-                "path": "./node_modules",
-                "readonly": true
-            }
-        }
-    },
-    "scripts": {
-        "add": "node ./index.js add",
-        "remove": "node ./index.js remove",
-        "update": "node ./index.js update"
-    }
+	"package_version": 2,
+	"name": "pkg",
+	"version": "1.0.0",
+	"author": "向前",
+	"license": "MIT",
+	"editor": ">=3.6.0",
+	"description": "用于存放扩展包",
+	"contributions": {
+		"asset-db": {
+			"mount": {
+				"path": "./node_modules",
+				"readonly": true
+			}
+		}
+	},
+	"scripts": {
+		"add": "node ./index.js add",
+		"remove": "node ./index.js remove",
+		"update": "node ./index.js update"
+	}
 }
