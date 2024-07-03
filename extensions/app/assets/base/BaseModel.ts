@@ -32,8 +32,12 @@ export type IModel<T> = {
     : T[P];
 };
 
+// export type IStore<T> = {
+//     [P in keyof T]: T[P] extends Function
+//     ? T[P]
+//     : IModel<T[P]>;
+// };
+
 export type IStore<T> = {
-    [P in keyof T]: T[P] extends Function
-    ? T[P]
-    : IModel<T[P]>;
+    [P in keyof T]: T[P];
 };
