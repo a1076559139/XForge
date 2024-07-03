@@ -121,7 +121,7 @@ async function main() {
                     if (!fs.existsSync(dir))
                         fs.mkdirSync(dir);
                 }
-                fs.writeFileSync(path.join(exportDir, pkgName + '.ts'), `export * from 'db://pkg/${pkgName}'`, 'utf-8');
+                fs.writeFileSync(path.join(exportDir, pkgName + '.ts'), `export * from 'db://pkg/${pkgName}';`, 'utf-8');
             }
             console.log(`\n✅: 已成功安装包 ${pkgName}`);
         }
