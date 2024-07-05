@@ -1,4 +1,4 @@
-import { Asset, AssetManager, Canvas, Component, Event, Layers, Node, Prefab, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, find, instantiate, isValid, js, settings, sys } from 'cc';
+import { Asset, AssetManager, Camera, Canvas, Component, Event, Layers, Node, Prefab, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, find, instantiate, isValid, js, settings } from 'cc';
 import { DEBUG, DEV } from 'cc/env';
 import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
 import Core from '../../Core';
@@ -171,9 +171,14 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     private showQueue: IShowParams<UIName>[] = [];
 
-    /**默认相机 */
-    public get defaultCamera() {
+    /**相机 */
+    public get camera() {
         return this.Root2D.getComponent(Canvas).cameraComponent;
+    }
+
+    /**画布*/
+    public get canvas() {
+        return this.Root2D.getComponent(Canvas);
     }
 
     protected init(finish: Function) {
@@ -202,11 +207,13 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     protected onLoad() {
         this.Root2D = find(Root2DPath);
-        if (sys.isNative) {
-            // cc在处理UI双相机时，在native环境下目前有BUG
-            const cameraCleaner = this.Root2D.getChildByName('CameraCleaner');
-            if (cameraCleaner) cameraCleaner.active = false;
-        }
+
+        // 避免camera.priority<0的情况，否则会造成渲染异常
+        // 编辑器内已经不允许设置<0的数值了，这里这么做是为了兼容以前如果之前Camera设置过<0的值
+        this.Root2D.getComponentsInChildren(Camera).forEach(camera => {
+            if (camera.priority < 0) camera.priority = 0;
+        });
+
         director.addPersistRootNode(this.Root2D);
 
         this.UserInterface = find(UserInterfacePath);
