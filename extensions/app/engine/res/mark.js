@@ -7,57 +7,76 @@
         const finished = [];
 
         assetItemList.forEach((item) => {
-            if (item.type !== 'cc.Asset') return;
+            const currPaddingLeft = parseInt(item.style.paddingLeft);
+            if (currPaddingLeft > 50) {
+                item.style['border-left'] = '2px solid dimgray';
+            } else {
+                item.style['border-left'] = '';
+            }
+
+            const labelList = item.getElementsByTagName('label');
+            if (!labelList) return;
+            const labelEl = Array.from(labelList).find(labelEl => {
+                labelEl.style.color = '';
+                return folder.indexOf(labelEl.innerText.trim()) >= 0
+            });
+            if (!labelEl) return;
 
             const iconList = item.getElementsByTagName('ui-icon');
             if (!iconList || iconList.length < 2) return;
             const iconEl = Array.from(iconList).pop();
             if (!iconEl) return;
+            iconEl.style.color = '';
 
-            const labelList = item.getElementsByTagName('label');
-            if (!labelList) return;
-            const labelEl = Array.from(labelList).find(labelEl => folder.indexOf(labelEl.innerText.trim()) >= 0);
-            if (!labelEl) return;
+            if (item.type !== 'cc.Asset') return;
 
             if (labelEl.innerText.trim() === 'app') {
                 iconEl['value'] = 'setting';
                 iconEl.removeAttribute('color');
-                iconEl.style.color = 'mediumseagreen';
+                iconEl.style.color = 'mediumturquoise';
+                labelEl.style.color = 'whitesmoke';
             }
             else if (labelEl.innerText.trim() === 'app-appinit') {
                 iconEl['value'] = 'home';
                 iconEl.removeAttribute('color');
                 iconEl.style.color = 'sandybrown';
+                labelEl.style.color = 'whitesmoke';
             }
             else if (labelEl.innerText.trim() === 'app-builtin') {
                 iconEl['value'] = 'service';
                 iconEl.removeAttribute('color');
-                iconEl.style.color = 'mediumseagreen';
+                iconEl.style.color = 'deepskyblue';
+                labelEl.style.color = 'whitesmoke';
             }
             else if (labelEl.innerText.trim() === 'app-bundle') {
                 iconEl['value'] = 'extension';
                 iconEl.removeAttribute('color');
                 iconEl.style.color = 'mediumseagreen';
+                labelEl.style.color = 'whitesmoke';
             }
             else if (labelEl.innerText.trim() === 'app-scene') {
                 iconEl['value'] = 'mini-game';
                 iconEl.removeAttribute('color');
-                iconEl.style.color = 'mediumseagreen';
+                iconEl.style.color = 'gold';
+                labelEl.style.color = 'whitesmoke';
             }
             else if (labelEl.innerText.trim() === 'app-sound') {
                 iconEl['value'] = 'music';
                 iconEl.removeAttribute('color');
                 iconEl.style.color = 'yellowgreen';
+                labelEl.style.color = 'yellowgreen';
             }
             else if (labelEl.innerText.trim() === 'app-view') {
                 iconEl['value'] = 'particle';
                 iconEl.removeAttribute('color');
                 iconEl.style.color = 'tomato';
+                labelEl.style.color = 'tomato';
             }
             else if (finished.indexOf(labelEl.innerText.trim()) === -1) {
                 finished.push(labelEl.innerText.trim());
                 iconEl.removeAttribute('color');
                 iconEl.style.color = 'orange';
+                labelEl.style.color = 'orange';
             }
         });
     }
