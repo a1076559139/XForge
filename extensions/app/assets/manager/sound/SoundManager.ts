@@ -612,6 +612,13 @@ export default class SoundManager<E extends string, M extends string> extends Ba
     }
 
     /**
+     * 音乐音量倍率
+     */
+    public get musicVolumeScale() {
+        return AudioEngine.inst.getMusicVolumeScale();
+    }
+
+    /**
      * 设置音效音量倍率
      * @param scale 
      * @param isCache 音量倍率是否写入缓存(通过localstorage)
@@ -619,5 +626,12 @@ export default class SoundManager<E extends string, M extends string> extends Ba
     public setEffectVolumeScale(scale: number, isCache = false) {
         AudioEngine.inst.setAllEffectsVolumeScale(scale);
         isCache && storage.set(this.effectVolumeScaleCacheKey, scale);
+    }
+
+    /**
+     * 音效音量倍率
+     */
+    public get effectVolumeScale() {
+        return AudioEngine.inst.getAllEffectsVolumeScale();
     }
 }
