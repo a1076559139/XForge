@@ -33,22 +33,31 @@ export default class SoundManager<E extends string, M extends string> extends Ba
     static setting: {
         /**预加载 */
         preload?: (IMusicName | IEffectName)[],
+
         /**音乐静音缓存key名 */
         musicMuteCacheKey?: string,
         /**音效静音缓存key名 */
         effectMuteCacheKey?: string,
+        /**音乐音量倍率缓存key名 */
+        musicVolumeScaleCacheKey?: string,
+        /**音效音量倍率缓存key名 */
+        effectVolumeScaleCacheKey?: string,
+
         /**默认播放的音乐名 */
         defaultMusicName?: IMusicName | '',
-        /**默认音乐音量 */
+        /**默认音乐的音量 */
         defaultMusicVolume?: number,
-        /**默认按钮音效名 */
+
+        /**默认按钮的音效名 */
         defaultEffectName?: IEffectName | '',
-        /**默认按钮音效音量 */
+        /**默认按钮音效的音量 */
         defaultEffectVolume?: number
     } = {};
 
     private musicMuteCacheKey = 'musicMute';
     private effectMuteCacheKey = 'effectMute';
+    private musicVolumeScaleCacheKey = 'musicVolumeScale';
+    private effectVolumeScaleCacheKey = 'effectVolumeScale';
 
     private defaultMusicName = '';
     private defaultMusicVolume = 1;
@@ -62,10 +71,17 @@ export default class SoundManager<E extends string, M extends string> extends Ba
     protected init(finish: Function) {
         const setting = SoundManager.setting;
 
+        // 缓存的key名
         if (setting.musicMuteCacheKey) this.musicMuteCacheKey = setting.musicMuteCacheKey;
         if (setting.effectMuteCacheKey) this.musicMuteCacheKey = setting.effectMuteCacheKey;
+        if (setting.musicVolumeScaleCacheKey) this.musicVolumeScaleCacheKey = setting.musicVolumeScaleCacheKey;
+        if (setting.effectVolumeScaleCacheKey) this.effectVolumeScaleCacheKey = setting.effectVolumeScaleCacheKey;
+
+        // 默认音乐
         if (setting.defaultMusicName) this.defaultMusicName = setting.defaultMusicName;
         if (typeof setting.defaultMusicVolume === 'number') this.defaultMusicVolume = setting.defaultMusicVolume;
+
+        // 默认按钮音效
         if (setting.defaultEffectName) this.defaultEffectName = setting.defaultEffectName;
         if (typeof setting.defaultEffectVolume === 'number') this.defaultEffectVolume = setting.defaultEffectVolume;
 
@@ -80,6 +96,18 @@ export default class SoundManager<E extends string, M extends string> extends Ba
             AudioEngine.inst.setAllEffectsMute(effectMute);
         } else {
             this.warn('effectMuteCacheKey不能为空');
+        }
+        if (this.musicVolumeScaleCacheKey) {
+            const musicVolumeScale = storage.get(this.musicVolumeScaleCacheKey);
+            if (typeof musicVolumeScale === 'number') AudioEngine.inst.setMusicVolumeScale(musicVolumeScale);
+        } else {
+            this.warn('musicVolumeScaleCacheKey不能为空');
+        }
+        if (this.effectVolumeScaleCacheKey) {
+            const effectVolumeScale = storage.get(this.effectVolumeScaleCacheKey);
+            if (typeof effectVolumeScale === 'number') AudioEngine.inst.setAllEffectsVolumeScale(effectVolumeScale);
+        } else {
+            this.warn('effectVolumeScaleCacheKey不能为空');
         }
 
         super.init(finish);
@@ -535,14 +563,23 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         }
     }
 
+    /**
+     * 音乐是否正在播放
+     */
     get isMusicPlaying() {
         return this.playingMusic.playing;
     }
 
+    /**
+     * 音乐是否暂停
+     */
     get isMusicPaused() {
         return this.playingMusic.paused;
     }
 
+    /**
+     * 音乐是否静音
+     */
     public get isMusicMute() {
         return AudioEngine.inst.getMusicMute();
     }
@@ -557,7 +594,30 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         isCache && storage.set(this.effectMuteCacheKey, mute);
     }
 
+    /**
+     * 音效是否静音
+     */
     public get isEffectMute() {
         return AudioEngine.inst.getAllEffectsMute();
+    }
+
+    /**
+     * 设置音乐音量倍率
+     * @param scale 
+     * @param isCache 音量倍率是否写入缓存(通过localstorage)
+     */
+    public setMusicVolumeScale(scale: number, isCache = false) {
+        AudioEngine.inst.setMusicVolumeScale(scale);
+        isCache && storage.set(this.musicVolumeScaleCacheKey, scale);
+    }
+
+    /**
+     * 设置音效音量倍率
+     * @param scale 
+     * @param isCache 音量倍率是否写入缓存(通过localstorage)
+     */
+    public setEffectVolumeScale(scale: number, isCache = false) {
+        AudioEngine.inst.setAllEffectsVolumeScale(scale);
+        isCache && storage.set(this.effectVolumeScaleCacheKey, scale);
     }
 }
