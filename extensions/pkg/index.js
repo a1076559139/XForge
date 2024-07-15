@@ -68,13 +68,15 @@ async function main() {
 
     // npm指令
     const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-    const cmdIndex = process.argv.findIndex(item => item === 'update' || item === 'add' || item === 'remove');
-    const registry = process.argv.find(item => item.indexOf('--registry=') !== -1) || '--registry=https://registry.npmmirror.com';
 
+    const cmdIndex = process.argv.findIndex(item => item === 'update' || item === 'add' || item === 'remove');
     const cmd = process.argv[cmdIndex];
 
+    const prefix = '--prefix=' + __dirname;
+    const registry = process.argv.find(item => item.indexOf('--registry=') !== -1) || '--registry=https://registry.npmmirror.com';
+
     if (cmd === 'update') {
-        const args = ['--prefix=' + __dirname, registry, 'update'];
+        const args = [prefix, registry, 'update'];
         const code = await executeCmd(npm, args);
         if (code !== 0)
             throw new Error(`错误码: ${code}`);
@@ -84,7 +86,7 @@ async function main() {
         const pkgName = process.argv[cmdIndex + 1];
         if (!pkgName)
             throw new Error('输入要安装的包名字');
-        const args = ['--prefix=' + __dirname, registry, 'install', pkgName];
+        const args = [prefix, registry, 'install', pkgName];
         const code = await executeCmd(npm, args);
         if (code !== 0) {
             throw new Error(`错误码: ${code}`);
@@ -113,7 +115,7 @@ async function main() {
         const pkgName = process.argv[cmdIndex + 1];
         if (!pkgName)
             throw new Error('输入要卸载的包名字');
-        const args = ['--prefix=' + __dirname, registry, 'uninstall', pkgName];
+        const args = [prefix, registry, 'uninstall', pkgName];
         const code = await executeCmd(npm, args);
         if (code !== 0) {
             throw new Error(`错误码: ${code}`);
