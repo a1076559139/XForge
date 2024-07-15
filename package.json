@@ -12,12 +12,10 @@
   },
   "scripts": {
     "cli": "npx --registry=https://registry.npmmirror.com @gamex/cc-cli@latest",
-    "upgrade": "npx --registry=https://registry.npmmirror.com @gamex/cc-cli@latest upgrade 快捷指令:升级框架",
-    "package": "npx --registry=https://registry.npmmirror.com @gamex/cc-cli@latest package 快捷指令:管理扩展",
-    "app:build": "npm run --prefix ./extensions/app build",
-    "app:watch": "npm run --prefix ./extensions/app watch",
-    "pkg:add": "npm run --prefix ./extensions/pkg add",
-    "pkg:remove": "npm run --prefix ./extensions/pkg remove",
-    "pkg:update": "npm run --prefix ./extensions/pkg update"
+    "upgrade": "npm run cli upgrade 快捷指令:升级框架",
+    "package": "npm run cli package 快捷指令:管理扩展",
+    "pkg:add": "node ./extensions/pkg add",
+    "pkg:remove": "node ./extensions/pkg remove",
+    "pkg:update": "node ./extensions/pkg update"
   }
 }

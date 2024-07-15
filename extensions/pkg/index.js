@@ -50,25 +50,6 @@ const packageDir = path.join(__dirname, 'package');
 const exportDirName = 'pkg-export';
 const exportDir = path.join(__dirname, '../../assets', exportDirName);
 
-// function getMetaCache() {
-//     const out = {};
-//     fs.readdirSync(assetsDir).forEach((file) => {
-//         const filePath = path.join(assetsDir, file);
-//         if (fs.statSync(filePath).isDirectory() && file.startsWith('@')) {
-//             // 内层(只记录第一层的.meta)
-//             fs.readdirSync(filePath).forEach((_file) => {
-//                 const _filePath = path.join(filePath, _file);
-//                 if (!fs.statSync(_filePath).isDirectory() && _filePath.endsWith('.meta')) {
-//                     out[_filePath] = fs.readFileSync(_filePath, 'utf-8');
-//                 }
-//             });
-//         } else if (filePath.endsWith('.meta')) {
-//             out[filePath] = fs.readFileSync(filePath, 'utf-8');
-//         }
-//     });
-//     return out;
-// }
-
 async function main() {
     // 移除旧目录
     if (fs.existsSync(packageDir)) {
@@ -87,20 +68,23 @@ async function main() {
 
     // npm指令
     const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-    const cmd = process.argv[2].trim();
+    const cmdIndex = process.argv.findIndex(item => item === 'update' || item === 'add' || item === 'remove');
+    const registry = process.argv.find(item => item.indexOf('--registry=') !== -1) || '--registry=https://registry.npmmirror.com';
+
+    const cmd = process.argv[cmdIndex];
 
     if (cmd === 'update') {
-        const cmd = ['--registry=https://registry.npmmirror.com', 'update'];
-        const code = await executeCmd(npm, cmd);
+        const args = ['--prefix=' + __dirname, registry, 'update'];
+        const code = await executeCmd(npm, args);
         if (code !== 0)
             throw new Error(`错误码: ${code}`);
         else
             console.log('\n✅: 已更新安装包');
     } else if (cmd === 'add') {
-        const pkgName = process.argv[3].trim();
+        const pkgName = process.argv[cmdIndex + 1];
         if (!pkgName)
             throw new Error('输入要安装的包名字');
-        const args = ['--registry=https://registry.npmmirror.com', 'install', pkgName];
+        const args = ['--prefix=' + __dirname, registry, 'install', pkgName];
         const code = await executeCmd(npm, args);
         if (code !== 0) {
             throw new Error(`错误码: ${code}`);
@@ -126,10 +110,10 @@ async function main() {
             console.log(`\n✅: 已成功安装包 ${pkgName}`);
         }
     } else if (cmd === 'remove') {
-        const pkgName = process.argv[3].trim();
+        const pkgName = process.argv[cmdIndex + 1];
         if (!pkgName)
             throw new Error('输入要卸载的包名字');
-        const args = ['--registry=https://registry.npmmirror.com', 'uninstall', pkgName];
+        const args = ['--prefix=' + __dirname, registry, 'uninstall', pkgName];
         const code = await executeCmd(npm, args);
         if (code !== 0) {
             throw new Error(`错误码: ${code}`);
