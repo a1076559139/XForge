@@ -1,3 +1,6 @@
+## 交流与支持
+欢迎加入 QQ 群：795231926，一起探讨和交流 XForge 开发经验。
+
 # 一、介绍
 
 框架设计的目的是希望：<br/>
@@ -42,7 +45,7 @@
 
 <br>
 
-# 三、目录结构
+# 三、目录结构 [(视频)](https://www.bilibili.com/video/BV1nP8peeE9B/)
 ```
 ├─assets
 │   ├─app
@@ -78,7 +81,7 @@
 
 <br/>
 
-# 五、详细介绍 [(视频)](https://www.bilibili.com/video/BV1wp4y1G7ue/?spm_id_from=888.80997.embed_other.whitelist&t=1)
+# 五、详细介绍 [(视频)](https://www.bilibili.com/video/BV138bXeNEUt/)
 
 ## 1、 首屏
 

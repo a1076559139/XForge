@@ -846,28 +846,56 @@ export default class BaseView extends Component {
         );
     }
 
-    // 以下为可重写
+    //////////////以下为可重写//////////////
+    /**
+    * 展示
+    * @param data 传递给onShow的参数
+    * @returns 
+    */
     protected onShow(data?: any): any {
         return data;
     }
 
+    /**
+     * 隐藏
+     * @param data 传递给onHide的参数
+     * @returns 
+     */
     protected onHide(data?: any): any {
         return data;
     }
 
+    /**
+     * 失去焦点
+     * @returns 
+     */
     protected onLostFocus(): any {
         return true;
     }
 
+    /**
+     * 获得焦点
+     * @returns 
+     */
     protected onFocus(): any {
         return true;
     }
 
+    /**
+     * onShow前调用
+     * @param next 回调，传递的error不为空时，表示错误，onShow不会执行
+     * @param data 传递给onShow的参数
+     */
     protected beforeShow(next: (error?: string) => void, data?: any): any {
         next(null);
     }
 
-    protected beforeHide(data?: any): string {
+    /**
+     * hide前调用
+     * @param data 传递给onHide的参数
+     * @returns 如果返回字符串，则表示错误信息
+     */
+    protected beforeHide(data?: any): string | void {
         return null;
     }
 
