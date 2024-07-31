@@ -626,9 +626,6 @@ export default class BaseView extends Component {
                 // 触发onLoad、onEnable
                 if (this.node.active !== true) { this.node.active = true; }
 
-                // 设置遮罩，触发focus逻辑
-                Core.inst.manager.ui.refreshShade();
-
                 this.log('onShow');
                 let result = null;
                 try {
@@ -637,6 +634,9 @@ export default class BaseView extends Component {
                     this.onError();
                     console.error(err);
                 }
+
+                // 设置遮罩，触发focus逻辑
+                Core.inst.manager.ui.refreshShade();
 
                 try {
                     onShow && onShow(result);
