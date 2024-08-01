@@ -83,7 +83,7 @@ enum ViewState {
     Hid,
 }
 
-const Group = { id: 'BaseView', name: 'settings', displayOrder: -Infinity };
+const Group = { id: 'BaseView', name: 'Settings', displayOrder: -Infinity, style: 'section' };
 
 @ccclass('BaseView')
 export default class BaseView extends Component {
@@ -284,7 +284,7 @@ export default class BaseView extends Component {
     private _blockInput = true;
     @property({
         group: Group,
-        tooltip: '是否阻断点击事件',
+        tooltip: '是否禁止点击事件向下层传递',
         visible(this: BaseView) {
             if (this.is3D()) return false;
             return true;
