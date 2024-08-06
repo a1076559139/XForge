@@ -31,6 +31,11 @@
                     "open-panel"
                 ]
             },
+            "open-help": {
+                "methods": [
+                    "open-help"
+                ]
+            },
             "update-executor": {
                 "methods": [
                     "update-executor"
@@ -72,6 +77,11 @@
                 "path": "i18n:app.menuMain",
                 "label": "i18n:app.update",
                 "message": "update-executor"
+            },
+            {
+                "path": "i18n:app.menuMain",
+                "label": "i18n:app.help",
+                "message": "open-help"
             }
         ],
         "assets": {
