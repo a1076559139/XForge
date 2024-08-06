@@ -97,7 +97,7 @@ export default class BaseView extends Component {
                 emit<K extends keyof E>(key: E[K], ...args: Parameters<T[K]>): void;
                 on<K extends keyof E>(key: E[K], callback: (...args: Parameters<T[K]>) => ReturnType<T[K]>, target?: any): void;
                 once<K extends keyof E>(key: E[K], callback: (...args: Parameters<T[K]>) => ReturnType<T[K]>, target?: any): void;
-                off(key: E[keyof E], callback?: Function, target?: any): void;
+                off(key: E[keyof E], callback: Function, target?: any): void;
                 targetOff(target: any): void;
             }> {
                 return control ? control.inst as any : null;

@@ -1,5 +1,5 @@
 interface IHandle {
-    (next: (data?: any) => boolean, retry: (timeout?: number) => boolean | 'ASYNC', end: (data?: any) => boolean): void
+    (next: (data?: any) => boolean, retry: (timeout?: number) => Promise<boolean>, end: (data?: any) => boolean): void
 }
 
 interface IFinish<T> {
@@ -11,19 +11,7 @@ interface ITask<T> {
     add(handle: IHandle): this;
     start(finish?: IFinish<T> | Function): this;
     stop(): boolean;
-    isStop(): boolean;
-}
-
-class TaskItem {
-    private handle: IHandle = null;
-
-    constructor(handle: IHandle) {
-        this.handle = handle;
-    }
-
-    public execute(next: (data?: any) => boolean, retry: (timeout?: number) => boolean | 'ASYNC', end: (data?: any) => boolean) {
-        this.handle(next, retry, end);
-    }
+    isRunning(): boolean;
 }
 
 /**
@@ -32,22 +20,38 @@ class TaskItem {
 class Sync<T extends Array<any>> implements ITask<T> {
     private running = false;
     private index: number = -1;
-    private list: TaskItem[] = [];
+    private list: IHandle[] = [];
     private finish: IFinish<T> | Function = null;
 
-    // 每个item的返回值，通过next或end存储
+    /**
+     * 每个handle的返回值，通过next或end存储
+     */
     public results: T = [] as T;
 
+    /**
+     * 任务数量
+     * @returns 
+     */
     public size(): number {
         return this.list.length;
     }
 
+    /**
+     * 添加一个任务
+     * @param handle 
+     * @returns 
+     */
     public add(handle: IHandle) {
-        this.list.push(new TaskItem(handle));
+        this.list.push(handle);
         this.results.push(undefined);
         return this;
     }
 
+    /**
+     * 开始执行所有任务
+     * @param finish 执行完毕回调
+     * @returns 
+     */
     public start(finish?: IFinish<T> | Function) {
         if (this.running) {
             return this;
@@ -62,6 +66,10 @@ class Sync<T extends Array<any>> implements ITask<T> {
         return this;
     }
 
+    /**
+     * 停止所有任务
+     * @returns 
+     */
     public stop(): boolean {
         if (!this.running) {
             return false;
@@ -75,6 +83,18 @@ class Sync<T extends Array<any>> implements ITask<T> {
         return true;
     }
 
+    /**
+     * 是否正在执行
+     * @returns 
+     */
+    public isRunning() {
+        return this.running;
+    }
+
+    /**
+     * @deprecated
+     * @returns 
+     */
     public isStop() {
         return !this.running;
     }
@@ -123,10 +143,20 @@ class Sync<T extends Array<any>> implements ITask<T> {
 
         if (index !== this.index) return false;
 
-        const taskItem = this.list[index];
-        taskItem && taskItem.execute(
+        const handle = this.list[index];
+        handle && handle(
             (data?: any) => this.next(index, data),
-            (timeout = 0) => Number(timeout) > 0 ? (setTimeout(() => this.retry(index), Number(timeout) * 1000), 'ASYNC') : this.retry(index),
+            (timeout = 0) => {
+                return new Promise(resolve => {
+                    if (timeout > 0) {
+                        setTimeout(() => {
+                            resolve(this.retry(index));
+                        }, timeout * 1000)
+                    } else {
+                        resolve(this.retry(index));
+                    }
+                })
+            },
             (data?: any) => this.end(data)
         );
 
@@ -140,18 +170,29 @@ class Sync<T extends Array<any>> implements ITask<T> {
 class ASync<T extends Array<any>> implements ITask<T> {
     private running = false;
     private count: number = 0;
-    private list: TaskItem[] = [];
+    private list: IHandle[] = [];
     private finish: IFinish<T> | Function = null;
 
-    // 每个item的返回值，通过next或end存储
+    /**
+     * 每个handle的返回值，通过next或end存储
+     */
     public results: T = [] as T;
 
+    /**
+     * 任务数量
+     * @returns 
+     */
     public size(): number {
         return this.list.length;
     }
 
+    /**
+     * 添加一个任务
+     * @param handle 
+     * @returns 
+     */
     public add(handle: IHandle) {
-        this.list.push(new TaskItem(handle));
+        this.list.push(handle);
         this.results.push(undefined);
 
         if (this.running) {
@@ -160,6 +201,11 @@ class ASync<T extends Array<any>> implements ITask<T> {
         return this;
     }
 
+    /**
+     * 开始执行所有任务
+     * @param finish 执行完毕回调
+     * @returns 
+     */
     public start(finish?: IFinish<T> | Function) {
         if (this.running) {
             return this;
@@ -180,6 +226,10 @@ class ASync<T extends Array<any>> implements ITask<T> {
         return this;
     }
 
+    /**
+     * 停止所有任务
+     * @returns 
+     */
     public stop(): boolean {
         if (!this.running) {
             return false;
@@ -192,6 +242,18 @@ class ASync<T extends Array<any>> implements ITask<T> {
         return true;
     }
 
+    /**
+     * 是否正在执行
+     * @returns 
+     */
+    public isRunning() {
+        return this.running;
+    }
+
+    /**
+     * @deprecated
+     * @returns 
+     */
     public isStop() {
         return !this.running;
     }
@@ -236,10 +298,20 @@ class ASync<T extends Array<any>> implements ITask<T> {
             return false;
         }
 
-        const taskItem = this.list[index];
-        taskItem && taskItem.execute(
+        const handle = this.list[index];
+        handle && handle(
             (data?: any) => this.next(index, data),
-            (timeout = 0) => Number(timeout) > 0 ? (setTimeout(() => this.retry(index), Number(timeout) * 1000), 'ASYNC') : this.retry(index),
+            (timeout = 0) => {
+                return new Promise(resolve => {
+                    if (timeout > 0) {
+                        setTimeout(() => {
+                            resolve(this.retry(index));
+                        }, timeout * 1000)
+                    } else {
+                        resolve(this.retry(index));
+                    }
+                })
+            },
             (data?: any) => this.end(index, data)
         );
 
@@ -250,15 +322,26 @@ class ASync<T extends Array<any>> implements ITask<T> {
 class Any<T extends Array<any>> implements ITask<T> {
     private task = new Sync();
 
-    // 每个item的返回值，通过next或end存储
+    /**
+     * 每个handle的返回值，通过next或end存储
+     */
     public get results(): T {
         return this.task.results as T;
     }
 
+    /**
+     * 任务数量
+     * @returns 
+     */
     public size() {
         return this.task.size();
     }
 
+    /**
+     * 添加一个任务
+     * @param handle 
+     * @returns 
+     */
     public add(handles: IHandle | IHandle[]) {
         if (handles instanceof Array) {
             const async = new ASync();
@@ -270,15 +353,36 @@ class Any<T extends Array<any>> implements ITask<T> {
         return this;
     }
 
+    /**
+     * 开始执行所有任务
+     * @param finish 执行完毕回调
+     * @returns 
+     */
     public start(finish?: IFinish<T> | Function) {
         this.task.start(finish);
         return this;
     }
 
+    /**
+     * 停止所有任务
+     * @returns 
+     */
     public stop() {
         return this.task.stop();
     }
 
+    /**
+     * 是否正在执行
+     * @returns 
+     */
+    public isRunning() {
+        return this.task.isRunning();
+    }
+
+    /**
+     * @deprecated
+     * @returns 
+     */
     public isStop() {
         return this.task.isStop();
     }
