@@ -208,10 +208,11 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     protected onLoad() {
         this.Root2D = find(Root2DPath);
 
-        // 避免camera.priority<0的情况，否则会造成渲染异常
-        // 编辑器内已经不允许设置<0的数值了，这里这么做是为了兼容以前如果之前Camera设置过<0的值
         this.Root2D.getComponentsInChildren(Camera).forEach(camera => {
+            // 避免camera.priority<0的情况，否则会造成渲染异常
             if (camera.priority < 0) camera.priority = 0;
+            // 避免camera.far<=camera.near的情况，否则会造成渲染异常
+            if (camera.far <= camera.near) camera.far = camera.near + 1;
         });
 
         director.addPersistRootNode(this.Root2D);
