@@ -4,6 +4,7 @@ import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-
 import Core from '../../Core';
 import BaseManager from '../../base/BaseManager';
 import BaseView, { IHideParamOnHide, IShade, IShowParamAttr, IShowParamOnHide, IShowParamOnShow, IViewType, ViewType } from '../../base/BaseView';
+import UIMgrLoading from './comp/UIMgrLoading';
 import UIMgrShade from './comp/UIMgrShade';
 import UIMgrToast from './comp/UIMgrToast';
 import UIMgrZOrder from './comp/UIMgrZOrder';
@@ -223,10 +224,10 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
         this.shade = instantiate(this.shadePre);
         this.loading = instantiate(this.loadingPre);
-        this.shade.parent = this.UserInterface;
-        this.loading.parent = this.UserInterface;
         this.shade.active = false;
         this.loading.active = false;
+        this.shade.parent = this.UserInterface;
+        this.loading.parent = this.UserInterface;
 
         // toast是后面加的，需要做容错
         if (this.toastPre) {
@@ -838,9 +839,9 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                             typeof shadeSetting.end !== 'number' ? 180 : shadeSetting.end,
                             typeof shadeSetting.speed !== 'number' ? 100 : shadeSetting.speed
                         );
+                        this.shade.layer = node.layer;
                         this.shade.parent = uiRoot;
                         this.shade.active = true;
-                        this.shade.layer = node.layer;
                         // 以z坐标来代替2.x时代的zIndex
                         this.shade.setPosition(this.shade.position.x, this.shade.position.y, node.position.z);
 
@@ -1309,6 +1310,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     public showLoading(timeout = 0) {
         this.loading.active = true;
+        this.loading.getComponentInChildren(UIMgrLoading).init();
         const uuid = this.createUUID();
         this.showLoadingMap.set(uuid, true);
         if (timeout > 0) this.scheduleOnce(() => {
@@ -1321,6 +1323,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         if (!uuid) return;
         this.showLoadingMap.delete(uuid);
         if (this.showLoadingMap.size === 0) {
+            this.loading.getComponentInChildren(UIMgrLoading).clear();
             this.loading.active = false;
         }
     }

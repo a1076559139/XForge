@@ -53,11 +53,8 @@ export default class UIMgrToast extends Component {
         return this.node.children.length;
     }
 
-    protected onDisable() {
-        this.clear();
-    }
-
     protected onDestroy() {
+        this.clear();
         this.pool.clear();
     }
 

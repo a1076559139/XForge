@@ -19,7 +19,7 @@ export default class UIMgrToastCell extends Component {
         this.title.updateRenderData(true);
     }
 
-    onDisable() {
+    unuse() {
         this.title.string = '';
     }
 }

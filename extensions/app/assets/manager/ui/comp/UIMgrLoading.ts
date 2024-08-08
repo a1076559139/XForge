@@ -15,28 +15,27 @@ export default class UIMgrLoading extends Component {
     private angleSpeed = 120;
     private ringSpeed = 0.02;
 
-    private show = false;
-    private draw = false;
+    private inited = false;
+    private drawing = false;
+    private timedown = 0;
 
-    protected onEnable() {
-        if (!this.show) {
-            this.progress = 0;
-            this.ringScale = 1;
-            this.node.angle = 0;
-            this.reverse = false;
-            this.onDraw();
-            
-            this.scheduleOnce(() => {
-                this.draw = true;
-            }, this.delay);
-        }
-        this.show = true;
+    init() {
+        if (this.inited) return;
+        this.inited = true;
+
+        this.progress = 0;
+        this.ringScale = 1;
+        this.node.angle = 0;
+        this.reverse = false;
+
+        this.drawing = false;
+        this.timedown = this.delay;
+        this.getComponent(Graphics).clear();
     }
 
-    protected onDisable() {
-        this.draw = false;
-        this.show = false;
-        this.unscheduleAllCallbacks();
+    clear() {
+        this.inited = false;
+        this.drawing = false;
     }
 
     /**
@@ -68,7 +67,18 @@ export default class UIMgrLoading extends Component {
     }
 
     protected update(dt: number): void {
-        if (!this.draw) return;
+        // 倒计时
+        if (!this.drawing) {
+            if (this.timedown > 0) {
+                this.timedown -= dt;
+            }
+            if (this.timedown <= 0) {
+                this.drawing = true;
+            } else {
+                return;
+            }
+        }
+
         // 旋转
         this.node.angle -= this.angleSpeed * dt;
         if (this.node.angle >= 360 || this.node.angle <= -360) {

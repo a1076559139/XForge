@@ -511,6 +511,10 @@ export default class BaseView extends Component {
         }
 
         views = views.filter(name => {
+            if (!name) {
+                this.warn('[showMiniViews]', 'name不能为空');
+                return false;
+            }
             if (this._base_mini_show.has(name)) {
                 this.warn('[showMiniViews]', `重复融合${name}, 已跳过`);
                 return false;

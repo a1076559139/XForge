@@ -36,36 +36,42 @@ export default class UIMgrShade extends Component {
     }
     set speed(v) { this._speed = v; }
 
-    private stopAnimation = true;
+    private inited = false;
+    private drawing = false;
+    private timedown = 0;
 
     init(delay: number, begin: number, end: number, speed: number) {
         this.delay = delay;
         this.begin = begin;
         this.end = end;
         this.speed = speed;
-        this.stopAnimation = false;
+
+        if (this.inited) return;
+        this.inited = true;
+
+        this.drawing = false;
+        this.timedown = this.delay;
+        this.node.getComponent(UIOpacity).opacity = 0;
     }
 
-    protected onEnable() {
-        if (this.delay <= 0) {
-            this.stopAnimation = false;
-            this.node.getComponent(UIOpacity).opacity = this.begin;
-        } else {
-            this.stopAnimation = true;
-            this.node.getComponent(UIOpacity).opacity = 0;
-            this.scheduleOnce(() => {
-                this.node.getComponent(UIOpacity).opacity = this.begin;
-                this.stopAnimation = false;
-            }, this.delay);
-        }
-    }
-
-    protected onDisable() {
-        this.unscheduleAllCallbacks();
+    clear() {
+        this.inited = false;
+        this.drawing = false;
     }
 
     protected update(dt: number) {
-        if (this.stopAnimation) return;
+        if (!this.drawing) {
+            if (this.timedown > 0) {
+                this.timedown -= dt;
+            }
+            if (this.timedown <= 0) {
+                this.node.getComponent(UIOpacity).opacity = this.begin;
+                this.drawing = true;
+            } else {
+                return;
+            }
+        }
+
         const uiOpacity = this.node.getComponent(UIOpacity);
         if (this.speed > 0) {
             uiOpacity.opacity += this.speed * dt;
@@ -79,7 +85,7 @@ export default class UIMgrShade extends Component {
             }
         }
         if (uiOpacity.opacity == this.end) {
-            this.stopAnimation = true;
+            this.clear();
         }
     }
 }
