@@ -60,6 +60,8 @@ export default class UIMgrShade extends Component {
     }
 
     protected update(dt: number) {
+        if (!this.inited) return;
+
         if (!this.drawing) {
             if (this.timedown > 0) {
                 this.timedown -= dt;

@@ -67,6 +67,8 @@ export default class UIMgrLoading extends Component {
     }
 
     protected update(dt: number): void {
+        if (!this.inited) return;
+
         // 倒计时
         if (!this.drawing) {
             if (this.timedown > 0) {
