@@ -165,13 +165,13 @@ async function clearExecutor() {
         'import { app } from \'../../app/app\';\n' +
         'import { DEV, EDITOR } from \'cc/env\';\n\n';
 
-    result += '/**界面名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/\n';
+    result += '/**界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/\n';
     result += 'export enum ViewName {' + Object.keys(viewKeys).map(v => `${v}="${v}"`).join(',') + '}\n';
-    result += '/**子界面名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/\n';
+    result += '/**子界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/\n';
     result += 'export enum MiniViewName {' + Object.keys(miniViewKeys).map(v => `${v}="${v}"`).join(',') + '}\n';
-    result += '/**音乐名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/\n';
+    result += '/**音乐名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/\n';
     result += 'export enum MusicName {' + Object.keys(musicKeys).map(v => `"${v}"="${v}"`).join(',') + '}\n';
-    result += '/**音效名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/\n';
+    result += '/**音效名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/\n';
     result += 'export enum EffectName {' + Object.keys(effectKeys).map(v => `"${v}"="${v}"`).join(',') + '}\n\n';
 
     result += 'export type IViewName = keyof typeof ViewName\n';
@@ -410,13 +410,13 @@ async function updateExecutor() {
     if (Object.keys(musicKeys).length === 0) musicKeys['never'] = '';
     if (Object.keys(effectKeys).length === 0) effectKeys['never'] = '';
 
-    result += '/**界面名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/\n';
+    result += '/**界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/\n';
     result += 'export enum ViewName {' + Object.keys(viewKeys).map(v => `${v}="${v}"`).join(',') + '}\n';
-    result += '/**子界面名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/\n';
+    result += '/**子界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/\n';
     result += 'export enum MiniViewName {' + Object.keys(miniViewKeys).map(v => `${v}="${v}"`).join(',') + '}\n';
-    result += '/**音乐名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/\n';
+    result += '/**音乐名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/\n';
     result += 'export enum MusicName {' + Object.keys(musicKeys).map(v => `"${v}"="${v}"`).join(',') + '}\n';
-    result += '/**音效名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/\n';
+    result += '/**音效名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/\n';
     result += 'export enum EffectName {' + Object.keys(effectKeys).map(v => `"${v}"="${v}"`).join(',') + '}\n\n';
 
     result += 'export type IViewName = keyof typeof ViewName\n';

@@ -8,13 +8,13 @@ import LoaderManager from '../../../extensions/app/assets/manager/loader/LoaderM
 import SoundManager from '../../../extensions/app/assets/manager/sound/SoundManager'
 import TimerManager from '../../../extensions/app/assets/manager/timer/TimerManager'
 import UIManager from '../../../extensions/app/assets/manager/ui/UIManager'
-/**界面名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/
+/**界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/
 export enum ViewName {never="never"}
-/**子界面名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/
+/**子界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/
 export enum MiniViewName {never="never"}
-/**音乐名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/
+/**音乐名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/
 export enum MusicName {"never"="never"}
-/**音效名字枚举(在main、resources与app-model所在的Asset Bundle中无法使用此枚举)*/
+/**音效名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/
 export enum EffectName {"never"="never"}
 
 export type IViewName = keyof typeof ViewName
