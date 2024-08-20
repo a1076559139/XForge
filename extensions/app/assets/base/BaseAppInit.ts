@@ -44,24 +44,8 @@ export default abstract class BaseAppInit extends Component {
     protected startInit() {
         const projectBundles = settings.querySettings(Settings.Category.ASSETS, 'projectBundles') as string[];
         Core.inst.lib.task.createAny()
-            // 预加载model、admin、control、manager
+            // 预加载control、model、admin、manager
             .add([
-                (next, retry) => {
-                    // 预加载model
-                    if (projectBundles.indexOf(ModelBundleName) === -1) return next();
-                    assetManager.preloadAny({ url: ModelBundleName }, { ext: 'bundle' }, null, (err) => {
-                        if (err) return retry(0.1);
-                        next();
-                    });
-                },
-                (next, retry) => {
-                    // 预加载admin
-                    if (projectBundles.indexOf(AdminBundleName) === -1) return next();
-                    assetManager.preloadAny({ url: AdminBundleName }, { ext: 'bundle' }, null, (err) => {
-                        if (err) return retry(0.1);
-                        next();
-                    });
-                },
                 (next, retry) => {
                     // 预加载control(废弃)
                     if (projectBundles.indexOf(ControlBundleName) === -1) return next();
@@ -79,6 +63,22 @@ export default abstract class BaseAppInit extends Component {
                     });
                 },
                 (next, retry) => {
+                    // 预加载model
+                    if (projectBundles.indexOf(ModelBundleName) === -1) return next();
+                    assetManager.preloadAny({ url: ModelBundleName }, { ext: 'bundle' }, null, (err) => {
+                        if (err) return retry(0.1);
+                        next();
+                    });
+                },
+                (next, retry) => {
+                    // 预加载admin
+                    if (projectBundles.indexOf(AdminBundleName) === -1) return next();
+                    assetManager.preloadAny({ url: AdminBundleName }, { ext: 'bundle' }, null, (err) => {
+                        if (err) return retry(0.1);
+                        next();
+                    });
+                },
+                (next, retry) => {
                     // 预加载manage
                     if (projectBundles.indexOf(ManagerBundleName) === -1) return next();
                     assetManager.preloadAny({ url: ManagerBundleName }, { ext: 'bundle' }, null, (err) => {
@@ -87,22 +87,6 @@ export default abstract class BaseAppInit extends Component {
                     });
                 }
             ])
-            // 加载model
-            .add((next, retry) => {
-                if (projectBundles.indexOf(ModelBundleName) === -1) return next();
-                assetManager.loadBundle(ModelBundleName, (err) => {
-                    if (err) return retry(0.1);
-                    next();
-                });
-            })
-            // 加载admin
-            .add((next, retry) => {
-                if (projectBundles.indexOf(AdminBundleName) === -1) return next();
-                assetManager.loadBundle(AdminBundleName, (err) => {
-                    if (err) return retry(0.1);
-                    next();
-                });
-            })
             // 加载control(废弃)
             .add((next, retry) => {
                 if (projectBundles.indexOf(ControlBundleName) === -1) return next();
@@ -115,6 +99,22 @@ export default abstract class BaseAppInit extends Component {
             .add((next, retry) => {
                 if (projectBundles.indexOf(ControllerBundleName) === -1) return next();
                 assetManager.loadBundle(ControllerBundleName, (err) => {
+                    if (err) return retry(0.1);
+                    next();
+                });
+            })
+            // 加载model
+            .add((next, retry) => {
+                if (projectBundles.indexOf(ModelBundleName) === -1) return next();
+                assetManager.loadBundle(ModelBundleName, (err) => {
+                    if (err) return retry(0.1);
+                    next();
+                });
+            })
+            // 加载admin
+            .add((next, retry) => {
+                if (projectBundles.indexOf(AdminBundleName) === -1) return next();
+                assetManager.loadBundle(AdminBundleName, (err) => {
                     if (err) return retry(0.1);
                     next();
                 });
