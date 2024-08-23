@@ -8,22 +8,22 @@ import LoaderManager from '../../../extensions/app/assets/manager/loader/LoaderM
 import SoundManager from '../../../extensions/app/assets/manager/sound/SoundManager'
 import TimerManager from '../../../extensions/app/assets/manager/timer/TimerManager'
 import UIManager from '../../../extensions/app/assets/manager/ui/UIManager'
-/**界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/
-export enum ViewName {never="never"}
-/**子界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/
-export enum MiniViewName {never="never"}
-/**音乐名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/
-export enum MusicName {"never"="never"}
-/**音效名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/
-export enum EffectName {"never"="never"}
+/**界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用UIManager.ViewName*/
+export const ViewName = UIManager.ViewName
+/**子界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用UIManager.MiniViewName*/
+export const MiniViewName = UIManager.MiniViewName
+/**音乐名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用SoundManager.MusicName*/
+export const MusicName = SoundManager.MusicName
+/**音效名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用SoundManager.EffectName*/
+export const EffectName = SoundManager.EffectName
 
-export type IViewName = keyof typeof ViewName
+export type IViewName = "never"
 export type IViewNames = IViewName[]
-export type IMiniViewName = keyof typeof MiniViewName
+export type IMiniViewName = "never"
 export type IMiniViewNames = IMiniViewName[]
-export type IMusicName = keyof typeof MusicName
+export type IMusicName = "never"
 export type IMusicNames = IMusicName[]
-export type IEffectName = keyof typeof EffectName
+export type IEffectName = "never"
 export type IEffectNames = IEffectName[]
 
 if(!EDITOR||DEV) Object.assign(app.data, {})

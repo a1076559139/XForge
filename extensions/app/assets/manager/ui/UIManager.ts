@@ -11,21 +11,6 @@ import UIMgrZOrder from './comp/UIMgrZOrder';
 
 const { ccclass, property } = _decorator;
 
-const BlockEvents = [
-    Node.EventType.TOUCH_START, Node.EventType.TOUCH_MOVE, Node.EventType.TOUCH_END, Node.EventType.TOUCH_CANCEL,
-    Node.EventType.MOUSE_DOWN, Node.EventType.MOUSE_MOVE, Node.EventType.MOUSE_UP,
-    Node.EventType.MOUSE_ENTER, Node.EventType.MOUSE_LEAVE, Node.EventType.MOUSE_WHEEL
-];
-
-enum ErrorCode {
-    /**加载失败 */
-    LoadError,
-    /**beforeShow返回错误 */
-    LogicError,
-    /**UI无效(UI的isViewValid返回false) */
-    InvalidError,
-}
-
 interface IShowParams<T, IShow = any, IShowReturn = any, IHideReturn = any> {
     /**UI名 */
     name: T,
@@ -103,13 +88,51 @@ const Root2DPath = 'Root2D';
 const UserInterfacePath = 'Root2D/UserInterface';
 const ViewTypes = [ViewType.Page, ViewType.Paper, ViewType.Pop, ViewType.Top];
 
-type IPreload = (IViewName | IMiniViewName | Array<IViewName | IMiniViewName>)[];
+const BlockEvents = [
+    Node.EventType.TOUCH_START, Node.EventType.TOUCH_MOVE, Node.EventType.TOUCH_END, Node.EventType.TOUCH_CANCEL,
+    Node.EventType.MOUSE_DOWN, Node.EventType.MOUSE_MOVE, Node.EventType.MOUSE_UP,
+    Node.EventType.MOUSE_ENTER, Node.EventType.MOUSE_LEAVE, Node.EventType.MOUSE_WHEEL
+];
+
+/**
+ * 错误码
+ */
+enum ErrorCode {
+    /**加载失败 */
+    LoadError,
+    /**beforeShow返回错误 */
+    LogicError,
+    /**UI无效(UI的isViewValid返回false) */
+    InvalidError,
+}
+
+/**
+ * 界面名字枚举
+ */
+const ViewName: { [key in IViewName]: key } = new Proxy({} as any, {
+    get: function (target, key) {
+        if (target[key]) return target[key];
+        target[key] = key;
+        return key;
+    }
+});
+
+/**
+ * 子界面名字枚举
+ */
+const MiniViewName: { [key in IMiniViewName]: key } = new Proxy({} as any, {
+    get: function (target, key) {
+        if (target[key]) return target[key];
+        target[key] = key;
+        return key;
+    }
+});
 
 @ccclass('UIManager')
 export default class UIManager<UIName extends string, MiniName extends string> extends BaseManager {
     /**静态设置 */
     static setting: {
-        preload?: IPreload,
+        preload?: (IViewName | IMiniViewName | Array<IViewName | IMiniViewName>)[],
         defaultUI?: IViewName,
         defaultData?: any,
         shade?: IShade
@@ -117,6 +140,12 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     /**错误码 */
     static ErrorCode = ErrorCode;
+
+    /**界面名字枚举 */
+    static ViewName = ViewName;
+
+    /**子界面名字枚举 */
+    static MiniViewName = MiniViewName;
 
     @property({
         type: Prefab,
@@ -1004,7 +1033,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 onShow
             });
         } else {
-            Core.inst.manager.ui.showToast('请先设置首界面', 100);
+            Core.inst.manager.ui.showToast('请先设置首界面\n在setting.ts中修改', 100);
             onShow && onShow();
             this.warn('defaultUI 不存在');
         }

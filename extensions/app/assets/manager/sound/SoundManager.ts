@@ -16,17 +16,36 @@ const storage = {
     },
     get(key: string) {
         const data = sys.localStorage.getItem(key);
-
         if (data && typeof data === 'string') {
             return JSON.parse(data);
         }
-
         return undefined;
     }
 };
 
-const BundleName = 'app-sound';
+/**
+ * 音乐名字枚举
+ */
+const MusicName: { [key in IMusicName]: key } = new Proxy({} as any, {
+    get: function (target, key) {
+        if (target[key]) return target[key];
+        target[key] = key;
+        return key;
+    }
+});
 
+/**
+ * 音效名字枚举
+ */
+const EffectName: { [key in IEffectName]: key } = new Proxy({} as any, {
+    get: function (target, key) {
+        if (target[key]) return target[key];
+        target[key] = key;
+        return key;
+    }
+});
+
+const BundleName = 'app-sound';
 @ccclass('SoundManager')
 export default class SoundManager<E extends string, M extends string> extends BaseManager {
     /**静态设置 */
@@ -53,6 +72,11 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         /**默认按钮音效的音量 */
         defaultEffectVolume?: number
     } = {};
+
+    /**音乐名字枚举 */
+    static MusicName = MusicName;
+    /**音效名字枚举 */
+    static EffectName = EffectName;
 
     private musicMuteCacheKey = 'musicMute';
     private effectMuteCacheKey = 'effectMute';

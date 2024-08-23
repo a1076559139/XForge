@@ -155,32 +155,27 @@ const keyWords = [
 async function clearExecutor() {
     if (!existsSync(executorFilePath)) return;
 
-    const viewKeys = { never: false };
-    const miniViewKeys = { never: '' };
-    const musicKeys = { never: '' };
-    const effectKeys = { never: '' };
-
     let result = '/* eslint-disable */\n' +
         'import { Component } from \'cc\';\n' +
         'import { app } from \'../../app/app\';\n' +
         'import { DEV, EDITOR } from \'cc/env\';\n\n';
 
-    result += '/**界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/\n';
-    result += 'export enum ViewName {' + Object.keys(viewKeys).map(v => `${v}="${v}"`).join(',') + '}\n';
-    result += '/**子界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/\n';
-    result += 'export enum MiniViewName {' + Object.keys(miniViewKeys).map(v => `${v}="${v}"`).join(',') + '}\n';
-    result += '/**音乐名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/\n';
-    result += 'export enum MusicName {' + Object.keys(musicKeys).map(v => `"${v}"="${v}"`).join(',') + '}\n';
-    result += '/**音效名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/\n';
-    result += 'export enum EffectName {' + Object.keys(effectKeys).map(v => `"${v}"="${v}"`).join(',') + '}\n\n';
+    result += '/**界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用UIManager.ViewName*/\n';
+    result += 'export const ViewName = { "never":"never" }\n';
+    result += '/**子界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用UIManager.MiniViewName*/\n';
+    result += 'export const MiniViewName = { "never":"never" }\n';
+    result += '/**音乐名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用SoundManager.MusicName*/\n';
+    result += 'export const MusicName = { "never":"never" }\n';
+    result += '/**音效名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用SoundManager.EffectName*/\n';
+    result += 'export const EffectName = { "never":"never" }\n\n';
 
-    result += 'export type IViewName = keyof typeof ViewName\n';
+    result += 'export type IViewName = "never"\n';
     result += 'export type IViewNames = IViewName[]\n';
-    result += 'export type IMiniViewName = keyof typeof MiniViewName\n';
+    result += 'export type IMiniViewName = "never"\n';
     result += 'export type IMiniViewNames = IMiniViewName[]\n';
-    result += 'export type IMusicName = keyof typeof MusicName\n';
+    result += 'export type IMusicName = "never"\n';
     result += 'export type IMusicNames = IMusicName[]\n';
-    result += 'export type IEffectName = keyof typeof EffectName\n';
+    result += 'export type IEffectName = "never"\n';
     result += 'export type IEffectNames = IEffectName[]\n\n';
 
     // data
@@ -189,13 +184,15 @@ async function clearExecutor() {
     // config
     result += 'if(!EDITOR||DEV) Object.assign(app.config, {})\n\n';
 
+    // store
+    result += `if(!EDITOR||DEV) Object.assign(app.store, {})\n\n`;
+
     result += 'export type IApp = {\n';
     result += '    Manager: {},\n';
     result += '    manager: {},\n';
     result += '    data: {},\n';
     result += '    config: {}\n';
     result += '    store: {}\n';
-    // result += '    scene: IViewName[]\n';
     result += '}\n';
 
     // 修正windows系统中的\为/
@@ -405,31 +402,24 @@ async function updateExecutor() {
             mgrStr += ',';
         }
     });
-    if (Object.keys(viewKeys).length === 0) viewKeys['never'] = false;
-    if (Object.keys(miniViewKeys).length === 0) miniViewKeys['never'] = '';
-    if (Object.keys(musicKeys).length === 0) musicKeys['never'] = '';
-    if (Object.keys(effectKeys).length === 0) effectKeys['never'] = '';
 
-    result += '/**界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/\n';
-    result += 'export enum ViewName {' + Object.keys(viewKeys).map(v => `${v}="${v}"`).join(',') + '}\n';
-    result += '/**子界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/\n';
-    result += 'export enum MiniViewName {' + Object.keys(miniViewKeys).map(v => `${v}="${v}"`).join(',') + '}\n';
-    result += '/**音乐名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/\n';
-    result += 'export enum MusicName {' + Object.keys(musicKeys).map(v => `"${v}"="${v}"`).join(',') + '}\n';
-    result += '/**音效名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举)*/\n';
-    result += 'export enum EffectName {' + Object.keys(effectKeys).map(v => `"${v}"="${v}"`).join(',') + '}\n\n';
+    result += '/**界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用UIManager.ViewName*/\n';
+    result += 'export const ViewName = UIManager.ViewName\n';
+    result += '/**子界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用UIManager.MiniViewName*/\n';
+    result += 'export const MiniViewName = UIManager.MiniViewName\n';
+    result += '/**音乐名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用SoundManager.MusicName*/\n';
+    result += 'export const MusicName = SoundManager.MusicName\n';
+    result += '/**音效名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用SoundManager.EffectName*/\n';
+    result += 'export const EffectName = SoundManager.EffectName\n\n';
 
-    result += 'export type IViewName = keyof typeof ViewName\n';
+    result += `export type IViewName = ${JSON.stringify(Object.keys(viewKeys).join('|') || 'never')}\n`;
     result += 'export type IViewNames = IViewName[]\n';
-    result += 'export type IMiniViewName = keyof typeof MiniViewName\n';
+    result += `export type IMiniViewName = ${JSON.stringify(Object.keys(miniViewKeys).join('|') || 'never')}\n`;
     result += 'export type IMiniViewNames = IMiniViewName[]\n';
-    result += 'export type IMusicName = keyof typeof MusicName\n';
+    result += `export type IMusicName = ${JSON.stringify(Object.keys(musicKeys).join('|') || 'never')}\n`;
     result += 'export type IMusicNames = IMusicName[]\n';
-    result += 'export type IEffectName = keyof typeof EffectName\n';
+    result += `export type IEffectName = ${JSON.stringify(Object.keys(effectKeys).join('|') || 'never')}\n`;
     result += 'export type IEffectNames = IEffectName[]\n\n';
-
-    // scene
-    // result += `if(!EDITOR||DEV) Array.prototype.push.apply(app.scene, ${JSON.stringify(Object.keys(viewKeys).filter(key => viewKeys[key]))})\n`;
 
     // data
     handle(dataList, false);
@@ -450,7 +440,6 @@ async function updateExecutor() {
     result += `    data: {${dataList.map(varname => `${varname.slice(5)}:${varname}`).join(',')}},\n`;
     result += `    config: {${confList.map(varname => `${varname.slice(7)}:IReadOnly<${varname}>`).join(',')}}\n`;
     result += `    store: {${storeList.map(varname => `${varname.slice(6)}:IReadOnly<${varname}>`).join(',')}}\n`;
-    // result += '    scene: IReadOnly<IViewName[]>\n';
     result += '}\n';
 
     // 修正windows系统中的\为/
