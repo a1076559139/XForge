@@ -403,13 +403,13 @@ async function updateExecutor() {
     result += 'export const MusicName = SoundManager.MusicName\n';
     result += '/**音效名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用SoundManager.EffectName*/\n';
     result += 'export const EffectName = SoundManager.EffectName\n\n';
-    result += `export type IViewName = ${JSON.stringify(Object.keys(viewKeys).join('|') || 'never')}\n`;
+    result += `export type IViewName = ${Object.keys(viewKeys).map(str => `"${str}"`).join('|') || '"never"'}\n`;
     result += 'export type IViewNames = IViewName[]\n';
-    result += `export type IMiniViewName = ${JSON.stringify(Object.keys(miniViewKeys).join('|') || 'never')}\n`;
+    result += `export type IMiniViewName = ${Object.keys(miniViewKeys).map(str => `"${str}"`).join('|') || '"never"'}\n`;
     result += 'export type IMiniViewNames = IMiniViewName[]\n';
-    result += `export type IMusicName = ${JSON.stringify(Object.keys(musicKeys).join('|') || 'never')}\n`;
+    result += `export type IMusicName = ${Object.keys(musicKeys).map(str => `"${str}"`).join('|') || '"never"'}\n`;
     result += 'export type IMusicNames = IMusicName[]\n';
-    result += `export type IEffectName = ${JSON.stringify(Object.keys(effectKeys).join('|') || 'never')}\n`;
+    result += `export type IEffectName = ${Object.keys(effectKeys).map(str => `"${str}"`).join('|') || '"never"'}\n`;
     result += 'export type IEffectNames = IEffectName[]\n\n';
     // data
     handle(dataList, false);
