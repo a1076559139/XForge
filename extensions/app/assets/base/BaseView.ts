@@ -74,6 +74,19 @@ interface IMiniOnFinish {
     (): any
 }
 
+interface IBaseViewController<C, T extends { [key in string]: any }> {
+    new(): BaseView & {
+        readonly controller: Pick<C, keyof C> & Readonly<{
+            emit<K extends keyof T>(key: K, ...args: Parameters<T[K]>): void;
+            call<K extends keyof T & keyof T>(key: K, ...args: Parameters<T[K]>): ReturnType<T[K]>;
+            on<K extends keyof T>(key: K, callback: (...args: Parameters<T[K]>) => ReturnType<T[K]>, target?: any): void;
+            once<K extends keyof T>(key: K, callback: (...args: Parameters<T[K]>) => ReturnType<T[K]>, target?: any): void;
+            off(key: keyof T, callback: Function, target?: any): void;
+            targetOff(target: any): void;
+        }>
+    }
+}
+
 enum ViewState {
     BeforeShow,
     Showing,
@@ -107,17 +120,10 @@ export default class BaseView extends Component {
 
     static BindController<C, T extends { [key in string]: any }>(controller: IBaseController<C, T>) {
         return class BindController extends BaseView {
-            protected get controller(): Pick<C, keyof C> & Readonly<{
-                emit<K extends keyof T>(key: K, ...args: Parameters<T[K]>): void;
-                call<K extends keyof T & keyof T>(key: K, ...args: Parameters<T[K]>): ReturnType<T[K]>;
-                on<K extends keyof T>(key: K, callback: (...args: Parameters<T[K]>) => ReturnType<T[K]>, target?: any): void;
-                once<K extends keyof T>(key: K, callback: (...args: Parameters<T[K]>) => ReturnType<T[K]>, target?: any): void;
-                off(key: keyof T, callback: Function, target?: any): void;
-                targetOff(target: any): void;
-            }> {
+            protected get controller() {
                 return controller ? controller.inst as any : null;
             }
-        };
+        } as any as IBaseViewController<C, T>;
     }
 
     /**是否有效/是否可以被展示 */
