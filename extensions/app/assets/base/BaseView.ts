@@ -112,7 +112,7 @@ export default class BaseView extends Component {
                 call<K extends keyof T & keyof T>(key: K, ...args: Parameters<T[K]>): ReturnType<T[K]>;
                 on<K extends keyof T>(key: K, callback: (...args: Parameters<T[K]>) => ReturnType<T[K]>, target?: any): void;
                 once<K extends keyof T>(key: K, callback: (...args: Parameters<T[K]>) => ReturnType<T[K]>, target?: any): void;
-                off(key: keyof T, callback?: Function, target?: any): void;
+                off(key: keyof T, callback: Function, target?: any): void;
                 targetOff(target: any): void;
             }> {
                 return controller ? controller.inst as any : null;
