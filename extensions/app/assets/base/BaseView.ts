@@ -73,10 +73,16 @@ interface IMiniOnHide {
 interface IMiniOnFinish {
     (): any
 }
-
+type IPick<T> = {
+    -readonly [P in keyof T]: T[P] extends Function
+    ? T[P]
+    : (T[P] extends Object
+        ? IPick<T[P]>
+        : T[P]);
+};
 interface IBaseViewController<C, T extends { [key in string]: any }> {
     new(): BaseView & {
-        readonly controller: Pick<C, keyof C> & Readonly<{
+        readonly controller: IPick<C> & Readonly<{
             emit<K extends keyof T>(key: K, ...args: Parameters<T[K]>): void;
             call<K extends keyof T & keyof T>(key: K, ...args: Parameters<T[K]>): ReturnType<T[K]>;
             on<K extends keyof T>(key: K, callback: (...args: Parameters<T[K]>) => ReturnType<T[K]>, target?: any): void;
