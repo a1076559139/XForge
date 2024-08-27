@@ -160,6 +160,7 @@ class SuperBaseController<T extends { [key in string]?: AnyFunc }> {
     }
 }
 
+type IReadOnly<T> = { readonly [P in keyof T]: T[P] extends Function ? T[P] : (T[P] extends Object ? IReadOnly<T[P]> : T[P]); };
 export default function BaseController<C, T extends { [key in string]?: AnyFunc } = any>() {
     return class BaseController extends SuperBaseController<T> {
         public static Event: { [key in keyof T]: key } = new Proxy({} as any, {
@@ -170,7 +171,7 @@ export default function BaseController<C, T extends { [key in string]?: AnyFunc 
             }
         });
 
-        private static _base_inst: Readonly<C> = null;
+        private static _base_inst: IReadOnly<C> = null;
         public static get inst() {
             if (this._base_inst === null) {
                 this._base_inst = new this() as C;
