@@ -6,7 +6,8 @@ interface IFinish<T> {
     (results?: T, success?: boolean): any
 }
 
-interface ITask<T> {
+export interface ITask<T extends Array<any> = any[]> {
+    readonly results: Readonly<T>;
     size(): number;
     add(handle: IHandle): this;
     start(finish?: IFinish<T> | Function): this;
@@ -151,11 +152,11 @@ class Sync<T extends Array<any>> implements ITask<T> {
                     if (timeout > 0) {
                         setTimeout(() => {
                             resolve(this.retry(index));
-                        }, timeout * 1000)
+                        }, timeout * 1000);
                     } else {
                         resolve(this.retry(index));
                     }
-                })
+                });
             },
             (data?: any) => this.end(data)
         );
@@ -306,11 +307,11 @@ class ASync<T extends Array<any>> implements ITask<T> {
                     if (timeout > 0) {
                         setTimeout(() => {
                             resolve(this.retry(index));
-                        }, timeout * 1000)
+                        }, timeout * 1000);
                     } else {
                         resolve(this.retry(index));
                     }
-                })
+                });
             },
             (data?: any) => this.end(index, data)
         );
