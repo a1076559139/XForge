@@ -9,7 +9,7 @@ export default class UIMgrToastCell extends Component {
     private title: Label = null;
 
     init(title: string) {
-        if (title.length > 30) {
+        if (title.split('\n').find((v) => v.length > 30)) {
             this.title.overflow = Label.Overflow.RESIZE_HEIGHT;
             this.title.getComponent(UITransform).width = 600;
         } else {

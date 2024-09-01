@@ -161,7 +161,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
      */
     public preload(soundPath: (E | M), complete?: (item: AssetManager.RequestItem[]) => any) {
         if (!soundPath) {
-            this.error('[preload]', 'fail');
+            this.error('preload', 'fail');
             complete && setTimeout(function () {
                 if (!isValid(this)) return;
                 complete(null);
@@ -170,7 +170,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         }
 
         if (soundPath.indexOf('effect') !== 0 && soundPath.indexOf('music') !== 0) {
-            this.error('[preload]', 'fail', soundPath);
+            this.error('preload', 'fail', soundPath);
             complete && setTimeout(function () {
                 if (!isValid(this)) return;
                 complete(null);
@@ -201,7 +201,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         const complete = args[1] || args[0];
 
         if (!soundPath) {
-            this.error('[load]', 'fail');
+            this.error('load', 'fail');
             complete && setTimeout(() => {
                 if (!isValid(this)) return;
                 complete(null);
@@ -210,7 +210,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
         }
 
         if (soundPath.indexOf('effect') !== 0 && soundPath.indexOf('music') !== 0) {
-            this.error('[load]', 'fail', soundPath);
+            this.error('load', 'fail', soundPath);
             complete && setTimeout(() => {
                 if (!isValid(this)) return;
                 complete(null);

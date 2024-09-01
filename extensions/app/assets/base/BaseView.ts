@@ -1,4 +1,4 @@
-import { Asset, Component, Enum, EventTouch, Font, Label, Node, Scene, Sprite, SpriteFrame, UITransform, Widget, _decorator, director, error, isValid, js, log, sp } from 'cc';
+import { Asset, Component, Enum, EventTouch, Font, Label, Node, Scene, Sprite, SpriteFrame, UITransform, Widget, _decorator, director, isValid, js, sp } from 'cc';
 import { EDITOR } from 'cc/env';
 import { IMiniViewName, IMiniViewNames, IViewName } from '../../../../assets/app-builtin/app-admin/executor';
 import Core from '../Core';
@@ -469,7 +469,7 @@ export default class BaseView extends Component {
 
         views.forEach(name => {
             if (this.miniViews.indexOf(name) === -1) {
-                this.warn('[hideMiniViews]', `${name}不在miniViews中, 已跳过`);
+                this.warn('hideMiniViews', `${name}不在miniViews中, 已跳过`);
                 return;
             }
 
@@ -485,7 +485,7 @@ export default class BaseView extends Component {
     protected showMiniViews({ data, views, onShow, onHide, onFinish }: { data?: any, views: Array<IMiniViewName | IMiniViewNames>, onShow?: IMiniOnShow, onHide?: IMiniOnHide, onFinish?: IMiniOnFinish }) {
         if (views.length === 0) return false;
         if (this.typeName !== ViewType.Page) {
-            this.warn('[showMiniViews]', '仅支持Page类型');
+            this.warn('showMiniViews', '仅支持Page类型');
             return false;
         }
 
@@ -518,25 +518,25 @@ export default class BaseView extends Component {
         const task = Core.inst.lib.task.createSync();
 
         if (this.typeName !== ViewType.Page) {
-            this.warn('[showMiniViews]', '仅支持Page类型');
+            this.warn('showMiniViews', '仅支持Page类型');
             return task;
         }
 
         views = views.filter(name => {
             if (!name) {
-                this.warn('[showMiniViews]', 'name不能为空');
+                this.warn('showMiniViews', 'name不能为空');
                 return false;
             }
             if (this._base_mini_show.has(name)) {
-                this.warn('[showMiniViews]', `重复融合${name}, 已跳过`);
+                this.warn('showMiniViews', `重复融合${name}, 已跳过`);
                 return false;
             }
             if (this.miniViews.indexOf(name) === -1) {
-                this.warn('[showMiniViews]', `${name}不在miniViews中, 已跳过`);
+                this.warn('showMiniViews', `${name}不在miniViews中, 已跳过`);
                 return false;
             }
             if (name.indexOf(this.baseName) !== ViewType.Paper.length && name.indexOf(ViewType.PaperAll) !== 0) {
-                this.warn('[showMiniViews]', `${name}不属于当前Page, 已跳过`);
+                this.warn('showMiniViews', `${name}不属于当前Page, 已跳过`);
                 return false;
             }
 
@@ -551,7 +551,7 @@ export default class BaseView extends Component {
             const aSync = Core.inst.lib.task.createASync();
             views.forEach(name => {
                 aSync.add((next, retry) => {
-                    this.log('[mixin-load]', name);
+                    this.log('下载子页面', name);
                     Core.inst.manager.ui.load(name as any, result => {
                         result ? next() : this.scheduleOnce(retry, 0.1);
                     });
@@ -565,7 +565,7 @@ export default class BaseView extends Component {
             const aSync = Core.inst.lib.task.createASync();
             views.forEach(name => {
                 aSync.add((next) => {
-                    this.log('[mixin-show]', name);
+                    this.log('展示子页面', name);
                     if (!this._base_mini_show.has(name)) return next();
 
                     Core.inst.manager.ui.show({
@@ -583,7 +583,7 @@ export default class BaseView extends Component {
                         onError: (result, code) => {
                             if (code === Core.inst.Manager.UI.ErrorCode.LoadError) return true;
                             this._base_mini_show.delete(name);
-                            this.warn('[mixin-show]', name, result, '已跳过');
+                            this.warn('忽略子页面', name, result);
                             next();
                         },
                     });
@@ -832,33 +832,30 @@ export default class BaseView extends Component {
         });
     }
 
-    protected log(...args: any[]) {
-        log(
-            `%c ${this._base_view_name} %c %s %c`,
-            'background:#1e90ff ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #1e90ff; color: #fff;',
-            'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #1e90ff; color: #1e90ff;',
-            args.join(' '),
-            'background:transparent'
+    protected get log() {
+        return window.console.log.bind(window.console,
+            `%c %s %c %s `,
+            'background:#1e90ff; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #1e90ff; color: #fff; font-weight: normal;',
+            `[${this._base_view_name}] LOG ${new Date().toLocaleString()}`,
+            'background:#ffffff; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #1e90ff; color: #1e90ff; font-weight: normal;'
         );
     }
 
-    protected warn(...args: any[]) {
-        log(
-            `%c ${this._base_view_name} %c %s %c`,
-            'background:#eccc68 ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #eccc68; color: #fff;',
-            'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #eccc68; color: #eccc68;',
-            args.join(' '),
-            'background:transparent'
+    protected get warn() {
+        return window.console.warn.bind(window.console,
+            `%c %s %c %s `,
+            'background:#ff7f50; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff7f50; color: #fff; font-weight: normal;',
+            `[${this._base_view_name}] WARN ${new Date().toLocaleString()}`,
+            'background:#ffffff; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff7f50; color: #ff7f50; font-weight: normal;'
         );
     }
 
-    protected error(...args: any[]) {
-        error(
-            `%c ${this._base_view_name} %c %s %c`,
-            'background:#ff4757 ; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff4757; color: #fff;',
-            'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff4757; color: #ff4757;',
-            args.join(' '),
-            'background:transparent'
+    protected get error() {
+        return window.console.error.bind(window.console,
+            `%c %s %c %s `,
+            'background:#ff4757; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff4757; color: #fff; font-weight: normal;',
+            `[${this._base_view_name}] ERROR ${new Date().toLocaleString()}`,
+            'background:#ffffff; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff4757; color: #ff4757; font-weight: normal;'
         );
     }
 

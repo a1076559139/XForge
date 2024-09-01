@@ -132,9 +132,13 @@ const MiniViewName: { [key in IMiniViewName]: key } = new Proxy({} as any, {
 export default class UIManager<UIName extends string, MiniName extends string> extends BaseManager {
     /**静态设置 */
     static setting: {
+        /**预加载列表，会在UI初始化阶段进行 */
         preload?: (IViewName | IMiniViewName | Array<IViewName | IMiniViewName>)[],
+        /**默认UI，框架初始化完毕后会自动加载 */
         defaultUI?: IViewName,
+        /**给默认UI传递的数据 */
         defaultData?: any,
+        /**弹窗背景遮罩的参数 */
         shade?: IShade
     } = {};
 
@@ -404,7 +408,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 return typeName;
             }
         }
-        this.error('[getUIPrefix]', `${name}`);
+        this.error('getUIPrefix', `${name}`);
     }
 
     /**
@@ -424,7 +428,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             }
         }
 
-        this.error('[getUIParent]', `找不到${name}对应的Parent`);
+        this.error('getUIParent', `找不到${name}对应的Parent`);
         return null;
     }
 
@@ -578,7 +582,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 } else {
                     this.sceneCache[name] = asset;
                 }
-                this.log('[installUI]', name);
+                this.log('安装UI', name);
                 return complete && complete(asset);
             });
     }
@@ -605,6 +609,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         Core.inst.manager.loader.releaseAll(naBundle);
         Core.inst.manager.loader.removeBundle(resBundle);
         Core.inst.manager.loader.removeBundle(naBundle);
+        this.log('卸载UI', name);
     }
 
     /**
@@ -628,7 +633,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                     onComplete: callback
                 });
             } else {
-                this.error('[loadRes]', target.name, path);
+                this.error('loadRes', target.name, path);
                 callback && callback(null);
             }
         }
@@ -653,7 +658,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                     type: type
                 });
             } else {
-                this.error('[preloadRes]', target.name, path);
+                this.error('preloadRes', target.name, path);
             }
         }
     }
@@ -679,7 +684,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                     onComplete: callback
                 });
             } else {
-                this.error('[loadResDir]', target.name, path);
+                this.error('loadResDir', target.name, path);
                 callback && callback([]);
             }
         }
@@ -704,7 +709,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                     type: type
                 });
             } else {
-                this.error('[preloadResDir]', target.name, path);
+                this.error('preloadResDir', target.name, path);
             }
         }
     }
@@ -715,7 +720,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     public preload(name: UIName | MiniName, complete?: (item: AssetManager.RequestItem[]) => any) {
         // 验证name是否为真
         if (!name) {
-            this.error('[preload]', 'fail');
+            this.error('preload', 'fail');
             complete && setTimeout(function () {
                 if (!isValid(this)) return;
                 complete(null);
@@ -746,7 +751,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
         // 验证name是否为真
         if (!name) {
-            this.error('[load]', 'fail');
+            this.error('load', 'fail');
             complete && setTimeout(function () {
                 if (!isValid(this)) return;
                 complete(null);
@@ -774,7 +779,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         }
 
         if (!uiName) {
-            this.error('[release]', `${nameOrCom} fail`);
+            this.error('release', `${nameOrCom} fail`);
             return;
         }
 
@@ -785,7 +790,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 if (!node || !isValid(node, true)) return;
                 if (DEBUG) {
                     if (this.getBaseView(node).isShow)
-                        this.warn('[release]', `${uiName}正处于show状态, 此处将直接destroy`);
+                        this.warn('release', `${uiName}正处于show状态, 此处将直接destroy`);
                 }
                 node.parent = null;
                 node.destroy();
@@ -797,7 +802,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             if (node && isValid(node, true)) {
                 if (DEBUG) {
                     if (this.getBaseView(node).isShow)
-                        this.warn('[release]', `${uiName}正处于show状态, 此处将直接destroy`);
+                        this.warn('release', `${uiName}正处于show状态, 此处将直接destroy`);
                 }
                 node.parent = null;
                 node.destroy();
@@ -808,7 +813,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         const nodes = this.getUIInScene(uiName, true);
         if (nodes.length === 0 || nodes.every(node => !isValid(node, true))) {
             this.uninstallUI(uiName as UIName | MiniName);
-            this.log('[release]', uiName);
+            this.log('release', uiName);
         }
     }
 
@@ -902,7 +907,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
         node.active = false;
         if (node.name !== name) {
-            this.warn('[parsingPrefab]', `节点名与UI名不一致, 已重置为UI名: ${this.getUIPath(name)}`);
+            this.warn('parsingPrefab', `节点名与UI名不一致, 已重置为UI名: ${this.getUIPath(name)}`);
             node.name = name;
         }
 
@@ -916,19 +921,19 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         if (!asset || !asset.scene) return null;
 
         if (asset.scene.name !== name) {
-            this.warn('[parsingScene]', `场景名与UI名不一致, 已重置为UI名: ${this.getUIPath(name)}`);
+            this.warn('parsingScene', `场景名与UI名不一致, 已重置为UI名: ${this.getUIPath(name)}`);
             asset.scene.name = name;
         }
 
         const view = this.getViewInChildren(asset.scene);
         if (!view) {
-            this.error('[parsingScene]', `解析场景时未查询到根节点存在BaseView: ${this.getUIPath(name)}`);
+            this.error('parsingScene', `解析场景时未查询到根节点存在BaseView: ${this.getUIPath(name)}`);
             return null;
         }
 
         view.node.active = false;
         if (view.node.name !== name) {
-            this.warn('[parsingScene]', `节点名与UI名不一致, 已重置为UI名: ${this.getUIPath(name)}`);
+            this.warn('parsingScene', `节点名与UI名不一致, 已重置为UI名: ${this.getUIPath(name)}`);
             view.node.name = name;
         }
         return view.node;
@@ -1033,9 +1038,9 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 onShow
             });
         } else {
-            Core.inst.manager.ui.showToast('请先设置首界面\n在setting.ts中修改', 100);
+            Core.inst.manager.ui.showToast('请先设置首界面\n在setting.ts中修改defaultUI', 100);
             onShow && onShow();
-            this.warn('defaultUI 不存在');
+            this.warn('defaultUI不存在，请在setting.ts中修改');
         }
     }
 
@@ -1108,7 +1113,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
         this.createUI(name, silent, (node, scene) => {
             if (!node) {
-                this.error('[show]', `${name} 不存在或加载失败`);
+                this.error('show', `${name} 不存在或加载失败`);
                 // 「没有指定onError」或「onError返回true」会自动发起重试
                 if (onError && onError(`${name} 不存在或加载失败`, UIManager.ErrorCode.LoadError) !== true) {
                     return;
@@ -1146,7 +1151,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                             if (this.currScene !== name) {
                                 this.currScene = name;
                                 director.runSceneImmediate(scene, null, () => {
-                                    this.log('[scene]', name);
+                                    this.log('切换场景', name);
                                 });
                             }
                         } else if (this.currScene !== UIScene) {
@@ -1154,7 +1159,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                             const scene = new Scene(UIScene);
                             scene.autoReleaseAssets = true;
                             director.runSceneImmediate(scene, null, () => {
-                                this.log('[scene]', UIScene);
+                                this.log('切换场景', UIScene);
                             });
                         }
                     }
@@ -1178,7 +1183,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             return;
         }
 
-        this.log('[show]', name);
+        this.log('show', name);
 
         // 判断ui是否有效
         const showLoadingUuid = silent ? '' : this.showLoading();
@@ -1186,7 +1191,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             this.checkUIValid(name, data, (valid) => {
                 // 加载失败
                 if (valid === -1) {
-                    this.error('[show]', `${name} 不存在或加载失败`);
+                    this.error('show', `${name} 不存在或加载失败`);
                     // 「没有指定onError」或「onError返回true」会自动发起重试
                     if (onError && onError(`${name} 不存在或加载失败`, UIManager.ErrorCode.LoadError) !== true) {
                         return this.hideLoading(showLoadingUuid);
@@ -1196,7 +1201,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
                 // ui无效
                 if (valid === 0) {
-                    this.warn('[show]', `${name} 无效`);
+                    this.warn('show', `${name} 无效`);
                     this.uninstallUI(name);
                     onError && onError(`${name} 无效`, UIManager.ErrorCode.InvalidError);
                     this.hideLoading(showLoadingUuid);
@@ -1237,7 +1242,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
         if (nodes.length === 0) {
             if (!this.uiLoadingMap.has(name) || this.uiLoadingMap.get(name).length === 0) {
-                return this.warn('[hide]', `${name} 不存在`);
+                return this.warn('hide', `${name} 不存在`);
             }
         }
 
@@ -1254,7 +1259,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             com.constructor.prototype.hide.call(com, data, onHide);
         }
 
-        this.log('[hide]', name);
+        this.log('hide', name);
     }
 
     /**
@@ -1283,7 +1288,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             return;
         }
 
-        this.warn('[pop]', `${name} 不存在`);
+        this.warn('pop', `${name} 不存在`);
     }
 
     /**
@@ -1312,7 +1317,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             return;
         }
 
-        this.warn('[shift]', `${name} 不存在`);
+        this.warn('shift', `${name} 不存在`);
     }
 
     /**
@@ -1387,7 +1392,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      */
     public showToast(message: string, timeout?: number) {
         if (!this.toast) {
-            return this.error('[showToast]', '请确认首场景中「Root2D/Manager/UIManager」的「Toast Pre」属性存在');
+            return this.error('showToast', '请确认首场景中「Root2D/Manager/UIManager」的「Toast Pre」属性存在');
         }
         this.toast.getComponent(UIMgrToast).add({
             message, timeout
@@ -1414,7 +1419,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             this.addTouchMaskListener();
             this.touchEnabled = false;
         }
-        this.log('[setTouchEnabled]', this.touchEnabled);
+        this.warn('setTouchEnabled', this.touchEnabled);
     }
 
     /**
