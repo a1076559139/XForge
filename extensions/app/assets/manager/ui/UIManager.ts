@@ -582,7 +582,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 } else {
                     this.sceneCache[name] = asset;
                 }
-                this.log('安装UI', name);
+                this.log(`加载: ${name}`);
                 return complete && complete(asset);
             });
     }
@@ -609,7 +609,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         Core.inst.manager.loader.releaseAll(naBundle);
         Core.inst.manager.loader.removeBundle(resBundle);
         Core.inst.manager.loader.removeBundle(naBundle);
-        this.log('卸载UI', name);
+        this.log(`卸载: ${name}`);
     }
 
     /**
@@ -813,7 +813,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         const nodes = this.getUIInScene(uiName, true);
         if (nodes.length === 0 || nodes.every(node => !isValid(node, true))) {
             this.uninstallUI(uiName as UIName | MiniName);
-            this.log('release', uiName);
+            this.log(`释放资源: ${uiName}`);
         }
     }
 
@@ -1151,7 +1151,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                             if (this.currScene !== name) {
                                 this.currScene = name;
                                 director.runSceneImmediate(scene, null, () => {
-                                    this.log('切换场景', name);
+                                    this.log(`切换场景: ${name}`);
                                 });
                             }
                         } else if (this.currScene !== UIScene) {
@@ -1159,7 +1159,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                             const scene = new Scene(UIScene);
                             scene.autoReleaseAssets = true;
                             director.runSceneImmediate(scene, null, () => {
-                                this.log('切换场景', UIScene);
+                                this.log(`切换场景: ${UIScene}`);
                             });
                         }
                     }
@@ -1183,7 +1183,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             return;
         }
 
-        this.log('show', name);
+        this.log(`show: ${name}`);
 
         // 判断ui是否有效
         const showLoadingUuid = silent ? '' : this.showLoading();
@@ -1259,7 +1259,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             com.constructor.prototype.hide.call(com, data, onHide);
         }
 
-        this.log('hide', name);
+        this.log(`hide: ${name}`);
     }
 
     /**

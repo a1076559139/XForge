@@ -551,7 +551,7 @@ export default class BaseView extends Component {
             const aSync = Core.inst.lib.task.createASync();
             views.forEach(name => {
                 aSync.add((next, retry) => {
-                    this.log('下载子页面', name);
+                    this.log(`下载子页面: ${name}`);
                     Core.inst.manager.ui.load(name as any, result => {
                         result ? next() : this.scheduleOnce(retry, 0.1);
                     });
@@ -565,7 +565,7 @@ export default class BaseView extends Component {
             const aSync = Core.inst.lib.task.createASync();
             views.forEach(name => {
                 aSync.add((next) => {
-                    this.log('展示子页面', name);
+                    this.log(`展示子页面: ${name}`);
                     if (!this._base_mini_show.has(name)) return next();
 
                     Core.inst.manager.ui.show({
