@@ -1,4 +1,4 @@
-import { Component, Director, director, Node, _decorator } from 'cc';
+import { _decorator, Component, Director, director, Node } from 'cc';
 const { ccclass } = _decorator;
 
 @ccclass('UIMgrZOrder')
@@ -10,14 +10,22 @@ export default class UIMgrZOrder extends Component {
         this.checkUpdateZOrder();
         this.node.on(Node.EventType.CHILD_ADDED, this.onChildAdded, this);
         this.node.on(Node.EventType.CHILD_REMOVED, this.onChildRemoveed, this);
-        this.node.on(Node.EventType.SIBLING_ORDER_CHANGED, this.checkUpdateZOrder, this);
+        if (Node.EventType.CHILDREN_ORDER_CHANGED) {
+            this.node.on(Node.EventType.CHILDREN_ORDER_CHANGED, this.checkUpdateZOrder, this);
+        } else {
+            this.node.on(Node.EventType.SIBLING_ORDER_CHANGED, this.checkUpdateZOrder, this);
+        }
     }
 
     protected onDestroy() {
         director.off(Director.EVENT_AFTER_UPDATE, this.updateZOrder, this);
         this.node.off(Node.EventType.CHILD_ADDED, this.onChildAdded, this);
         this.node.off(Node.EventType.CHILD_REMOVED, this.onChildRemoveed, this);
-        this.node.off(Node.EventType.SIBLING_ORDER_CHANGED, this.checkUpdateZOrder, this);
+        if (Node.EventType.CHILDREN_ORDER_CHANGED) {
+            this.node.off(Node.EventType.CHILDREN_ORDER_CHANGED, this.checkUpdateZOrder, this);
+        } else {
+            this.node.off(Node.EventType.SIBLING_ORDER_CHANGED, this.checkUpdateZOrder, this);
+        }
     }
 
     private onChildAdded(child: Node) {

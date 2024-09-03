@@ -12,7 +12,7 @@ class Logger {
      */
     get log() {
         return window.console.log.bind(window.console,
-            `%c %s %c %s `,
+            '%c %s %c %s ',
             'background:#6495ed; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #6495ed; color: #fff; font-weight: normal;',
             `[LOG] ${new Date().toLocaleString()}`,
             'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #6495ed; color: #6495ed; font-weight: normal;'
@@ -25,7 +25,7 @@ class Logger {
 
     get warn() {
         return window.console.warn.bind(window.console,
-            `%c %s %c %s `,
+            '%c %s %c %s ',
             'background:#ff7f50; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff7f50; color: #fff; font-weight: normal;',
             `[WARN] ${new Date().toLocaleString()}`,
             'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff7f50; color: #ff7f50; font-weight: normal;'
@@ -37,7 +37,7 @@ class Logger {
      */
     get error() {
         return window.console.error.bind(window.console,
-            `%c %s %c %s `,
+            '%c %s %c %s ',
             'background:#ff4757; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff4757; color: #fff; font-weight: normal;',
             `[ERROR] ${new Date().toLocaleString()}`,
             'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff4757; color: #ff4757; font-weight: normal;'
@@ -49,7 +49,7 @@ class Logger {
      */
     get debug() {
         return window.console.log.bind(window.console,
-            `%c %s %c %s `,
+            '%c %s %c %s ',
             'background:#ff6347; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff6347; color: #fff; font-weight: normal;',
             `[DEBUG] ${new Date().toLocaleString()}`,
             'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff6347; color: #ff6347; font-weight: normal;'
@@ -61,7 +61,7 @@ class Logger {
      */
     get success() {
         return window.console.log.bind(window.console,
-            `%c %s %c %s `,
+            '%c %s %c %s ',
             'background:#00ae9d; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #00ae9d; color: #fff; font-weight: normal;',
             `[SUCC] ${new Date().toLocaleString()}`,
             'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #00ae9d; color: #00ae9d; font-weight: normal;'

@@ -19,39 +19,39 @@ const uuid = new class UUID {
 };
 
 const loadBegin = window.console.log.bind(window.console,
-    `%c %s %c %s `,
+    '%c %s %c %s ',
     'background:#32cd32; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #32cd32; color: #fff; font-weight: normal;',
     `[BaseManager] 下载开始 ${new Date().toLocaleString()}`,
     'background:#ffffff; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #32cd32; color: #32cd32; font-weight: normal;'
-)
+);
 
 const loadFinish = window.console.log.bind(window.console,
-    `%c %s %c %s `,
+    '%c %s %c %s ',
     'background:#00ae9d; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #00ae9d; color: #fff; font-weight: normal;',
     `[BaseManager] 下载完成 ${new Date().toLocaleString()}`,
     'background:#ffffff; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #00ae9d; color: #00ae9d; font-weight: normal;'
-)
+);
 
 const loadError = window.console.log.bind(window.console,
-    `%c %s %c %s `,
+    '%c %s %c %s ',
     'background:#ff4757; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff4757; color: #fff; font-weight: normal;',
     `[BaseManager] 下载失败 ${new Date().toLocaleString()}`,
     'background:#ffffff; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff4757; color: #ff4757; font-weight: normal;'
-)
+);
 
 const initBegin = window.console.log.bind(window.console,
-    `%c %s %c %s `,
+    '%c %s %c %s ',
     'background:#3e4145; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #3e4145; color: #fff; font-weight: normal;',
     `[BaseManager] 初始化开始 ${new Date().toLocaleString()}`,
     'background:#ffffff; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #3e4145; color: #3e4145; font-weight: normal;'
-)
+);
 
 const initFinish = window.console.log.bind(window.console,
-    `%c %s %c %s `,
+    '%c %s %c %s ',
     'background:#008080; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #008080; color: #fff; font-weight: normal;',
     `[BaseManager] 初始化完成 ${new Date().toLocaleString()}`,
     'background:#ffffff; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #008080; color: #008080; font-weight: normal;'
-)
+);
 
 @ccclass('BaseManager')
 export default class BaseManager extends Component {
@@ -126,7 +126,7 @@ export default class BaseManager extends Component {
 
     protected get log() {
         return window.console.log.bind(window.console,
-            `%c %s %c %s `,
+            '%c %s %c %s ',
             'background:#4169e1; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #4169e1; color: #fff; font-weight: normal;',
             `[${this._base_manager_name}] LOG ${new Date().toLocaleString()}`,
             'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #4169e1; color: #4169e1; font-weight: normal;'
@@ -135,7 +135,7 @@ export default class BaseManager extends Component {
 
     protected get warn() {
         return window.console.warn.bind(window.console,
-            `%c %s %c %s `,
+            '%c %s %c %s ',
             'background:#ff7f50; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff7f50; color: #fff; font-weight: normal;',
             `[${this._base_manager_name}] WARN ${new Date().toLocaleString()}`,
             'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff7f50; color: #ff7f50; font-weight: normal;'
@@ -144,7 +144,7 @@ export default class BaseManager extends Component {
 
     protected get error() {
         return window.console.error.bind(window.console,
-            `%c %s %c %s `,
+            '%c %s %c %s ',
             'background:#ff4757; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff4757; color: #fff; font-weight: normal;',
             `[${this._base_manager_name}] ERROR ${new Date().toLocaleString()}`,
             'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff4757; color: #ff4757; font-weight: normal;'

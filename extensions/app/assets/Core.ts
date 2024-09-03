@@ -62,7 +62,7 @@ const eventTarget = new EventTarget();
 export default class Core<T extends ICore> {
     static EventType = EventType;
 
-    protected static _inst: Core<ICore> = null;
+    protected static _inst: Core<ICore> | undefined;
     static get inst() {
         if (!this._inst) this._inst = new Core();
         return this._inst;
