@@ -893,6 +893,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         }
 
         this.shade.active = false;
+        this.shade.getComponent(UIMgrShade).clear();
         if (!onFocus) {
             isValid(this.currFocus, true) && this.currFocus.constructor.prototype.focus.call(this.currFocus, false);
             this.currFocus = null;
