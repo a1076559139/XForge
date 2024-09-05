@@ -192,11 +192,16 @@ export default class BaseView extends Component {
     })
     public get hideEvent() {
         if (this.is3D()) return HideEvent.destroy;
+        if (this.isPaperAll()) return HideEvent.destroy;
         return this._hideEvent;
     }
     public set hideEvent(value) {
         if (this.is3D() && value !== HideEvent.destroy) {
-            this.log('3D模式下只能选择destroy模式');
+            this.log('3D模式下只能是destroy模式');
+            return;
+        }
+        if (this.isPaperAll() && value !== HideEvent.destroy) {
+            this.log('PaperAll只能是destroy模式');
             return;
         }
         this._hideEvent = value;
@@ -211,12 +216,17 @@ export default class BaseView extends Component {
     })
     protected get singleton(): boolean {
         if (this.isPage()) return true;
-        if (this.isPaperAll()) return true;
+        if (this.isPaperAll()) return false;
         if (this.isPaper()) return true;
         return this._singleton && (<typeof BaseView>this.constructor)._singleton;
     }
     protected set singleton(value) {
-        if (!value) {
+        if (value) {
+            if (this.isPaperAll()) {
+                this.log('PaperAll只能是非单例模式');
+                return;
+            }
+        } else {
             if (this.isPage()) {
                 this.log('Page只能是单例模式');
                 return;
