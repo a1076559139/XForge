@@ -211,17 +211,12 @@ export default class BaseView extends Component {
     })
     protected get singleton(): boolean {
         if (this.isPage()) return true;
-        if (this.isPaperAll()) return false;
+        if (this.isPaperAll()) return true;
         if (this.isPaper()) return true;
         return this._singleton && (<typeof BaseView>this.constructor)._singleton;
     }
     protected set singleton(value) {
-        if (value) {
-            if (this.isPaperAll()) {
-                this.log('PaperAll只能是非单例模式');
-                return;
-            }
-        } else {
+        if (!value) {
             if (this.isPage()) {
                 this.log('Page只能是单例模式');
                 return;
