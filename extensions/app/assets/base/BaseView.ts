@@ -83,11 +83,17 @@ type IPick<T> = {
 interface IBaseViewController<C, T extends { [key in string]: any }> {
     new(): BaseView & {
         readonly controller: IPick<C> & Readonly<{
+            /**获取第一个事件回调的返回值 */
             emit<K extends keyof T>(key: K, ...args: Parameters<T[K]>): void;
+            /**发射事件 */
             call<K extends keyof T & keyof T>(key: K, ...args: Parameters<T[K]>): ReturnType<T[K]>;
+            /**注册事件回调 */
             on<K extends keyof T>(key: K, callback: (...args: Parameters<T[K]>) => ReturnType<T[K]>, target?: any): void;
+            /**注册一次性事件回调 */
             once<K extends keyof T>(key: K, callback: (...args: Parameters<T[K]>) => ReturnType<T[K]>, target?: any): void;
+            /**取消事件回调 */
             off(key: keyof T, callback: Function, target?: any): void;
+            /**取消事件回调 */
             targetOff(target: any): void;
         }>
     }
@@ -107,9 +113,9 @@ const Group = { id: 'BaseView', name: 'Settings', displayOrder: -Infinity, style
 @ccclass('BaseView')
 export default class BaseView extends Component {
     /**
-     * @deprecated 废弃，请使用Controller代替Control
+     * @deprecated 废弃，请使用BindController代替BindControl
      */
-    static BindControl<C, E, T extends { [key in keyof E]?: any }>(control: IBaseControl<C, E, T>) {
+    static BindControl<C, E, T extends { [key in keyof E]?: any }>(Control: IBaseControl<C, E, T>) {
         return class BindControl extends BaseView {
             protected get control(): Pick<C, keyof C> & Readonly<{
                 call<K extends keyof E>(key: E[K], ...args: Parameters<T[K]>): ReturnType<T[K]>;
@@ -119,20 +125,25 @@ export default class BaseView extends Component {
                 off(key: E[keyof E], callback: Function, target?: any): void;
                 targetOff(target: any): void;
             }> {
-                return control ? control.inst as any : null;
+                return Control ? Control.inst as any : null;
             }
         };
     }
 
-    static BindController<C, T extends { [key in string]: any }>(controller: IBaseController<C, T>) {
+    /**
+     * 给UI绑定一个控制器，绑定后可以通过this.controller访问，并能访问一些内部方法(emit、on、once、off、targetOff)
+     */
+    static BindController<C, T extends { [key in string]: any }>(Controller: IBaseController<C, T>) {
         return class BindController extends BaseView {
             protected get controller() {
-                return controller ? controller.inst as any : null;
+                return Controller ? Controller.inst as any : null;
             }
         } as any as IBaseViewController<C, T>;
     }
 
-    /**是否有效/是否可以被展示 */
+    /**
+     * 是否有效，如果返回false的话，app.manager.ui.show会触发onError回调
+     */
     public static isViewValid(next: (valid: boolean) => void, data: any) {
         data;
         next && next(true);
