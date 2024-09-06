@@ -1241,6 +1241,8 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         : IHideParams<UIName, Parameters<UI['onHide']>[0], ReturnType<UI['onHide']>>) {
         const nodes = this.getUIInShowing(name, true);
 
+        this.log(`hide: ${name}`);
+
         if (nodes.length === 0) {
             if (!this.uiLoadingMap.has(name) || this.uiLoadingMap.get(name).length === 0) {
                 return this.warn('hide', `${name} 不存在`);
@@ -1259,8 +1261,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
             com.constructor.prototype.hide.call(com, data, onHide);
         }
-
-        this.log(`hide: ${name}`);
     }
 
     /**
@@ -1274,6 +1274,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
         if (this.uiLoadingMap.has(name) && this.uiLoadingMap.get(name).length) {
             this.uiLoadingMap.get(name).pop();
+            this.log(`pop: ${name}`);
             return;
         }
 
@@ -1286,6 +1287,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             }
 
             com.constructor.prototype.hide.call(com, data, onHide);
+            this.log(`pop: ${name}`);
             return;
         }
 
@@ -1310,11 +1312,13 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             }
 
             com.constructor.prototype.hide.call(com, data, onHide);
+            this.log(`shift: ${name}`);
             return;
         }
 
         if (this.uiLoadingMap.has(name) && this.uiLoadingMap.get(name).length) {
             this.uiLoadingMap.get(name).shift();
+            this.log(`shift: ${name}`);
             return;
         }
 
@@ -1328,6 +1332,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * - 此流程一定是同步的
      */
     public hideAll({ data, exclude }: { data?: any, exclude?: UIName[] } = {}): void {
+        this.log('hideAll');
         // 展示中的
         this.uiShowingMap.forEach((name, com) => {
             if (this.isPaper(name)) return;
