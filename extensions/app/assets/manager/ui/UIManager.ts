@@ -1328,7 +1328,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 关闭全部View
      * - 不关闭展示中的Page(加载中的会停止)
-     * - 不关闭paper
      * - 此流程一定是同步的
      */
     public hideAll({ data, exclude }: { data?: any, exclude?: UIName[] } = {}): void {

@@ -83,11 +83,17 @@ type IPick<T> = {
 interface IBaseViewController<C, T extends { [key in string]: any }> {
     new(): BaseView & {
         readonly controller: IPick<C> & Readonly<{
+            /**获取第一个事件回调的返回值 */
             emit<K extends keyof T>(key: K, ...args: Parameters<T[K]>): void;
+            /**发射事件 */
             call<K extends keyof T & keyof T>(key: K, ...args: Parameters<T[K]>): ReturnType<T[K]>;
+            /**注册事件回调 */
             on<K extends keyof T>(key: K, callback: (...args: Parameters<T[K]>) => ReturnType<T[K]>, target?: any): void;
+            /**注册一次性事件回调 */
             once<K extends keyof T>(key: K, callback: (...args: Parameters<T[K]>) => ReturnType<T[K]>, target?: any): void;
+            /**取消事件回调 */
             off(key: keyof T, callback: Function, target?: any): void;
+            /**取消事件回调 */
             targetOff(target: any): void;
         }>
     }
@@ -104,12 +110,15 @@ enum ViewState {
 
 const Group = { id: 'BaseView', name: 'Settings', displayOrder: -Infinity, style: 'section' };
 
+// 记录PaperAll的owner
+const PaperAllToOwner: Map<IMiniViewName, string> = new Map();
+
 @ccclass('BaseView')
 export default class BaseView extends Component {
     /**
-     * @deprecated 废弃，请使用Controller代替Control
+     * @deprecated 废弃，请使用BindController代替BindControl
      */
-    static BindControl<C, E, T extends { [key in keyof E]?: any }>(control: IBaseControl<C, E, T>) {
+    static BindControl<C, E, T extends { [key in keyof E]?: any }>(Control: IBaseControl<C, E, T>) {
         return class BindControl extends BaseView {
             protected get control(): Pick<C, keyof C> & Readonly<{
                 call<K extends keyof E>(key: E[K], ...args: Parameters<T[K]>): ReturnType<T[K]>;
@@ -119,23 +128,48 @@ export default class BaseView extends Component {
                 off(key: E[keyof E], callback: Function, target?: any): void;
                 targetOff(target: any): void;
             }> {
-                return control ? control.inst as any : null;
+                return Control ? Control.inst as any : null;
             }
         };
     }
 
-    static BindController<C, T extends { [key in string]: any }>(controller: IBaseController<C, T>) {
+    /**
+     * 给UI绑定一个控制器，绑定后可以通过this.controller访问，并能访问一些内部方法(emit、on、once、off、targetOff)
+     */
+    static BindController<C, T extends { [key in string]: any }>(Controller: IBaseController<C, T>) {
         return class BindController extends BaseView {
             protected get controller() {
-                return controller ? controller.inst as any : null;
+                return Controller ? Controller.inst as any : null;
             }
         } as any as IBaseViewController<C, T>;
     }
 
-    /**是否有效/是否可以被展示 */
+    /**
+     * 是否有效，如果返回false的话，app.manager.ui.show会触发onError回调
+     */
     public static isViewValid(next: (valid: boolean) => void, data: any) {
         data;
         next && next(true);
+    }
+
+    public static isPage(name: string) {
+        return name.indexOf(ViewType.Page) === 0;
+    }
+
+    public static isPaper(name: string) {
+        return name.indexOf(ViewType.Paper) === 0;
+    }
+
+    public static isPaperAll(name: string) {
+        return name.indexOf(ViewType.PaperAll) === 0;
+    }
+
+    public static isPop(name: string) {
+        return name.indexOf(ViewType.Pop) === 0;
+    }
+
+    public static isTop(name: string) {
+        return name.indexOf(ViewType.Top) === 0;
     }
 
     // 是否被调用过
@@ -152,23 +186,23 @@ export default class BaseView extends Component {
     private _base_mini_show: Set<IMiniViewName> = new Set();
 
     protected isPage() {
-        return this._base_view_name?.indexOf(ViewType.Page) === 0;
+        return BaseView.isPage(this._base_view_name);
     }
 
     protected isPaper() {
-        return this._base_view_name?.indexOf(ViewType.Paper) === 0;
+        return BaseView.isPaper(this._base_view_name);
     }
 
     protected isPaperAll() {
-        return this._base_view_name?.indexOf(ViewType.PaperAll) === 0;
+        return BaseView.isPaperAll(this._base_view_name);
     }
 
     protected isPop() {
-        return this._base_view_name?.indexOf(ViewType.Pop) === 0;
+        return BaseView.isPop(this._base_view_name);
     }
 
     protected isTop() {
-        return this._base_view_name?.indexOf(ViewType.Top) === 0;
+        return BaseView.isTop(this._base_view_name);
     }
 
     protected is2D() {
@@ -192,16 +226,11 @@ export default class BaseView extends Component {
     })
     public get hideEvent() {
         if (this.is3D()) return HideEvent.destroy;
-        if (this.isPaperAll()) return HideEvent.destroy;
         return this._hideEvent;
     }
     public set hideEvent(value) {
         if (this.is3D() && value !== HideEvent.destroy) {
             this.log('3D模式下只能是destroy模式');
-            return;
-        }
-        if (this.isPaperAll() && value !== HideEvent.destroy) {
-            this.log('PaperAll只能是destroy模式');
             return;
         }
         this._hideEvent = value;
@@ -216,17 +245,12 @@ export default class BaseView extends Component {
     })
     protected get singleton(): boolean {
         if (this.isPage()) return true;
-        if (this.isPaperAll()) return false;
+        if (this.isPaperAll()) return true;
         if (this.isPaper()) return true;
         return this._singleton && (<typeof BaseView>this.constructor)._singleton;
     }
     protected set singleton(value) {
-        if (value) {
-            if (this.isPaperAll()) {
-                this.log('PaperAll只能是非单例模式');
-                return;
-            }
-        } else {
+        if (!value) {
             if (this.isPage()) {
                 this.log('Page只能是单例模式');
                 return;
@@ -460,7 +484,7 @@ export default class BaseView extends Component {
      */
     protected hideAllMiniViews(data?: any) {
         this._base_mini_show.forEach((name) => {
-            Core.inst.manager.ui.shift({ name, data });
+            Core.inst.manager.ui.hide({ name, data });
         });
         this._base_mini_show.clear();
     }
@@ -478,8 +502,9 @@ export default class BaseView extends Component {
                 return;
             }
 
+            // 验证
             if (!this._base_mini_show.has(name)) return;
-
+            // 关闭
             Core.inst.manager.ui.hide({ name, data });
         });
     }
@@ -487,7 +512,18 @@ export default class BaseView extends Component {
     /**
      * 展示子界面
      */
-    protected showMiniViews({ data, views, onShow, onHide, onFinish }: { data?: any, views: Array<IMiniViewName | IMiniViewNames>, onShow?: IMiniOnShow, onHide?: IMiniOnHide, onFinish?: IMiniOnFinish }) {
+    protected showMiniViews({ data, views, onShow, onHide, onFinish }: {
+        /**传递给子界面的数据 */
+        data?: any,
+        /**子界面名字列表 */
+        views: Array<IMiniViewName | IMiniViewNames>,
+        /**子界面展示回调 */
+        onShow?: IMiniOnShow,
+        /**子界面关闭回调 */
+        onHide?: IMiniOnHide,
+        /**子界面融合完成回调 */
+        onFinish?: IMiniOnFinish
+    }) {
         if (views.length === 0) return false;
         if (this.typeName !== ViewType.Page) {
             this.warn('showMiniViews', '仅支持Page类型');
@@ -570,9 +606,18 @@ export default class BaseView extends Component {
             const aSync = Core.inst.lib.task.createASync();
             views.forEach(name => {
                 aSync.add((next) => {
+                    if (!this._base_mini_show?.has(name)) return next();
                     this.log(`展示子页面: ${name}`);
-                    if (!this._base_mini_show.has(name)) return next();
 
+                    const isPaperAll = BaseView.isPaperAll(name)
+                    // 是PaperAll
+                    if (isPaperAll) {
+                        // 先关闭
+                        Core.inst.manager.ui.hide({ name });
+                        // 设置owner
+                        PaperAllToOwner.set(name, this.uuid);
+                    }
+                    // 再展示
                     Core.inst.manager.ui.show({
                         name, data,
                         silent: true,
@@ -582,12 +627,19 @@ export default class BaseView extends Component {
                             next();
                         },
                         onHide: (result) => {
-                            this._base_mini_show.delete(name);
+                            // 验证PaperAll是否属于当前Page
+                            if (isPaperAll) {
+                                const owner = PaperAllToOwner.get(name);
+                                if (owner && owner === this.uuid) {
+                                    PaperAllToOwner.delete(name);
+                                }
+                            }
+                            this._base_mini_show?.delete(name);
                             if (onHide) onHide(name, result);
                         },
                         onError: (result, code) => {
                             if (code === Core.inst.Manager.UI.ErrorCode.LoadError) return true;
-                            this._base_mini_show.delete(name);
+                            this._base_mini_show?.delete(name);
                             this.warn('忽略子页面', name, result);
                             next();
                         },

@@ -135,10 +135,12 @@ class SuperBaseController<T extends { [key in string]?: AnyFunc }> {
 
     private event = new EventEmitter();
 
+    /**获取第一个事件回调的返回值 */
     protected call<K extends keyof T>(key: K, ...args: Parameters<T[K]>): ReturnType<T[K]> {
         return this.event.call.call(this.event, key, args);
     }
 
+    /**发射事件 */
     protected emit<K extends keyof T>(key: K, ...args: Parameters<T[K]>): void {
         return this.event.emit.call(this.event, key, args);
     }
