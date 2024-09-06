@@ -609,7 +609,7 @@ export default class BaseView extends Component {
                     if (!this._base_mini_show?.has(name)) return next();
                     this.log(`展示子页面: ${name}`);
 
-                    const isPaperAll = BaseView.isPaperAll(name)
+                    const isPaperAll = BaseView.isPaperAll(name);
                     // 是PaperAll
                     if (isPaperAll) {
                         // 先关闭
