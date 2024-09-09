@@ -607,17 +607,12 @@ export default class BaseView extends Component {
             views.forEach(name => {
                 aSync.add((next) => {
                     if (!this._base_mini_show?.has(name)) return next();
-                    this.log(`展示子页面: ${name}`);
 
-                    const isPaperAll = BaseView.isPaperAll(name);
-                    // 是PaperAll
-                    if (isPaperAll) {
-                        // 先关闭
-                        Core.inst.manager.ui.hide({ name });
-                        // 设置owner
+                    this.log(`展示子页面: ${name}`);
+                    // 是PaperAll,设置owner
+                    if (BaseView.isPaperAll(name)) {
                         PaperAllToOwner.set(name, this.uuid);
                     }
-                    // 再展示
                     Core.inst.manager.ui.show({
                         name, data,
                         silent: true,
@@ -627,8 +622,8 @@ export default class BaseView extends Component {
                             next();
                         },
                         onHide: (result) => {
-                            // 验证PaperAll是否属于当前Page
-                            if (isPaperAll) {
+                            if (BaseView.isPaperAll(name)) {
+                                // 验证PaperAll是否属于当前Page
                                 const owner = PaperAllToOwner.get(name);
                                 if (owner && owner === this.uuid) {
                                     PaperAllToOwner.delete(name);
@@ -639,6 +634,14 @@ export default class BaseView extends Component {
                         },
                         onError: (result, code) => {
                             if (code === Core.inst.Manager.UI.ErrorCode.LoadError) return true;
+                            if (BaseView.isPaperAll(name)) {
+                                // 验证PaperAll是否属于当前Page
+                                const owner = PaperAllToOwner.get(name);
+                                if (owner && owner === this.uuid) {
+                                    PaperAllToOwner.delete(name);
+                                    Core.inst.manager.ui.hide({ name });
+                                }
+                            }
                             this._base_mini_show?.delete(name);
                             this.warn('忽略子页面', name, result);
                             next();
@@ -685,6 +688,8 @@ export default class BaseView extends Component {
             if (!error) {
                 // 设置展示中
                 if (changeState) this._base_view_state = ViewState.Showing;
+                // 所有Paper只会是单例，而PaprAll比较特殊会被不同的Page使用，在PaperAll被重复show时，优先触发之前的onHide
+                if (this.isPaperAll()) this.node.emit('onHide');
                 onHide && this.node.once('onHide', onHide);
 
                 // 触发onCreate
