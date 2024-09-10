@@ -1,4 +1,4 @@
-import { Asset, AssetManager, Camera, Canvas, Component, Event, Layers, Node, Prefab, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, find, instantiate, isValid, js, settings } from 'cc';
+import { Asset, AssetManager, Camera, Canvas, Component, Event, Layers, Node, Prefab, ResolutionPolicy, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, find, instantiate, isValid, js, screen, settings, size, view } from 'cc';
 import { DEBUG, DEV } from 'cc/env';
 import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
 import Core from '../../Core';
@@ -139,7 +139,12 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         /**给默认UI传递的数据 */
         defaultData?: any,
         /**弹窗背景遮罩的参数 */
-        shade?: IShade
+        shade?: IShade,
+        /**
+         * 是否自动适配分辨率策略
+         * - 会根据设备分辨率、设计分辨率与默认适配策略计算出新的适配策略，以保证UI在屏幕内的显示效果最好
+         */
+        autoFit?: boolean,
     } = {};
 
     /**错误码 */
@@ -241,17 +246,14 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     protected onLoad() {
         this.Root2D = find(Root2DPath);
-
+        this.UserInterface = find(UserInterfacePath);
         this.Root2D.getComponentsInChildren(Camera).forEach(camera => {
             // 避免camera.priority<0的情况，否则会造成渲染异常
             if (camera.priority < 0) camera.priority = 0;
             // 避免camera.far<=camera.near的情况，否则会造成渲染异常
             if (camera.far <= camera.near) camera.far = camera.near + 1;
         });
-
         director.addPersistRootNode(this.Root2D);
-
-        this.UserInterface = find(UserInterfacePath);
 
         this.initUITypes();
 
@@ -266,6 +268,42 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         if (this.toastPre) {
             this.toast = instantiate(this.toastPre);
             this.toast.parent = this.UserInterface;
+        }
+
+        // 自动适配分辨率策略
+        if (UIManager.setting.autoFit) {
+            const designResolution = settings.querySettings(Settings.Category.SCREEN, 'designResolution') as { width: number, height: number, policy: number };
+            const windowSize = size(screen.windowSize);
+            let resolutionPolicy = designResolution.policy;
+            const autoFitResolutionPolicy = function () {
+                if (designResolution.policy === ResolutionPolicy.FIXED_WIDTH) {
+                    if (windowSize.width / windowSize.height > designResolution.width / designResolution.height) {
+                        if (resolutionPolicy === ResolutionPolicy.FIXED_HEIGHT) return;
+                        view.setResolutionPolicy(ResolutionPolicy.FIXED_HEIGHT);
+                        resolutionPolicy = ResolutionPolicy.FIXED_HEIGHT;
+                    } else {
+                        if (resolutionPolicy === ResolutionPolicy.FIXED_WIDTH) return;
+                        view.setResolutionPolicy(ResolutionPolicy.FIXED_WIDTH);
+                        resolutionPolicy = ResolutionPolicy.FIXED_WIDTH;
+                    }
+                } else if (designResolution.policy === ResolutionPolicy.FIXED_HEIGHT) {
+                    if (windowSize.height / windowSize.width > designResolution.height / designResolution.width) {
+                        if (resolutionPolicy === ResolutionPolicy.FIXED_HEIGHT) return;
+                        view.setResolutionPolicy(ResolutionPolicy.FIXED_WIDTH);
+                        resolutionPolicy = ResolutionPolicy.FIXED_WIDTH;
+                    } else {
+                        if (resolutionPolicy === ResolutionPolicy.FIXED_HEIGHT) return;
+                        view.setResolutionPolicy(ResolutionPolicy.FIXED_HEIGHT);
+                        resolutionPolicy = ResolutionPolicy.FIXED_HEIGHT;
+                    }
+                }
+            };
+            autoFitResolutionPolicy();
+            this.schedule(() => {
+                if (windowSize.equals(screen.windowSize)) return;
+                windowSize.set(screen.windowSize);
+                autoFitResolutionPolicy();
+            }, 0.5);
         }
     }
 
@@ -323,20 +361,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 this.log('屏蔽触摸');
             }
         }
-    }
-
-    /**
-     * UI是否是子界面
-     */
-    private isPaper(name: string): boolean {
-        return name.indexOf(ViewType.Paper) === 0;
-    }
-
-    /**
-     * UI是否是页面
-     */
-    private isPage(name: string): boolean {
-        return name.indexOf(ViewType.Page) === 0;
     }
 
     /**
@@ -1143,7 +1167,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                     if (error) {
                         this.uiShowingMap.delete(com);
                         onError && onError(error, UIManager.ErrorCode.LogicError);
-                    } else if (this.isPage(name)) {
+                    } else if (BaseView.isPage(name)) {
                         if (isValid(this.currPage, true) && this.currPage !== com && this.currPage.isShow) {
                             this.currPage.constructor.prototype.hide.call(this.currPage, { name });
                         }
@@ -1334,14 +1358,14 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         this.log('hideAll');
         // 展示中的
         this.uiShowingMap.forEach((name, com) => {
-            if (this.isPaper(name)) return;
+            if (BaseView.isPaper(name)) return;
             if (exclude && exclude.indexOf(name) !== -1) return;
             if (com === this.currPage) return;
             com.constructor.prototype.hide.call(com, data);
         });
         // 加载中的
         this.uiLoadingMap.forEach((value, name) => {
-            if (this.isPaper(name)) return;
+            if (BaseView.isPaper(name)) return;
             if (exclude && exclude.indexOf(name) !== -1) return;
             value.length = 0;
         });
