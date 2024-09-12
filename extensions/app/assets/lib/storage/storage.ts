@@ -1,5 +1,27 @@
 import { error, js, log, sys } from 'cc';
 
+const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+
+function encode(text: string, key: string) {
+    key = key || chars;
+    let encrypted = '';
+    for (let i = 0; i < text.length; i++) {
+        const charCode = text.charCodeAt(i) ^ key.charCodeAt(i % key.length);
+        encrypted += String.fromCharCode(charCode);
+    }
+    return encrypted;
+}
+
+function decode(encryptedText: string, key: string) {
+    key = key || chars;
+    let decrypted = '';
+    for (let i = 0; i < encryptedText.length; i++) {
+        const charCode = encryptedText.charCodeAt(i) ^ key.charCodeAt(i % key.length);
+        decrypted += String.fromCharCode(charCode);
+    }
+    return decrypted;
+}
+
 const weekOfYear = function (curDate?: Date) {
     /*
      date1是当前日期
@@ -31,23 +53,33 @@ const getDayUpdateTime = function (curDate?: Date) {
     return curDate.toLocaleDateString();
 };
 
-export default class storage {
-    private static _cache = {};
+class Storage {
+    private _cache = {};
+
+    /**
+     * 加密密钥  
+     * - 如果需要加密内容，请设置密钥的值
+     */
+    secretKey: string = '';
 
     /**
      * 返回值为false代表调用失败
      */
-    static set(key: string, value: unknown) {
+    set(key: string, value: unknown) {
         if (typeof key === 'string' && typeof value !== 'undefined') {
             try {
-                let data = JSON.stringify(value);
-                sys.localStorage.setItem(key, data);
+                const data = JSON.stringify(value);
+                if (this.secretKey) {
+                    sys.localStorage.setItem(key, encode(data, this.secretKey));
+                } else {
+                    sys.localStorage.setItem(key, data);
+                }
                 // 设置缓存
                 this._cache[key] = data;
                 return true;
             } catch (err) { log(err); }
         } else {
-            error('_storage set error');
+            error('storage set error');
         }
         return false;
     }
@@ -55,7 +87,7 @@ export default class storage {
     /**
      * 返回值为undefined代表调用失败
      */
-    static get(key: string) {
+    get(key: string) {
         // 先读取缓存
         if (typeof this._cache[key] !== 'undefined') {
             return JSON.parse(this._cache[key]);
@@ -65,6 +97,7 @@ export default class storage {
         try {
             let data = sys.localStorage.getItem(key);
             if (data && typeof data === 'string') {
+                if (this.secretKey) data = decode(data, this.secretKey);
                 // 设置缓存
                 this._cache[key] = data;
                 result = JSON.parse(data);
@@ -80,7 +113,7 @@ export default class storage {
     /**
      * 返回值为false代表调用失败
      */
-    static add(key: string, value: number = 1) {
+    add(key: string, value: number = 1) {
         let result = this.get(key);
         if (result !== undefined) {
             result = result || 0;
@@ -95,7 +128,7 @@ export default class storage {
     /**
      * 返回值为false代表调用失败
      */
-    static remove(key: string) {
+    remove(key: string) {
         try {
             sys.localStorage.removeItem(key);
             delete this._cache[key];
@@ -108,7 +141,7 @@ export default class storage {
     /**
      * 返回值为false代表调用失败
      */
-    static clear() {
+    clear() {
         try {
             sys.localStorage.clear();
             js.clear(this._cache);
@@ -122,7 +155,7 @@ export default class storage {
      * 设置本周数据 [返回值为false代表调用失败]
      * @param {Function} cb 当已存在本周的数据时，会根据cb的返回决定是否存储，true代表存储
      */
-    static setWeek(key: string, value: unknown, cb?: (oldValue: unknown, newValue: unknown) => boolean) {
+    setWeek(key: string, value: unknown, cb?: (oldValue: unknown, newValue: unknown) => boolean) {
         const updateTime = getWeekUpdateTime();
 
         if (cb) {
@@ -148,7 +181,7 @@ export default class storage {
     /**
      * 获取本周数据 [返回值为undefined代表调用失败]
      */
-    static getWeek(key: string) {
+    getWeek(key: string) {
         const data = this.get(key);
         if (data && data.updateTime == getWeekUpdateTime()) {
             return data.data;
@@ -160,7 +193,7 @@ export default class storage {
      * 设置本天数据 [返回值为false代表调用失败]
      * @param {Function} cb 当已存在本天的数据时，会根据cb的返回决定是否存储，true代表存储
      */
-    static setDay(key: string, value: unknown, cb?: (oldValue: unknown, newValue: unknown) => boolean) {
+    setDay(key: string, value: unknown, cb?: (oldValue: unknown, newValue: unknown) => boolean) {
         const updateTime = getDayUpdateTime();
 
         if (cb) {
@@ -187,7 +220,7 @@ export default class storage {
      * 获取本天数据 [返回值为undefined代表调用失败]
      * @param {*} key 
      */
-    static getDay(key: string) {
+    getDay(key: string) {
         const data = this.get(key);
         if (data && data.updateTime == getDayUpdateTime()) {
             return data.data;
@@ -195,3 +228,5 @@ export default class storage {
         return data && null;
     }
 }
+
+export default new Storage();
