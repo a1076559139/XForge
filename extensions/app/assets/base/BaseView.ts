@@ -684,12 +684,15 @@ export default class BaseView extends Component {
         const changeState = this._base_view_state === ViewState.Hid;
         if (changeState) this._base_view_state = ViewState.BeforeShow;
         const next = (error: string) => {
+            if (!error) {
+                // 所有Paper只会是单例，而且所有Paper都不允许被当前Page重复show
+                // 但PaprAll比较特殊，会被不同的Page使用，在PaperAll被不同的Page重复show时，清除之前的onHide
+                if (this.isPaperAll()) this.node.emit('onHide');
+            }
             beforeShow && beforeShow(error);
             if (!error) {
                 // 设置展示中
                 if (changeState) this._base_view_state = ViewState.Showing;
-                // 所有Paper只会是单例，而PaprAll比较特殊会被不同的Page使用，在PaperAll被重复show时，优先触发之前的onHide
-                if (this.isPaperAll()) this.node.emit('onHide');
                 onHide && this.node.once('onHide', onHide);
 
                 // 触发onCreate

@@ -1155,6 +1155,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             com.constructor.prototype.show.call(com, data, attr,
                 // onShow
                 (result: any) => {
+                    this.uiShowingMap.set(com, name);
                     onShow && onShow(result);
                 },
                 // onHide
@@ -1168,6 +1169,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                         this.uiShowingMap.delete(com);
                         onError && onError(error, UIManager.ErrorCode.LogicError);
                     } else if (BaseView.isPage(name)) {
+                        this.uiShowingMap.set(com, name);
                         if (isValid(this.currPage, true) && this.currPage !== com && this.currPage.isShow) {
                             this.currPage.constructor.prototype.hide.call(this.currPage, { name });
                         }
