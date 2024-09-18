@@ -288,7 +288,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                     }
                 } else if (designResolution.policy === ResolutionPolicy.FIXED_HEIGHT) {
                     if (windowSize.height / windowSize.width > designResolution.height / designResolution.width) {
-                        if (resolutionPolicy === ResolutionPolicy.FIXED_HEIGHT) return;
+                        if (resolutionPolicy === ResolutionPolicy.FIXED_WIDTH) return;
                         view.setResolutionPolicy(ResolutionPolicy.FIXED_WIDTH);
                         resolutionPolicy = ResolutionPolicy.FIXED_WIDTH;
                     } else {
