@@ -39,6 +39,7 @@ exports.default = vue_1.default.extend({
             }
             this.showLoading = false;
             this.display = `[成功] 创建成功\n${rootPath}`;
+            Editor.Message.send('assets', 'twinkle', rootPath);
         }
     },
 });

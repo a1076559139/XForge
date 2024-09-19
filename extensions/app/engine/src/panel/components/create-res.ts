@@ -59,6 +59,8 @@ export default Vue.extend({
 
             this.showLoading = false;
             this.display = `[成功] 创建成功\n${folderPath}`;
+
+            Editor.Message.send('assets', 'twinkle', folderPath);
         }
     },
 });

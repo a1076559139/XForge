@@ -72,6 +72,7 @@ exports.default = vue_1.default.extend({
             }
             this.showLoading = false;
             this.display = `[成功] 创建成功\n${rootPath}`;
+            Editor.Message.send('assets', 'twinkle', scriptUrl);
             // 是否打开
             if (createResponse.response == 0) {
                 Editor.Message.request('asset-db', 'open-asset', scriptUrl);
