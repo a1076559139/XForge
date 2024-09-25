@@ -138,13 +138,13 @@ export default Vue.extend({
                 this.display = '[错误] 名字不合法\n1、不能以数字开头\n2、不能有大写字母\n3、分隔符只能使用-\n4、不能以分隔符开头或结尾';
                 return;
             }
-            if (name === 'all') {
-                this.display = '[错误] 名字不合法\n1、不能使用all作为名字';
+            if (name === 'all' || name === 'page' || name === 'paper' || name === 'pop' || name === 'top') {
+                this.display = '[错误] 名字不合法\n1、不能使用all、page、paper、pop、top作为名字';
                 return;
             }
 
             const is3D = isPage && this.groupSelectIndex == 1;
-            const ownerName = PageNames.get(owner);
+            const ownerName = PageNames.get(owner) as string;
             const uiName = isPaper ?
                 `${stringCase(type)}${stringCase(ownerName)}${stringCase(name)}` :
                 `${stringCase(type)}${stringCase(name)}`;
