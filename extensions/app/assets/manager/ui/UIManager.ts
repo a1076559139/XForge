@@ -276,26 +276,14 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             const windowSize = size(screen.windowSize);
             let resolutionPolicy = designResolution.policy;
             const autoFitResolutionPolicy = function () {
-                if (designResolution.policy === ResolutionPolicy.FIXED_WIDTH) {
-                    if (windowSize.width / windowSize.height > designResolution.width / designResolution.height) {
-                        if (resolutionPolicy === ResolutionPolicy.FIXED_HEIGHT) return;
-                        view.setResolutionPolicy(ResolutionPolicy.FIXED_HEIGHT);
-                        resolutionPolicy = ResolutionPolicy.FIXED_HEIGHT;
-                    } else {
-                        if (resolutionPolicy === ResolutionPolicy.FIXED_WIDTH) return;
-                        view.setResolutionPolicy(ResolutionPolicy.FIXED_WIDTH);
-                        resolutionPolicy = ResolutionPolicy.FIXED_WIDTH;
-                    }
-                } else if (designResolution.policy === ResolutionPolicy.FIXED_HEIGHT) {
-                    if (windowSize.height / windowSize.width > designResolution.height / designResolution.width) {
-                        if (resolutionPolicy === ResolutionPolicy.FIXED_WIDTH) return;
-                        view.setResolutionPolicy(ResolutionPolicy.FIXED_WIDTH);
-                        resolutionPolicy = ResolutionPolicy.FIXED_WIDTH;
-                    } else {
-                        if (resolutionPolicy === ResolutionPolicy.FIXED_HEIGHT) return;
-                        view.setResolutionPolicy(ResolutionPolicy.FIXED_HEIGHT);
-                        resolutionPolicy = ResolutionPolicy.FIXED_HEIGHT;
-                    }
+                if (windowSize.width / windowSize.height > designResolution.width / designResolution.height) {
+                    if (resolutionPolicy === ResolutionPolicy.FIXED_HEIGHT) return;
+                    view.setResolutionPolicy(ResolutionPolicy.FIXED_HEIGHT);
+                    resolutionPolicy = ResolutionPolicy.FIXED_HEIGHT;
+                } else {
+                    if (resolutionPolicy === ResolutionPolicy.FIXED_WIDTH) return;
+                    view.setResolutionPolicy(ResolutionPolicy.FIXED_WIDTH);
+                    resolutionPolicy = ResolutionPolicy.FIXED_WIDTH;
                 }
             };
             autoFitResolutionPolicy();
