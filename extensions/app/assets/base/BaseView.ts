@@ -897,6 +897,7 @@ export default class BaseView extends Component {
         });
     }
 
+    /**打印日志 */
     protected get log() {
         return window.console.log.bind(window.console,
             '%c %s %c %s ',
@@ -906,6 +907,7 @@ export default class BaseView extends Component {
         );
     }
 
+    /**打印警告 */
     protected get warn() {
         return window.console.warn.bind(window.console,
             '%c %s %c %s ',
@@ -915,6 +917,7 @@ export default class BaseView extends Component {
         );
     }
 
+    /**打印错误 */
     protected get error() {
         return window.console.error.bind(window.console,
             '%c %s %c %s ',
