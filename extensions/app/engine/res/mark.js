@@ -105,6 +105,9 @@
             if (iconUI) iconUI['color'] = 'true';
             if (iconUI) iconUI.style.color = '';
             if (nameUI) nameUI.style.color = '';
+
+            if (iconDiv) iconDiv.style.height = '100%';
+            if (iconDiv) iconDiv.style.backgroundColor = '';
             if (nameDiv) nameDiv.style.backgroundColor = '';
 
             if (!isDirectory || !iconUI || !nameUI) return;
@@ -165,10 +168,12 @@
                 if (isExpand) {
                     iconUI.style.color = 'gold';
                     nameUI.style.color = 'whitesmoke';
+                    iconDiv.style.backgroundColor = 'brown';
                     nameDiv.style.backgroundColor = 'brown';
                 } else {
                     iconUI.style.color = 'gold';
                     nameUI.style.color = 'whitesmoke';
+                    iconDiv.style.backgroundColor = '';
                     nameDiv.style.backgroundColor = '';
                 }
             }
