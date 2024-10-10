@@ -45,11 +45,10 @@ export default class UIMgrShade extends Component {
         this.begin = begin;
         this.end = end;
         this.speed = speed;
+        this.drawing = true;
 
         if (this.inited) return;
         this.inited = true;
-
-        this.drawing = false;
         this.timedown = this.delay;
         this.node.getComponent(UIOpacity).opacity = 0;
     }
@@ -61,14 +60,12 @@ export default class UIMgrShade extends Component {
 
     protected update(dt: number) {
         if (!this.inited) return;
+        if (!this.drawing) return;
 
-        if (!this.drawing) {
-            if (this.timedown > 0) {
-                this.timedown -= dt;
-            }
+        if (this.timedown > 0) {
+            this.timedown -= dt;
             if (this.timedown <= 0) {
                 this.node.getComponent(UIOpacity).opacity = this.begin;
-                this.drawing = true;
             } else {
                 return;
             }
@@ -87,7 +84,7 @@ export default class UIMgrShade extends Component {
             }
         }
         if (uiOpacity.opacity == this.end) {
-            this.clear();
+            this.drawing = false;
         }
     }
 }
