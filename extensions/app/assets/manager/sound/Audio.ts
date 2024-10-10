@@ -6,6 +6,7 @@ export default class Audio {
     private mute = false;
     private endedCallback: Function = null;
     private startedCallback: Function = null;
+    private paused = false;
 
     private audioSource: AudioSource = null;
     constructor() {
@@ -46,12 +47,16 @@ export default class Audio {
     }
 
     pause() {
+        this.paused = true;
         this.audioSource.pause();
         return this;
     }
 
     resume() {
-        this.audioSource.play();
+        if (this.paused) {
+            this.paused = false;
+            this.audioSource.play();
+        }
         return this;
     }
 
@@ -104,6 +109,7 @@ export default class Audio {
         this.volume = 1;
         this.volumeScale = 1;
         this.mute = false;
+        this.paused = false;
         this.endedCallback = null;
         this.startedCallback = null;
         if (this.audioSource) {
