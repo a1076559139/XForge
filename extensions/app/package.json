@@ -36,9 +36,14 @@
                     "open-help"
                 ]
             },
-            "update-executor": {
+            "open-repository": {
                 "methods": [
-                    "update-executor"
+                    "open-repository"
+                ]
+            },
+            "refresh-executor": {
+                "methods": [
+                    "refresh-executor"
                 ]
             },
             "scene:ready": {
@@ -69,19 +74,24 @@
         },
         "menu": [
             {
-                "path": "i18n:app.menuMain",
+                "path": "i18n:app.app",
                 "label": "i18n:app.create",
                 "message": "open-panel"
             },
             {
-                "path": "i18n:app.menuMain",
-                "label": "i18n:app.update",
-                "message": "update-executor"
+                "path": "i18n:app.app",
+                "label": "i18n:app.refresh",
+                "message": "refresh-executor"
             },
             {
-                "path": "i18n:app.menuMain",
+                "path": "i18n:app.app",
                 "label": "i18n:app.help",
                 "message": "open-help"
+            },
+            {
+                "path": "i18n:app.app",
+                "label": "i18n:app.repository",
+                "message": "open-repository"
             }
         ],
         "assets": {

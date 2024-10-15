@@ -1,11 +1,12 @@
 'use strict';
 module.exports = {
     description: 'The core of the framework',
+    app: 'App',
     create: 'Create',
-    update: 'Update',
+    refresh: 'Refresh',
     help: 'Help',
+    repository: 'GitHub',
     tiny: 'TinyPNG',
-    menuMain: 'App',
     menuCreateView: 'CreateUI',
     menuCreateManager: 'CreateManager',
     menuCreateControl: 'CreateControl',

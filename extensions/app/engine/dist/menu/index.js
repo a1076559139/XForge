@@ -8,7 +8,7 @@ const tinyPNG_1 = __importDefault(require("./tinyPNG"));
 function getMenu(assetInfo) {
     return [
         {
-            label: 'i18n:app.menuMain',
+            label: 'i18n:app.app',
             submenu: [
                 {
                     label: 'i18n:app.tiny',

@@ -176,7 +176,7 @@ async function clearExecutor() {
     // config
     result += 'if(!EDITOR||DEV) Object.assign(app.config, {})\n\n';
     // store
-    result += `if(!EDITOR||DEV) Object.assign(app.store, {})\n\n`;
+    result += 'if(!EDITOR||DEV) Object.assign(app.store, {})\n\n';
     result += 'export type IApp = {\n';
     result += '    Manager: {},\n';
     result += '    manager: {},\n';
@@ -479,10 +479,14 @@ exports.methods = {
         const url = 'https://gitee.com/cocos2d-zp/cococs-creator-frame-3d/wikis/pages?sort_id=9432723&doc_id=5075526';
         Editor.Message.send('program', 'open-url', url);
     },
-    ['update-executor']() {
+    ['open-repository']() {
+        const url = 'https://github.com/a1076559139/XForge';
+        Editor.Message.send('program', 'open-url', url);
+    },
+    ['refresh-executor']() {
         // 点击更新
         callUpdateExecutor();
-        console.log('[executor.ts] 更新成功');
+        console.log('[executor.ts] 刷新成功');
     },
     ['scene:ready']() {
         // 

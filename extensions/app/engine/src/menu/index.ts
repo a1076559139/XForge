@@ -4,7 +4,7 @@ import tinyPNG from './tinyPNG';
 function getMenu(assetInfo: AssetInfo) {
     return [
         {
-            label: 'i18n:app.menuMain',
+            label: 'i18n:app.app',
             submenu: [
                 {
                     label: 'i18n:app.tiny',
