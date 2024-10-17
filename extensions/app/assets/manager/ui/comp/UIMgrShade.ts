@@ -50,7 +50,8 @@ export default class UIMgrShade extends Component {
         if (this.inited) return;
         this.inited = true;
         this.timedown = this.delay;
-        this.node.getComponent(UIOpacity).opacity = 0;
+        // 初始透明度
+        this.node.getComponent(UIOpacity).opacity = this.timedown > 0 ? 0 : this.begin;
     }
 
     clear() {
@@ -64,11 +65,9 @@ export default class UIMgrShade extends Component {
 
         if (this.timedown > 0) {
             this.timedown -= dt;
-            if (this.timedown <= 0) {
-                this.node.getComponent(UIOpacity).opacity = this.begin;
-            } else {
-                return;
-            }
+            if (this.timedown > 0) return;
+            // 初始透明度
+            this.node.getComponent(UIOpacity).opacity = this.begin;
         }
 
         const uiOpacity = this.node.getComponent(UIOpacity);
