@@ -80,7 +80,7 @@ export default class UIMgrToast extends Component {
                 if (currMinY > lastMaxY) {
                     // 存在空隙
                     const addLen = Math.max(-this.squeezeSpeed * dt * (children.length - index), lastMaxY - currMinY);
-                    curr.setPosition(curr.position.add3f(0, addLen, 0));
+                    curr.setPosition(curr.position.x, curr.position.y + addLen, curr.position.z);
                 }
             } else {
                 const last = children[index + 1];
@@ -93,7 +93,7 @@ export default class UIMgrToast extends Component {
                 if (currMinY < lastMaxY) {
                     // 存在重叠
                     const addLen = Math.min(this.squeezeSpeed * dt * (children.length - index - 1), lastMaxY - currMinY);
-                    curr.setPosition(curr.position.add3f(0, addLen, 0));
+                    curr.setPosition(curr.position.x, curr.position.y + addLen, curr.position.z);
                     const winSize = view.getVisibleSize();
                     if (currMinY > winSize.height / 2) {
                         // 触发回收逻辑
@@ -104,7 +104,7 @@ export default class UIMgrToast extends Component {
                 } else if (currMinY > lastMaxY) {
                     // 存在空隙
                     const addLen = Math.max(-this.squeezeSpeed * dt * (children.length - index), lastMaxY - currMinY);
-                    curr.setPosition(curr.position.add3f(0, addLen, 0));
+                    curr.setPosition(curr.position.x, curr.position.y + addLen, curr.position.z);
                 }
             }
         }
