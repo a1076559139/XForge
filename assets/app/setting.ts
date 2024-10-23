@@ -6,7 +6,7 @@ UIManager.setting.preload = [];
 // 默认UI, 会在首屏流程后自动show
 UIManager.setting.defaultUI = ''; // 通过App菜单创建Page类型的UI后，填入该UI的名称(会有自动提示与类型检查)
 // 是否自动适配分辨率策略
-UIManager.setting.autoFit = true; // 开启后，会自动根据设备分辨率、设计分辨率与默认适配策略计算出新的适配策略，以保证UI在屏幕内的显示效果最好
+UIManager.setting.autoFit = true; // 开启后，会弃用项目设置中的适配策略，并自动根据设备分辨率与设计分辨率计算出新的适配策略
 // 弹窗默认遮罩展现动画配置
 UIManager.setting.shade = {
     delay: 0,
