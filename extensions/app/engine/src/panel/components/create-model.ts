@@ -9,13 +9,14 @@ function getScript(type: string, className: string) {
     if (type === 'data') {
         const BaseModel = '../../../extensions/app/assets/base/BaseModel';
         return 'import { IModel } from \'' + BaseModel + '\';\r\n' +
-            '// data中不能定义任何方法\r\n' +
+            '// data中不能定义任何方法(更建议使用store)\r\n' +
             'export default class ' + className + ' implements IModel<' + className + '> {\r\n' +
             '}';
     } else if (type === 'config') {
         const BaseModel = '../../../extensions/app/assets/base/BaseModel';
         return 'import { IModel } from \'' + BaseModel + '\';\r\n' +
             '// config中不能定义任何方法, 任何变量在外部访问都是readonly\r\n' +
+            '// 如果config中的内容是服务器下发的，可以使用Object.assign覆盖config中的内容\r\n' +
             'export default class ' + className + ' implements IModel<' + className + '> {\r\n' +
             '}';
     } else if (type === 'store') {
