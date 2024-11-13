@@ -65,10 +65,10 @@ export enum ViewType {
 }
 
 interface IMiniOnShow {
-    (name: string, data?: any): any
+    (name: IMiniViewName, data?: any): any
 }
 interface IMiniOnHide {
-    (name: string, data?: any): any
+    (name: IMiniViewName, data?: any): any
 }
 interface IMiniOnFinish {
     (): any
