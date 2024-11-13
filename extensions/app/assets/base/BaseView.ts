@@ -823,7 +823,7 @@ export default class BaseView extends Component {
      * @param callback 回调
      * this.loadRes('Bag', Prefab, function(asset){})
      */
-    protected loadRes<T extends typeof Asset>(path: string, type: T, callback?: (result: InstanceType<T>) => any) {
+    protected loadRes<T extends typeof Asset>(path: string, type: T, callback?: (result: InstanceType<T> | null) => any) {
         Core.inst.manager.ui.loadRes(this, path, type, callback);
     }
 
@@ -842,7 +842,7 @@ export default class BaseView extends Component {
      * @param callback 回调
      * this.loadResDir('Bag', Prefab, function(asset){})
      */
-    protected loadResDir<T extends typeof Asset>(path: string, type: T, callback?: (result: InstanceType<T>[]) => any) {
+    protected loadResDir<T extends typeof Asset>(path: string, type: T, callback?: (result: InstanceType<T>[] | null) => any) {
         Core.inst.manager.ui.loadResDir(this, path, type, callback);
     }
 

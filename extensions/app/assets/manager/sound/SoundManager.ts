@@ -159,7 +159,7 @@ export default class SoundManager<E extends string, M extends string> extends Ba
      * 预加载声音资源
      * @param soundPath sound路径
      */
-    public preload(soundPath: (E | M), complete?: (item: AssetManager.RequestItem[]) => any) {
+    public preload(soundPath: (E | M), complete?: (item: AssetManager.RequestItem[] | null) => any) {
         if (!soundPath) {
             this.error('preload', 'fail');
             complete && setTimeout(function () {
@@ -194,8 +194,8 @@ export default class SoundManager<E extends string, M extends string> extends Ba
      * @param complete 加载完成回调
      */
     public load(soundPath: (E | M)): void;
-    public load(soundPath: (E | M), complete: (result: any) => any): void;
-    public load(soundPath: (E | M), progress: (finish: number, total: number, item: AssetManager.RequestItem) => void, complete: (result: any) => any): void;
+    public load(soundPath: (E | M), complete: (result: AudioClip | null) => any): void;
+    public load(soundPath: (E | M), progress: (finish: number, total: number, item: AssetManager.RequestItem) => void, complete: (result: AudioClip | null) => any): void;
     public load(soundPath: (E | M), ...args: Function[]): void {
         const progress = (args[1] && args[0]) as (finish: number, total: number, item: AssetManager.RequestItem) => void;
         const complete = args[1] || args[0];

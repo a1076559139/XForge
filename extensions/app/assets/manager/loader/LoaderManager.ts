@@ -5,7 +5,7 @@ const { ccclass } = _decorator;
 @ccclass('LoaderManager')
 export default class LoaderManager extends BaseManager {
 
-    private handle(handle: string, { bundle, version, path, type, onProgress, onComplete }: { bundle?: string, version?: string, path: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (result: any) => void }) {
+    private handle(handle: string, { bundle, version, path, type, onProgress, onComplete }: { bundle?: string, version?: string, path: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (result: unknown | null) => void }) {
         if (!handle) {
             this.error('handle is empty');
             return onComplete && onComplete(null);
@@ -42,7 +42,7 @@ export default class LoaderManager extends BaseManager {
      * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundel名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
      * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
      */
-    public preload(params: { path: string, bundle?: string, version?: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (item: AssetManager.RequestItem[]) => void }) {
+    public preload(params: { path: string, bundle?: string, version?: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (item: AssetManager.RequestItem[] | null) => void }) {
         if (SceneAsset === params.type as typeof Asset) {
             this.handle('preloadScene', { path: params.path, bundle: params.bundle, version: params.version, onProgress: params.onProgress, onComplete: params.onComplete });
         } else {
@@ -55,7 +55,7 @@ export default class LoaderManager extends BaseManager {
      * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundel名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
      * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
      */
-    public preloadDir(params: { path: string, bundle?: string, version?: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (items: AssetManager.RequestItem[]) => void }) {
+    public preloadDir(params: { path: string, bundle?: string, version?: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (items: AssetManager.RequestItem[] | null) => void }) {
         this.handle('preloadDir', params);
     }
 
@@ -66,7 +66,7 @@ export default class LoaderManager extends BaseManager {
      * @param params.path bundle下的相对路径
      * @param params.type 资源类型
      */
-    public load<T extends typeof Asset>(params: { path: string, bundle?: string, version?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (item: InstanceType<T>) => void }) {
+    public load<T extends typeof Asset>(params: { path: string, bundle?: string, version?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (item: InstanceType<T> | null) => void }) {
         if (SceneAsset === params.type as typeof Asset) {
             this.handle('loadScene', { path: params.path, bundle: params.bundle, version: params.version, onProgress: params.onProgress, onComplete: params.onComplete });
         } else {
@@ -81,7 +81,7 @@ export default class LoaderManager extends BaseManager {
      * @param params.path bundle下的相对路径
      * @param params.type 资源类型
      */
-    public loadAsync<T extends typeof Asset>(params: { path: string, bundle?: string, version?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void }): Promise<InstanceType<T>> {
+    public loadAsync<T extends typeof Asset>(params: { path: string, bundle?: string, version?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void }): Promise<InstanceType<T> | null> {
         return new Promise((resolve) => {
             this.load({
                 ...params,
@@ -97,7 +97,7 @@ export default class LoaderManager extends BaseManager {
      * @param params.path bundle下的相对路径
      * @param params.type 资源类型
      */
-    public loadDir<T extends typeof Asset>(params: { path: string, bundle?: string, version?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (items: InstanceType<T>[]) => void }) {
+    public loadDir<T extends typeof Asset>(params: { path: string, bundle?: string, version?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (items: InstanceType<T>[] | null) => void }) {
         this.handle('loadDir', params);
     }
 
@@ -108,7 +108,7 @@ export default class LoaderManager extends BaseManager {
      * @param params.path bundle下的相对路径
      * @param params.type 资源类型
      */
-    public loadDirAsync<T extends typeof Asset>(params: { path: string, bundle?: string, version?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void }): Promise<InstanceType<T>[]> {
+    public loadDirAsync<T extends typeof Asset>(params: { path: string, bundle?: string, version?: string, type?: T, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void }): Promise<InstanceType<T>[] | null> {
         return new Promise((resolve) => {
             this.loadDir({
                 ...params,
@@ -159,7 +159,7 @@ export default class LoaderManager extends BaseManager {
      * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundel名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
      * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
      */
-    public loadBundle({ bundle, version, onComplete }: { bundle?: string, version?: string, onComplete?: (bundle: AssetManager.Bundle) => any }) {
+    public loadBundle({ bundle, version, onComplete }: { bundle?: string, version?: string, onComplete?: (bundle: AssetManager.Bundle | null) => any }) {
         if (!bundle) bundle = 'resources';
         if (version) {
             assetManager.loadBundle(bundle, { version }, (err: Error, bundle: AssetManager.Bundle) => {
@@ -177,7 +177,7 @@ export default class LoaderManager extends BaseManager {
      * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundel名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
      * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
      */
-    public loadBundleAsync(params: { bundle?: string, version?: string }): Promise<AssetManager.Bundle> {
+    public loadBundleAsync(params: { bundle?: string, version?: string }): Promise<AssetManager.Bundle | null> {
         return new Promise((resolve) => {
             this.loadBundle({
                 ...params,
@@ -210,7 +210,7 @@ export default class LoaderManager extends BaseManager {
      * @example
      * loadRemote({url:'', ext:'.png', onComplete:(){result}})
      */
-    public loadRemote({ url, ext, onComplete }: { url: string, ext?: string, onComplete?: (result: Asset) => void }) {
+    public loadRemote({ url, ext, onComplete }: { url: string, ext?: string, onComplete?: (result: Asset | null) => void }) {
         if (ext) {
             assetManager.loadRemote(url, { ext }, (error, res) => {
                 if (error) {
@@ -235,7 +235,7 @@ export default class LoaderManager extends BaseManager {
      * @example
      * await loadRemoteAsync({url:'', ext:'.png'})
      */
-    public loadRemoteAsync(params: { url: string, ext?: string }): Promise<Asset> {
+    public loadRemoteAsync(params: { url: string, ext?: string }): Promise<Asset | null> {
         return new Promise((resolve) => {
             this.loadRemote({
                 ...params,

@@ -541,7 +541,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 安装UI
      */
-    private installUI(name: UIName | MiniName, complete?: (result: Prefab | SceneAsset) => any, progress?: (finish: number, total: number, item: AssetManager.RequestItem) => void) {
+    private installUI(name: UIName | MiniName, complete?: (result: Prefab | SceneAsset | null) => any, progress?: (finish: number, total: number, item: AssetManager.RequestItem) => void) {
         if (this.sceneCache[name]) {
             complete && setTimeout(() => {
                 if (!isValid(this)) return;
@@ -627,7 +627,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 加载ui内部资源
      */
-    public loadRes<T extends typeof Asset>(target: Component, path: string, type: T, callback?: (item: InstanceType<T>) => any) {
+    public loadRes<T extends typeof Asset>(target: Component, path: string, type: T, callback?: (item: InstanceType<T> | null) => any) {
         if (typeof target === 'string') {
             Core.inst.manager.loader.load({
                 bundle: this.getResBundleName(target),
@@ -678,7 +678,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 加载ui内部资源
      */
-    public loadResDir<T extends typeof Asset>(target: Component, path: string, type: T, callback?: (items: InstanceType<T>[]) => any) {
+    public loadResDir<T extends typeof Asset>(target: Component, path: string, type: T, callback?: (items: InstanceType<T>[] | null) => any) {
         if (typeof target === 'string') {
             Core.inst.manager.loader.loadDir({
                 bundle: this.getResBundleName(target),
@@ -729,7 +729,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 预加载UI
      */
-    public preload(name: UIName | MiniName, complete?: (item: AssetManager.RequestItem[]) => any) {
+    public preload(name: UIName | MiniName, complete?: (item: AssetManager.RequestItem[] | null) => any) {
         // 验证name是否为真
         if (!name) {
             this.error('preload', 'fail');
@@ -755,8 +755,8 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 加载UI
      */
     public load(name: UIName | MiniName): void;
-    public load(name: UIName | MiniName, complete: (result: Prefab | SceneAsset) => any): void;
-    public load(name: UIName | MiniName, progress: (finish: number, total: number, item: AssetManager.RequestItem) => void, complete: (result: Prefab | SceneAsset) => any): void;
+    public load(name: UIName | MiniName, complete: (result: Prefab | SceneAsset | null) => any): void;
+    public load(name: UIName | MiniName, progress: (finish: number, total: number, item: AssetManager.RequestItem) => void, complete: (result: Prefab | SceneAsset | null) => any): void;
     public load(name: UIName | MiniName, ...args: Function[]): void {
         const progress = (args[1] && args[0]) as (finish: number, total: number, item: AssetManager.RequestItem) => void;
         const complete = (args[1] || args[0]) as (result: any) => any;
