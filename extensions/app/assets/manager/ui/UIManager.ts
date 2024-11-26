@@ -1207,7 +1207,10 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         Core.inst.lib.task.execute((retry) => {
             this.checkUIValid(name, data, (valid) => {
                 // 验证本次加载是否有效
-                if (this.removeUILoadingUuid(name, uiLoadingUuid) === false) return;
+                if (this.removeUILoadingUuid(name, uiLoadingUuid) === false) {
+                    this.hideLoading(showLoadingUuid);
+                    return;
+                }
 
                 // 加载失败
                 if (valid === -1) {
