@@ -1200,10 +1200,15 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
         this.log(`show: ${name}`);
 
-        // 判断ui是否有效
+        // 生成一个UI加载的UUID
+        const uiLoadingUuid = this.addUILoadingUuid(name);
         const showLoadingUuid = silent ? '' : this.showLoading();
+        // 判断ui是否有效
         Core.inst.lib.task.execute((retry) => {
             this.checkUIValid(name, data, (valid) => {
+                // 验证本次加载是否有效
+                if (this.removeUILoadingUuid(name, uiLoadingUuid) === false) return;
+
                 // 加载失败
                 if (valid === -1) {
                     this.error('show', `${name} 不存在或加载失败`);
