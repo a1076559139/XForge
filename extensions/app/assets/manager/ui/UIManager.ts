@@ -329,7 +329,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         if (this.touchMaskMap.size > 0) return;
 
         for (let i = 0; i < BlockEvents.length; i++) {
-            this.UserInterface.on(BlockEvents[i], this.stopPropagation, this, true);
+            this.Root2D.on(BlockEvents[i], this.stopPropagation, this, true);
         }
     }
 
@@ -338,7 +338,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         if (this.touchMaskMap.size > 0) return;
 
         for (let i = 0; i < BlockEvents.length; i++) {
-            this.UserInterface.off(BlockEvents[i], this.stopPropagation, this, true);
+            this.Root2D.off(BlockEvents[i], this.stopPropagation, this, true);
         }
     }
 
