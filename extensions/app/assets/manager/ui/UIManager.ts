@@ -952,8 +952,8 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         return view.node;
     }
 
-    private addUILoadingUuid(name: UIName) {
-        const uuid = this.createUUID();
+    private addUILoadingUuid(name: UIName, loadingUuid?: string) {
+        const uuid = loadingUuid || this.createUUID();
         if (!this.uiLoadingMap.has(name)) {
             this.uiLoadingMap.set(name, [uuid]);
         } else {
@@ -974,47 +974,50 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 创建UI
      */
     private createUI(name: UIName, silent: boolean, callback: (node: Node, scene?: Scene) => any) {
-        // 添加触摸屏蔽
-        const maskUUID = silent ? '' : this.addTouchMask();
+        // 生成一个UI加载的UUID
+        const loadingUuid = silent ? '' : this.showLoading();
+        const uiLoadingUuid = this.addUILoadingUuid(name, loadingUuid);
 
+        // 验证name
         if (!name) {
             setTimeout(() => {
                 if (!isValid(this)) return;
-                // 移除触摸屏蔽
-                this.removeTouchMask(maskUUID);
+                // 验证本次加载是否有效
+                if (this.removeUILoadingUuid(name, uiLoadingUuid) === false) {
+                    return this.hideLoading(loadingUuid);
+                }
                 callback(null);
+                this.hideLoading(loadingUuid);
             });
             return;
         }
-
-        // 生成一个UI加载的UUID
-        const uiLoadingUuid = this.addUILoadingUuid(name);
 
         // 判断是否已经存在节点并且是单例模式
         const node = this.getUIInScene(name);
         if (isValid(node, true) && this.getBaseView(node).isSingleton === true) {
             setTimeout(() => {
                 if (!isValid(this)) return;
-                // 移除触摸屏蔽
-                this.removeTouchMask(maskUUID);
+
                 // 验证本次加载是否有效
-                if (this.removeUILoadingUuid(name, uiLoadingUuid) === false) return;
+                if (this.removeUILoadingUuid(name, uiLoadingUuid) === false) {
+                    return this.hideLoading(loadingUuid);
+                }
+
                 // 验证节点是否有效
                 if (isValid(node, true)) {
                     callback(node);
+                    this.hideLoading(loadingUuid);
                 } else {
                     this.createUI(name, silent, callback);
+                    this.hideLoading(loadingUuid);
                 }
             });
             return;
         }
 
-        // 加载prefab
-        const loadingUuid = silent ? '' : this.showLoading();
+        // 加载UI
         this.load(name, (asset) => {
             if (!isValid(this)) return;
-            // 移除触摸屏蔽
-            this.removeTouchMask(maskUUID);
 
             // 验证本次加载是否有效
             if (this.removeUILoadingUuid(name, uiLoadingUuid) === false) {
@@ -1201,14 +1204,14 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         this.log(`show: ${name}`);
 
         // 生成一个UI加载的UUID
-        const uiLoadingUuid = this.addUILoadingUuid(name);
-        const showLoadingUuid = silent ? '' : this.showLoading();
+        const loadingUuid = silent ? '' : this.showLoading();
+        const uiLoadingUuid = this.addUILoadingUuid(name, loadingUuid);
         // 判断ui是否有效
         Core.inst.lib.task.execute((retry) => {
             this.checkUIValid(name, data, (valid) => {
                 // 验证本次加载是否有效
                 if (this.removeUILoadingUuid(name, uiLoadingUuid) === false) {
-                    this.hideLoading(showLoadingUuid);
+                    this.hideLoading(loadingUuid);
                     return;
                 }
 
@@ -1217,7 +1220,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                     this.error('show', `${name} 不存在或加载失败`);
                     // 「没有指定onError」或「onError返回true」会自动发起重试
                     if (onError && onError(`${name} 不存在或加载失败`, UIManager.ErrorCode.LoadError) !== true) {
-                        return this.hideLoading(showLoadingUuid);
+                        return this.hideLoading(loadingUuid);
                     }
                     return retry(1);
                 }
@@ -1227,12 +1230,12 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                     this.warn('show', `${name} 无效`);
                     this.uninstallUI(name);
                     onError && onError(`${name} 无效`, UIManager.ErrorCode.InvalidError);
-                    this.hideLoading(showLoadingUuid);
+                    this.hideLoading(loadingUuid);
                     return;
                 }
 
                 this.showUI(params);
-                this.hideLoading(showLoadingUuid);
+                this.hideLoading(loadingUuid);
             });
         });
     }
@@ -1271,7 +1274,10 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             }
         }
 
-        if (this.uiLoadingMap.has(name)) this.uiLoadingMap.get(name).length = 0;
+        if (this.uiLoadingMap.has(name)) {
+            this.uiLoadingMap.get(name).forEach((loadingUuid) => this.hideLoading(loadingUuid));
+            this.uiLoadingMap.get(name).length = 0;
+        }
 
         for (let index = nodes.length - 1; index >= 0; index--) {
             const node = nodes[index];
@@ -1295,7 +1301,8 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         const nodes = this.getUIInShowing(name, true);
 
         if (this.uiLoadingMap.has(name) && this.uiLoadingMap.get(name).length) {
-            this.uiLoadingMap.get(name).pop();
+            const loadingUuid = this.uiLoadingMap.get(name).pop();
+            this.hideLoading(loadingUuid);
             this.log(`pop: ${name}`);
             return;
         }
@@ -1339,7 +1346,8 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         }
 
         if (this.uiLoadingMap.has(name) && this.uiLoadingMap.get(name).length) {
-            this.uiLoadingMap.get(name).shift();
+            const loadingUuid = this.uiLoadingMap.get(name).shift();
+            this.hideLoading(loadingUuid);
             this.log(`shift: ${name}`);
             return;
         }
@@ -1365,6 +1373,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         this.uiLoadingMap.forEach((value, name) => {
             if (BaseView.isPaper(name)) return;
             if (exclude && exclude.indexOf(name) !== -1) return;
+            value.forEach((loadingUuid) => this.hideLoading(loadingUuid));
             value.length = 0;
         });
     }
