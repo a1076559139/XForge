@@ -5,7 +5,7 @@ import Core from '../Core';
 const { ccclass } = _decorator;
 
 const UserManagerRoot = 'Root2D/UserManager';
-const DotReWriteFuns = ['emit', 'on', 'once', 'off', 'targetOff'];
+const DontRewriteFuns = ['emit', 'on', 'once', 'off', 'targetOff'];
 
 const uuid = new class UUID {
     private index = 0;
@@ -68,7 +68,7 @@ export default class BaseManager extends Component {
         super();
 
         if (EDITOR) {
-            DotReWriteFuns.forEach((funName) => {
+            DontRewriteFuns.forEach((funName) => {
                 if (BaseManager.prototype[funName] !== this[funName]) {
                     warn(`[${this._base_manager_name}] 不应该重写父类方法{${funName}}`);
                 }
