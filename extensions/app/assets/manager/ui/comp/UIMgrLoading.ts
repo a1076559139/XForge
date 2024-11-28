@@ -1,10 +1,13 @@
-import { Component, Graphics, UITransform, _decorator } from 'cc';
+import { Component, Graphics, Size, UITransform, _decorator } from 'cc';
 const { ccclass, property, requireComponent } = _decorator;
 
 @ccclass('UIMgrLoading')
 @requireComponent(Graphics)
 @requireComponent(UITransform)
 export default class UIMgrLoading extends Component {
+    @property({ tooltip: '动画的尺寸' })
+    private size: Size = new Size(60, 60);
+
     @property({ tooltip: '等待几秒后开始动画' })
     private delay = 0;
 
@@ -45,10 +48,10 @@ export default class UIMgrLoading extends Component {
         const uiTransform = this.node.getComponent(UITransform);
 
         const graphics = this.getComponent(Graphics);
-        const centerX = uiTransform.width * (0.5 - uiTransform.anchorX);
-        const centerY = uiTransform.height * (0.5 - uiTransform.anchorY);
+        const centerX = this.size.width * (0.5 - uiTransform.anchorX);
+        const centerY = this.size.height * (0.5 - uiTransform.anchorY);
 
-        const r = Math.min(uiTransform.width / 2, uiTransform.height / 2);
+        const r = Math.min(this.size.width / 2, this.size.height / 2);
 
         const allPI = Math.PI;
         const offst = 0;

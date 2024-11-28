@@ -13,6 +13,7 @@ UIManager.setting.shade = {
     begin: 100,
     end: 200,
     speed: 400,
+    blur: false
 };
 
 // 预加载的音频(按数组顺序依次预加载)

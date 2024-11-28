@@ -26,7 +26,12 @@ export type IShade = {
     /**结束透明度 默认180 */
     end?: number,
     /**透明变化速度 默认100 */
-    speed?: number
+    speed?: number,
+    /**
+     * 毛玻璃效果 默认false
+     * - 开启后其它参数将无效
+     */
+    blur?: boolean,
 };
 
 export interface IShowParamAttr {

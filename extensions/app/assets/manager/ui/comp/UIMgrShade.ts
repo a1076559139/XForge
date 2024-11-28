@@ -1,4 +1,4 @@
-import { Component, UIOpacity, _decorator } from 'cc';
+import { Camera, Color, Component, Director, Material, RenderTexture, Sprite, SpriteFrame, UIOpacity, _decorator, director, view } from 'cc';
 const { ccclass, property, requireComponent } = _decorator;
 
 @ccclass('UIMgrShade')
@@ -40,7 +40,62 @@ export default class UIMgrShade extends Component {
     private drawing = false;
     private timedown = 0;
 
-    init(delay: number, begin: number, end: number, speed: number) {
+    private blurMaterial: Material = null;
+    private normalFrame: SpriteFrame = null;
+
+    protected onLoad(): void {
+        this.normalFrame = this.node.getComponent(Sprite).spriteFrame;
+        this.blurMaterial = this.node.getComponent(Sprite).customMaterial;
+    }
+
+    init(delay: number, begin: number, end: number, speed: number, blur: boolean) {
+        if (blur) {
+            this.node.getComponent(Sprite).color = Color.WHITE;
+            this.node.getComponent(Sprite).spriteFrame = null;
+            this.node.getComponent(Sprite).customMaterial = this.blurMaterial;
+
+            const cameraList = director.getScene().getComponentsInChildren(Camera)
+                .sort((a, b) => a.priority - b.priority)
+                .filter(camera => {
+                    if (!camera.enabledInHierarchy) return false;
+                    if (camera.targetTexture) return false;
+                    return true;
+                });
+            const cameraList2 = cameraList.map(camera => camera.camera);
+
+            let count = 0;
+            director.targetOff(this);
+            director.on(Director.EVENT_BEFORE_RENDER, () => {
+                const size = view.getVisibleSize();
+                const renderTexture = new RenderTexture();
+                renderTexture.reset({ width: size.width / 2, height: size.height / 2 });
+
+                cameraList.forEach(camera => {
+                    camera.targetTexture = renderTexture;
+                });
+                director.root.pipeline.render(cameraList2);
+                cameraList.forEach(camera => {
+                    camera.targetTexture = null;
+                });
+
+                const spriteFrame = new SpriteFrame();
+                spriteFrame.texture = renderTexture;
+                spriteFrame.flipUVY = true;
+                this.node.getComponent(Sprite).spriteFrame = spriteFrame;
+
+                if (count++ === 2) {
+                    this.node.getComponent(Sprite).spriteFrame.flipUVY = false;
+                    this.node.getComponent(Sprite).customMaterial = null;
+                    director.targetOff(this);
+                }
+            }, this);
+        } else {
+            director.targetOff(this);
+            this.node.getComponent(Sprite).spriteFrame = this.normalFrame;
+            this.node.getComponent(Sprite).color = Color.BLACK;
+            this.node.getComponent(Sprite).customMaterial = null;
+        }
+
         this.delay = delay;
         this.begin = begin;
         this.end = end;
@@ -57,6 +112,7 @@ export default class UIMgrShade extends Component {
     clear() {
         this.inited = false;
         this.drawing = false;
+        director.targetOff(this);
     }
 
     protected update(dt: number) {

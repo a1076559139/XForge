@@ -142,7 +142,9 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         shade?: IShade,
         /**
          * 是否自动适配分辨率策略
-         * - 会根据设备分辨率、设计分辨率与默认适配策略计算出新的适配策略，以保证UI在屏幕内的显示效果最好
+         * - 开启后会弃用当前的适配策略，并根据实际设备分辨率与设计分辨率的比值，计算出新的适配策略(宽适配或高适配)，保证游戏区域不会被裁减只会扩边
+         *   - 当实际设备分辨率「高/宽」>= 设计分辨率「高/宽」时，为宽适配
+         *   - 当实际设备分辨率「高/宽」< 设计分辨率「高/宽」时，为高适配
          */
         autoFit?: boolean,
     } = {};
@@ -255,19 +257,20 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         });
         director.addPersistRootNode(this.Root2D);
 
-        this.initUITypes();
+        this.createTypeRoot();
 
         this.shade = instantiate(this.shadePre);
-        this.loading = instantiate(this.loadingPre);
-        this.shade.active = false;
-        this.loading.active = false;
         this.shade.parent = this.UserInterface;
-        this.loading.parent = this.UserInterface;
+        this.shade.active = false;
+
+        this.loading = instantiate(this.loadingPre);
+        this.loading.parent = this.node;
+        this.loading.active = false;
 
         // toast是后面加的，需要做容错
         if (this.toastPre) {
             this.toast = instantiate(this.toastPre);
-            this.toast.parent = this.UserInterface;
+            this.toast.parent = this.node;
         }
 
         // 自动适配分辨率策略
@@ -295,7 +298,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         }
     }
 
-    private initUITypes() {
+    private createTypeRoot() {
         ViewTypes.forEach((type) => {
             const d2 = new Node(type);
             d2.layer = Layers.Enum.UI_2D;
@@ -879,12 +882,17 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                     // 添加遮罩
                     if (com.isNeedShade && com.isShow) {
                         const shadeSetting = Object.assign({}, UIManager.setting.shade, com.constructor.prototype.onShade.call(com));
-                        this.shade.getComponent(UIMgrShade).init(
-                            typeof shadeSetting.delay !== 'number' ? 0 : shadeSetting.delay,
-                            typeof shadeSetting.begin !== 'number' ? 60 : shadeSetting.begin,
-                            typeof shadeSetting.end !== 'number' ? 180 : shadeSetting.end,
-                            typeof shadeSetting.speed !== 'number' ? 100 : shadeSetting.speed
-                        );
+                        if (shadeSetting.blur) {
+                            this.shade.getComponent(UIMgrShade).init(0, 255, 255, 0, true);
+                        } else {
+                            this.shade.getComponent(UIMgrShade).init(
+                                typeof shadeSetting.delay !== 'number' ? 0 : shadeSetting.delay,
+                                typeof shadeSetting.begin !== 'number' ? 60 : shadeSetting.begin,
+                                typeof shadeSetting.end !== 'number' ? 180 : shadeSetting.end,
+                                typeof shadeSetting.speed !== 'number' ? 100 : shadeSetting.speed,
+                                false,
+                            );
+                        }
                         this.shade.layer = node.layer;
                         this.shade.parent = uiRoot;
                         this.shade.active = true;
@@ -1380,7 +1388,13 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     public showLoading(timeout = 0) {
         this.loading.active = true;
-        this.loading.getComponentInChildren(UIMgrLoading).init();
+        this.loading.setSiblingIndex(-1);
+        if (this.loading.getComponent(UIMgrLoading)) {
+            this.loading.getComponent(UIMgrLoading).init();
+        } else {
+            // 兼容旧版本
+            this.loading.getComponentInChildren(UIMgrLoading)?.init();
+        }
         const uuid = this.createUUID();
         this.showLoadingMap.set(uuid, true);
         if (timeout > 0) this.scheduleOnce(() => {
@@ -1393,7 +1407,12 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         if (!uuid) return;
         this.showLoadingMap.delete(uuid);
         if (this.showLoadingMap.size === 0) {
-            this.loading.getComponentInChildren(UIMgrLoading).clear();
+            if (this.loading.getComponent(UIMgrLoading)) {
+                this.loading.getComponent(UIMgrLoading).clear();
+            } else {
+                // 兼容旧版本
+                this.loading.getComponentInChildren(UIMgrLoading)?.clear();
+            }
             this.loading.active = false;
         }
     }
@@ -1430,6 +1449,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         if (!this.toast) {
             return this.error('showToast', '请确认首场景中「Root2D/Manager/UIManager」的「Toast Pre」属性存在');
         }
+        this.toast.setSiblingIndex(-1);
         this.toast.getComponent(UIMgrToast).add({
             message, timeout
         });
