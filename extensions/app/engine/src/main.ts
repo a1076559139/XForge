@@ -493,7 +493,7 @@ export const methods: { [key: string]: (...any: any) => any } = {
         Editor.Panel.open('app.open-panel');
     },
     ['open-help']() {
-        const url = 'https://gitee.com/cocos2d-zp/cococs-creator-frame-3d/wikis/pages?sort_id=9432723&doc_id=5075526';
+        const url = 'https://gitee.com/cocos2d-zp/xforge/wikis/pages';
         Editor.Message.send('program', 'open-url', url);
     },
     ['open-repository']() {

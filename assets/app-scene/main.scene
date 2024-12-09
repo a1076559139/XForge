@@ -60,7 +60,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "Root2D",
+    "_name": "Canvas",
     "_objFlags": 512,
     "__editorExtras__": {},
     "_parent": {

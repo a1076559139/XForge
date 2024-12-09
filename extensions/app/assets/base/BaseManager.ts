@@ -1,10 +1,11 @@
-import { AssetManager, Component, EventTarget, Prefab, Widget, _decorator, assetManager, error, find, instantiate, js, path, settings, warn } from 'cc';
-import { DEBUG, EDITOR } from 'cc/env';
+import { AssetManager, Component, EventTarget, Prefab, Widget, _decorator, assetManager, error, instantiate, js, path, settings, warn } from 'cc';
+import { DEBUG, DEV, EDITOR } from 'cc/env';
 import Core from '../Core';
+import { Logger } from '../lib/logger/logger';
 
 const { ccclass } = _decorator;
 
-const UserManagerRoot = 'Root2D/UserManager';
+const UserManagerPath = 'UserManager';
 const DontRewriteFuns = ['emit', 'on', 'once', 'off', 'targetOff'];
 
 const uuid = new class UUID {
@@ -18,40 +19,15 @@ const uuid = new class UUID {
     }
 };
 
-const loadBegin = window.console.log.bind(window.console,
-    '%c %s %c %s ',
-    'background:#32cd32; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #32cd32; color: #fff; font-weight: normal;',
-    `[BaseManager] 下载开始 ${new Date().toLocaleString()}`,
-    'background:#ffffff; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #32cd32; color: #32cd32; font-weight: normal;'
-);
+const loadBegin = Logger.create('log', '#32cd32', DEV ? '[BaseManager] 下载开始' : '[BaseManager] [下载开始]');
 
-const loadFinish = window.console.log.bind(window.console,
-    '%c %s %c %s ',
-    'background:#00ae9d; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #00ae9d; color: #fff; font-weight: normal;',
-    `[BaseManager] 下载完成 ${new Date().toLocaleString()}`,
-    'background:#ffffff; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #00ae9d; color: #00ae9d; font-weight: normal;'
-);
+const loadFinish = Logger.create('log', '#00ae9d', DEV ? '[BaseManager] 下载完成' : '[BaseManager] [下载完成]');
 
-const loadError = window.console.log.bind(window.console,
-    '%c %s %c %s ',
-    'background:#ff4757; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff4757; color: #fff; font-weight: normal;',
-    `[BaseManager] 下载失败 ${new Date().toLocaleString()}`,
-    'background:#ffffff; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff4757; color: #ff4757; font-weight: normal;'
-);
+const loadError = Logger.create('log', '#ff4757', DEV ? '[BaseManager] 下载失败' : '[BaseManager] [下载失败]');
 
-const initBegin = window.console.log.bind(window.console,
-    '%c %s %c %s ',
-    'background:#3e4145; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #3e4145; color: #fff; font-weight: normal;',
-    `[BaseManager] 初始化开始 ${new Date().toLocaleString()}`,
-    'background:#ffffff; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #3e4145; color: #3e4145; font-weight: normal;'
-);
+const initBegin = Logger.create('log', '#3e4145', DEV ? '[BaseManager] 初始化开始' : '[BaseManager] [初始化开始]');
 
-const initFinish = window.console.log.bind(window.console,
-    '%c %s %c %s ',
-    'background:#008080; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #008080; color: #fff; font-weight: normal;',
-    `[BaseManager] 初始化完成 ${new Date().toLocaleString()}`,
-    'background:#ffffff; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #008080; color: #008080; font-weight: normal;'
-);
+const initFinish = Logger.create('log', '#008080', DEV ? '[BaseManager] 初始化完成' : '[BaseManager] [初始化完成]');
 
 @ccclass('BaseManager')
 export default class BaseManager extends Component {
@@ -126,31 +102,46 @@ export default class BaseManager extends Component {
 
     /**打印日志 */
     protected get log() {
+        if (DEV) {
+            return window.console.log.bind(window.console,
+                '%c %s %c %s ',
+                'background:#4169e1; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #4169e1; color: #fff; font-weight: normal;',
+                `[${this._base_manager_name}] LOG ${new Date().toLocaleString()}`,
+                'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #4169e1; color: #4169e1; font-weight: normal;'
+            );
+        }
         return window.console.log.bind(window.console,
-            '%c %s %c %s ',
-            'background:#4169e1; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #4169e1; color: #fff; font-weight: normal;',
-            `[${this._base_manager_name}] LOG ${new Date().toLocaleString()}`,
-            'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #4169e1; color: #4169e1; font-weight: normal;'
+            `[${this._base_manager_name}] [LOG] [${new Date().toLocaleString()}]`,
         );
     }
 
     /**打印警告 */
     protected get warn() {
+        if (DEV) {
+            return window.console.warn.bind(window.console,
+                '%c %s %c %s ',
+                'background:#ff7f50; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff7f50; color: #fff; font-weight: normal;',
+                `[${this._base_manager_name}] WARN ${new Date().toLocaleString()}`,
+                'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff7f50; color: #ff7f50; font-weight: normal;'
+            );
+        }
         return window.console.warn.bind(window.console,
-            '%c %s %c %s ',
-            'background:#ff7f50; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff7f50; color: #fff; font-weight: normal;',
-            `[${this._base_manager_name}] WARN ${new Date().toLocaleString()}`,
-            'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff7f50; color: #ff7f50; font-weight: normal;'
+            `[${this._base_manager_name}] [WARN] [${new Date().toLocaleString()}]`,
         );
     }
 
     /**打印错误 */
     protected get error() {
+        if (DEV) {
+            return window.console.error.bind(window.console,
+                '%c %s %c %s ',
+                'background:#ff4757; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff4757; color: #fff; font-weight: normal;',
+                `[${this._base_manager_name}] ERROR ${new Date().toLocaleString()}`,
+                'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff4757; color: #ff4757; font-weight: normal;'
+            );
+        }
         return window.console.error.bind(window.console,
-            '%c %s %c %s ',
-            'background:#ff4757; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff4757; color: #fff; font-weight: normal;',
-            `[${this._base_manager_name}] ERROR ${new Date().toLocaleString()}`,
-            'background:#ffffff ; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff4757; color: #ff4757; font-weight: normal;'
+            `[${this._base_manager_name}] [ERROR] [${new Date().toLocaleString()}]`,
         );
     }
 
@@ -176,49 +167,17 @@ export default class BaseManager extends Component {
 
     /***********************************静态***********************************/
     /**
-     * 将串式命名转成驼峰命名
-     * @param str 串式字符串
-     * @param lower 首字母是否小写(默认大写)
-     * @returns 
-     */
-    public static stringCase(str: string, lower = false) {
-        str = str.replace(/-/g, '_');
-        const arr = str.split('_');
-
-        return arr.map(function (str, index) {
-            if (index === 0 && lower) {
-                return str.charAt(0).toLocaleLowerCase() + str.slice(1);
-            }
-            return str.charAt(0).toLocaleUpperCase() + str.slice(1);
-        }).join('');
-    }
-
-    /**
-     * 将驼峰命名转成串式命名
-     * @param str 驼峰字符串
-     * @returns 
-     */
-    public static stringCaseNegate(str: string) {
-        return str.replace(/[A-Z]/g, (searchStr, startIndex) => {
-            if (startIndex === 0) {
-                return searchStr.toLocaleLowerCase();
-            } else {
-                return '-' + searchStr.toLocaleLowerCase();
-            }
-        });
-    }
-    /**
-     * manager asset bundle
-     */
-    private static bundle: AssetManager.Bundle = null;
-
-    /**
      * 系统内置manager的数量
      * @private
      */
     public static get sysMgrCount() {
         return 5;
     }
+
+    /**
+     * manager asset bundle
+     */
+    private static bundle: AssetManager.Bundle = null;
 
     /**
      * 初始化操作
@@ -328,7 +287,7 @@ export default class BaseManager extends Component {
 
         // 加载用户manager
         const loadUserMgrTask = Core.inst.lib.task.createASync();
-        const userManagerRoot = find(UserManagerRoot);
+        const UserManagerRoot = Core.Root2D.getChildByPath(UserManagerPath);
         urls.forEach(function (url) {
             loadUserMgrTask.add(function (next, retry) {
                 if (DEBUG) {
@@ -343,7 +302,7 @@ export default class BaseManager extends Component {
                             const endTime = window?.performance?.now ? performance.now() : Date.now();
                             loadFinish(`${managerName} 耗时:${(endTime - startTime).toFixed(6)} ms`);
                             const node = instantiate(prefab);
-                            node.parent = userManagerRoot;
+                            node.parent = UserManagerRoot;
                             node.active = true;
                             userMgrList.push(node.getComponent(BaseManager));
                             next();
@@ -357,7 +316,7 @@ export default class BaseManager extends Component {
                         retry(1);
                     } else {
                         const node = instantiate(prefab);
-                        node.parent = userManagerRoot;
+                        node.parent = UserManagerRoot;
                         node.active = true;
                         userMgrList.push(node.getComponent(BaseManager));
                         next();

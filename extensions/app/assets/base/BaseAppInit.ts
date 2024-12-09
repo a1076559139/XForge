@@ -181,18 +181,6 @@ export default abstract class BaseAppInit extends Component {
         return Core.inst.manager.ui.showDefault(() => {
             // 初始化完成
             this.onFinish();
-            // 默认音效(Button点击触发, 这个方案会阻挡input事件)
-            // if (Core.inst.Manager.Sound.setting.defaultEffectName) {
-            //     Core.inst.manager.ui.onUIRoot2D(Node.EventType.TOUCH_END, function (event: EventTouch) {
-            //         if (!event.target.getComponent(Button)) return;
-            //         setTimeout(() => {
-            //             if (!isValid(Core.inst.manager.sound)) return;
-            //             // 如果是scrollView中的button，在滑动后不播放点击音效
-            //             if (event.eventPhase === EventTouch.CAPTURING_PHASE) return;
-            //             Core.inst.manager.sound.playDefaultEffect();
-            //         });
-            //     }, null, true);
-            // }
             // 默认音乐(默认播放)
             if (Core.inst.Manager.Sound.setting.defaultMusicName) {
                 const onTouch = function () {

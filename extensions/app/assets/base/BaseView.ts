@@ -1,7 +1,8 @@
 import { Asset, Component, Enum, EventTouch, Font, Label, Node, Scene, Sprite, SpriteFrame, UITransform, Widget, _decorator, director, isValid, js, sp } from 'cc';
-import { EDITOR } from 'cc/env';
+import { DEV, EDITOR } from 'cc/env';
 import { IMiniViewName, IMiniViewNames, IViewName } from '../../../../assets/app-builtin/app-admin/executor';
 import Core from '../Core';
+import { Logger } from '../lib/logger/logger';
 import { IBaseControl } from './BaseControl';
 import { IBaseController } from './BaseController';
 
@@ -287,7 +288,13 @@ export default class BaseView extends Component {
             this.log('只有2D模式下才可以捕获焦点');
             return;
         }
-        this._captureFocus = value;
+
+        if (!EDITOR && this._captureFocus !== value) {
+            this._captureFocus = value;
+            Core.inst?.manager?.ui?.refreshShade();
+        } else {
+            this._captureFocus = value;
+        }
     }
 
     @property
@@ -890,7 +897,10 @@ export default class BaseView extends Component {
 
     /**
      * 设置图片资源
-     * @param path UI的resources目录下的相对路径
+     * @param path UI的resources目录下的相对路径(必须以/spriteFrame结尾)
+     * 
+     * @example
+     * setSprite(sprite, 'img/a/spriteFrame', onComplete:(succ)=>{})
      */
     protected setSprite(target: Sprite, path: string, onComplete?: (success: boolean) => any) {
         this.loadRes(path, SpriteFrame, (spriteFrame) => {
@@ -904,32 +914,17 @@ export default class BaseView extends Component {
 
     /**打印日志 */
     protected get log() {
-        return window.console.log.bind(window.console,
-            '%c %s %c %s ',
-            'background:#1e90ff; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #1e90ff; color: #fff; font-weight: normal;',
-            `[${this._base_view_name}] LOG ${new Date().toLocaleString()}`,
-            'background:#ffffff; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #1e90ff; color: #1e90ff; font-weight: normal;'
-        );
+        return Logger.create('log', '#1e90ff', DEV ? `[${this._base_view_name}] LOG` : `[${this._base_view_name}] [LOG]`);
     }
 
     /**打印警告 */
     protected get warn() {
-        return window.console.warn.bind(window.console,
-            '%c %s %c %s ',
-            'background:#ff7f50; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff7f50; color: #fff; font-weight: normal;',
-            `[${this._base_view_name}] WARN ${new Date().toLocaleString()}`,
-            'background:#ffffff; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff7f50; color: #ff7f50; font-weight: normal;'
-        );
+        return Logger.create('warn', '#ff7f50', DEV ? `[${this._base_view_name}] WARN` : `[${this._base_view_name}] [WARN]`);
     }
 
     /**打印错误 */
     protected get error() {
-        return window.console.error.bind(window.console,
-            '%c %s %c %s ',
-            'background:#ff4757; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff4757; color: #fff; font-weight: normal;',
-            `[${this._base_view_name}] ERROR ${new Date().toLocaleString()}`,
-            'background:#ffffff; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff4757; color: #ff4757; font-weight: normal;'
-        );
+        return Logger.create('error', '#ff4757', DEV ? `[${this._base_view_name}] ERROR` : `[${this._base_view_name}] [ERROR]`);
     }
 
     //////////////以下为可重写//////////////

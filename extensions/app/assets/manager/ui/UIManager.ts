@@ -1,4 +1,4 @@
-import { Asset, AssetManager, Camera, Canvas, Component, Event, Layers, Node, Prefab, ResolutionPolicy, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, find, instantiate, isValid, js, screen, settings, size, view } from 'cc';
+import { Asset, AssetManager, Camera, Canvas, Component, Event, Layers, Node, Prefab, ResolutionPolicy, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, instantiate, isValid, js, screen, settings, size, view } from 'cc';
 import { DEBUG, DEV } from 'cc/env';
 import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
 import Core from '../../Core';
@@ -83,9 +83,8 @@ interface IHideParams<T, IHide = any, IHideReturn = any> {
     onHide?: IHideParamOnHide<IHideReturn>
 }
 
-const UIScene = 'UIRoot';
-const Root2DPath = 'Root2D';
-const UserInterfacePath = 'Root2D/UserInterface';
+const UIScene = 'UIScene';
+const UserInterfacePath = 'UserInterface';
 const ViewTypes = [ViewType.Page, ViewType.Paper, ViewType.Pop, ViewType.Top];
 
 const BlockEvents = [
@@ -127,6 +126,39 @@ const MiniViewName: { [key in IMiniViewName]: key } = new Proxy({} as any, {
         return key;
     }
 });
+
+/**
+ * 将串式命名转成驼峰命名
+ * @param str 串式字符串
+ * @param lower 首字母是否小写(默认大写)
+ * @returns 
+ */
+function stringCase(str: string, lower = false) {
+    str = str.replace(/-/g, '_');
+    const arr = str.split('_');
+
+    return arr.map(function (str, index) {
+        if (index === 0 && lower) {
+            return str.charAt(0).toLocaleLowerCase() + str.slice(1);
+        }
+        return str.charAt(0).toLocaleUpperCase() + str.slice(1);
+    }).join('');
+}
+
+/**
+ * 将驼峰命名转成串式命名
+ * @param str 驼峰字符串
+ * @returns 
+ */
+function stringCaseNegate(str: string) {
+    return str.replace(/[A-Z]/g, (searchStr, startIndex) => {
+        if (startIndex === 0) {
+            return searchStr.toLocaleLowerCase();
+        } else {
+            return '-' + searchStr.toLocaleLowerCase();
+        }
+    });
+}
 
 @ccclass('UIManager')
 export default class UIManager<UIName extends string, MiniName extends string> extends BaseManager {
@@ -176,8 +208,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     })
     private toastPre: Prefab = null;
 
-    // 2D根节点
-    private Root2D: Node = null;
     // UI根节点
     private UserInterface: Node = null;
 
@@ -214,12 +244,12 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     /**相机 */
     public get camera() {
-        return this.Root2D.getComponent(Canvas).cameraComponent;
+        return this.canvas.cameraComponent;
     }
 
     /**画布*/
     public get canvas() {
-        return this.Root2D.getComponent(Canvas);
+        return Core.Root2D.getComponent(Canvas);
     }
 
     protected init(finish: Function) {
@@ -247,21 +277,22 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     protected onLoad() {
-        this.Root2D = find(Root2DPath);
-        this.UserInterface = find(UserInterfacePath);
-        this.Root2D.getComponentsInChildren(Camera).forEach(camera => {
+        this.UserInterface = Core.Root2D.getChildByName(UserInterfacePath);
+
+        Core.Root2D.getComponentsInChildren(Camera).forEach(camera => {
             // 避免camera.priority<0的情况，否则会造成渲染异常
             if (camera.priority < 0) camera.priority = 0;
             // 避免camera.far<=camera.near的情况，否则会造成渲染异常
             if (camera.far <= camera.near) camera.far = camera.near + 1;
         });
-        director.addPersistRootNode(this.Root2D);
+        director.addPersistRootNode(Core.Root2D);
 
         this.createTypeRoot();
 
         this.shade = instantiate(this.shadePre);
         this.shade.parent = this.UserInterface;
         this.shade.active = false;
+        this.shade.getComponent(Widget).target = Core.Root2D;
 
         this.loading = instantiate(this.loadingPre);
         this.loading.parent = this.node;
@@ -332,7 +363,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         if (this.touchMaskMap.size > 0) return;
 
         for (let i = 0; i < BlockEvents.length; i++) {
-            this.Root2D.on(BlockEvents[i], this.stopPropagation, this, true);
+            Core.Root2D.on(BlockEvents[i], this.stopPropagation, this, true);
         }
     }
 
@@ -341,7 +372,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         if (this.touchMaskMap.size > 0) return;
 
         for (let i = 0; i < BlockEvents.length; i++) {
-            this.Root2D.off(BlockEvents[i], this.stopPropagation, this, true);
+            Core.Root2D.off(BlockEvents[i], this.stopPropagation, this, true);
         }
     }
 
@@ -503,7 +534,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             return oldBundleName;
         }
 
-        return BaseManager.stringCaseNegate(uiName);
+        return stringCaseNegate(uiName);
     }
 
     /**
@@ -518,7 +549,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             return oldBundleName;
         }
 
-        return `${BaseManager.stringCaseNegate(uiName)}-res`;
+        return `${stringCaseNegate(uiName)}-res`;
     }
 
     /**
@@ -1447,7 +1478,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      */
     public showToast(message: string, timeout?: number) {
         if (!this.toast) {
-            return this.error('showToast', '请确认首场景中「Root2D/Manager/UIManager」的「Toast Pre」属性存在');
+            return this.error('showToast', '请确认首场景中「Canvas/Manager/UIManager」的「Toast Pre」属性存在');
         }
         this.toast.setSiblingIndex(-1);
         this.toast.getComponent(UIMgrToast).add({
@@ -1503,38 +1534,6 @@ export default class UIManager<UIName extends string, MiniName extends string> e
      * 在2DUI根节点上处理事件
      */
     public targetOffUserInterface(...args: Parameters<Node['targetOff']>) {
-        Node.prototype.targetOff.apply(this.UserInterface, args);
-    }
-
-    /**
-     * 在2DUI根节点上处理事件
-     * @deprecated 
-     */
-    public onUIRoot2D(...args: Parameters<Node['on']>) {
-        Node.prototype.on.apply(this.UserInterface, args);
-    }
-
-    /**
-     * 在2DUI根节点上处理事件
-     * @deprecated 
-     */
-    public onceUIRoot2D(...args: Parameters<Node['once']>) {
-        Node.prototype.once.apply(this.UserInterface, args);
-    }
-
-    /**
-     * 在2DUI根节点上处理事件
-     * @deprecated 
-     */
-    public offUIRoot2D(...args: Parameters<Node['off']>) {
-        Node.prototype.off.apply(this.UserInterface, args);
-    }
-
-    /**
-     * 在2DUI根节点上处理事件
-     * @deprecated 
-     */
-    public targetOffUIRoot2D(...args: Parameters<Node['targetOff']>) {
         Node.prototype.targetOff.apply(this.UserInterface, args);
     }
 

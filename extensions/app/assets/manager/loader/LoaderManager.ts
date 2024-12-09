@@ -1,4 +1,4 @@
-import { Asset, AssetManager, Font, Label, SceneAsset, Sprite, SpriteFrame, _decorator, assetManager, isValid, sp } from 'cc';
+import { Asset, AssetManager, Font, Label, SceneAsset, Sprite, SpriteFrame, Texture2D, TextureCube, _decorator, assetManager, isValid, sp } from 'cc';
 import BaseManager from '../../base/BaseManager';
 const { ccclass } = _decorator;
 
@@ -15,6 +15,17 @@ export default class LoaderManager extends BaseManager {
             return onComplete && onComplete(null);
         }
         if (!bundle) bundle = 'resources';
+
+        if (type === SpriteFrame && path.slice(-12) !== '/spriteFrame') {
+            this.warn(`加载SpriteFrame类型的资源, 路径必须以/spriteFrame结尾, 已自动修正: 「${path}」 -> 「${path}/spriteFrame」`);
+            path += '/spriteFrame';
+        } else if (type === Texture2D && path.slice(-8) !== '/texture') {
+            this.warn(`加载Texture2D类型的资源, 路径必须以/texture结尾, 已自动修正: 「${path}」 -> 「${path}/texture」`);
+            path += '/texture';
+        } else if (type === TextureCube && path.slice(-12) !== '/textureCube') {
+            this.warn(`加载TextureCube类型的资源, 路径必须以/textureCube结尾, 已自动修正: 「${path}」 -> 「${path}/textureCube」`);
+            path += '/textureCube';
+        }
 
         const args: any[] = [path];
         if (type) args.push(type);

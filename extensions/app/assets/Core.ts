@@ -1,4 +1,4 @@
-import { Component, EventTarget, js } from 'cc';
+import { Canvas, Component, director, EventTarget, js, Node } from 'cc';
 import { DEV, EDITOR } from 'cc/env';
 import * as debug from './lib/debug/debug';
 import logger from './lib/logger/logger';
@@ -61,6 +61,14 @@ const manager = {};
 const eventTarget = new EventTarget();
 export default class Core<T extends ICore> {
     static EventType = EventType;
+
+    private static _Root2D: Node | undefined;
+    public static get Root2D(): Node | undefined {
+        if (!this._Root2D) {
+            this._Root2D = director.getScene().getComponentInChildren(Canvas)?.node;
+        }
+        return this._Root2D;
+    }
 
     protected static _inst: Core<ICore> | undefined;
     static get inst() {

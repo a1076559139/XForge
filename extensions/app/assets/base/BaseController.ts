@@ -1,3 +1,6 @@
+import { DEV } from 'cc/env';
+import { Logger } from '../lib/logger/logger';
+
 class CallbackInfo {
     public callback: Function = null;
     public target: unknown = null;
@@ -163,32 +166,17 @@ class SuperBaseController<T extends { [key in string]?: AnyFunc }> {
 
     /**打印日志 */
     protected get log(): Function {
-        return window.console.log.bind(window.console,
-            '%c %s %c %s ',
-            'background:#4682b4; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #4682b4; color: #fff; font-weight: normal;',
-            `[${this['constructor'].name}] LOG ${new Date().toLocaleString()}`,
-            'background:#ffffff; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #4682b4; color: #4682b4; font-weight: normal;'
-        );
+        return Logger.create('log', '#4682b4', DEV ? `[${this['constructor'].name}] LOG` : `[${this['constructor'].name}] [LOG]`);
     }
 
     /**打印警告 */
     protected get warn(): Function {
-        return window.console.warn.bind(window.console,
-            '%c %s %c %s ',
-            'background:#ff7f50; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff7f50; color: #fff; font-weight: normal;',
-            `[${this['constructor'].name}] WARN ${new Date().toLocaleString()}`,
-            'background:#ffffff; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff7f50; color: #ff7f50; font-weight: normal;'
-        );
+        return Logger.create('warn', '#ff7f50', DEV ? `[${this['constructor'].name}] WARN` : `[${this['constructor'].name}] [WARN]`);
     }
 
     /**打印错误 */
     protected get error(): Function {
-        return window.console.error.bind(window.console,
-            '%c %s %c %s ',
-            'background:#ff4757; padding: 2px; border-radius: 5px 0 0 5px; border: 1px solid #ff4757; color: #fff; font-weight: normal;',
-            `[${this['constructor'].name}] ERROR ${new Date().toLocaleString()}`,
-            'background:#ffffff; padding: 2px; border-radius: 0 5px 5px 0; border: 1px solid #ff4757; color: #ff4757; font-weight: normal;'
-        );
+        return Logger.create('error', '#ff4757', DEV ? `[${this['constructor'].name}] ERROR` : `[${this['constructor'].name}] [ERROR]`);
     }
 }
 
