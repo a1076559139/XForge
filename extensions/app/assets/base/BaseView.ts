@@ -179,7 +179,7 @@ export default class BaseView extends Component {
     }
 
     // 是否被调用过
-    private _isOnCreateCalled = false;
+    private _base_view_created = false;
     // view状态
     private _base_view_state = ViewState.Hid;
     // 当前view的名字
@@ -475,7 +475,7 @@ export default class BaseView extends Component {
         }
     }
 
-    private onCreate(): any {
+    private onBaseViewCreate(): any {
         if (this.is3D()) return;
         const uiTransform = this.getComponent(UITransform);
         if (uiTransform) uiTransform.hitTest = (...args: any[]): boolean => {
@@ -519,6 +519,8 @@ export default class BaseView extends Component {
             // 关闭
             Core.inst.manager.ui.hide({ name, data });
         });
+        // TODO 手动刷新一下Paper下的UI顺序(原因是原生环境，显示层级正确但触摸层级可能会不正确)
+        Core.inst.manager.ui.sortUserInterface('Paper');
     }
 
     /**
@@ -661,7 +663,11 @@ export default class BaseView extends Component {
                     });
                 });
             });
-            aSync.start(next);
+            aSync.start(() => {
+                // TODO 手动刷新一下Paper下的UI顺序(原因是原生环境，显示层级正确但触摸层级可能会不正确)
+                Core.inst.manager.ui.sortUserInterface('Paper');
+                next();
+            });
         });
 
         return task;
@@ -674,7 +680,7 @@ export default class BaseView extends Component {
         if (!attr) return;
         if (typeof attr.zIndex === 'number') {
             // 以z坐标来代替2.x时代的zIndex
-            this.node.position.set(this.node.position.x, this.node.position.y, attr.zIndex);
+            this.node.setPosition(this.node.position.x, this.node.position.y, attr.zIndex);
         }
 
         if (typeof attr.siblingIndex === 'number') {
@@ -708,9 +714,9 @@ export default class BaseView extends Component {
                 onHide && this.node.once('onHide', onHide);
 
                 // 触发onCreate
-                if (this._isOnCreateCalled === false) {
-                    this._isOnCreateCalled = true;
-                    this.onCreate();
+                if (this._base_view_created === false) {
+                    this._base_view_created = true;
+                    this.onBaseViewCreate();
                 }
 
                 // 设置属性
