@@ -30,7 +30,7 @@ const path_1 = __importDefault(require("path"));
 const utils_1 = require("./utils");
 const electron = require('electron');
 const adminFolderName = 'app-admin';
-const controlFolderName = 'app-control';
+const controllerFolderName = 'app-controller';
 const managerFolderName = 'app-manager';
 const modelFolderName = 'app-model';
 const soundFolderName = 'app-sound';
@@ -44,8 +44,8 @@ const bundleFolderUrl = 'db://assets/' + bundleFolderName;
 const bundleFolderPath = utils_1.convertUrlToPath(bundleFolderUrl);
 const adminFolderUrl = builtinFolderUrl + '/' + adminFolderName;
 const adminFolderPath = builtinFolderPath + '/' + adminFolderName;
-const controlFolderUrl = builtinFolderUrl + '/' + controlFolderName;
-const controlFolderPath = builtinFolderPath + '/' + controlFolderName;
+const controllerFolderUrl = builtinFolderUrl + '/' + controllerFolderName;
+const controllerFolderPath = builtinFolderPath + '/' + controllerFolderName;
 const managerFolderUrl = builtinFolderUrl + '/' + managerFolderName;
 const managerFolderPath = builtinFolderPath + '/' + managerFolderName;
 const modelFolderUrl = builtinFolderUrl + '/' + modelFolderName;
@@ -58,7 +58,7 @@ const executorFileUrl = adminFolderUrl + '/executor.ts';
 const executorFilePath = adminFolderPath + '/executor.ts';
 function isExecutor(info, strict = true) {
     if (!strict) {
-        if (info.path.endsWith('Control') && info.type === 'cc.Script')
+        if (info.path.endsWith('Controller') && info.type === 'cc.Script')
             return true;
         if (info.path.endsWith('Manager') && (info.type === 'cc.Script' || info.type === 'cc.Prefab'))
             return true;
@@ -77,7 +77,7 @@ function isExecutor(info, strict = true) {
         return true;
     if (info.path === managerFolderUrl)
         return true;
-    if (info.path === controlFolderUrl)
+    if (info.path === controllerFolderUrl)
         return true;
     if (info.path === modelFolderUrl)
         return true;
@@ -85,8 +85,8 @@ function isExecutor(info, strict = true) {
         return true;
     if (info.path === viewFolderUrl)
         return true;
-    if (info.path.startsWith(controlFolderUrl)) {
-        return info.path.endsWith('Control') && info.type === 'cc.Script';
+    if (info.path.startsWith(controllerFolderUrl)) {
+        return info.path.endsWith('Controller') && info.type === 'cc.Script';
     }
     if (info.path.startsWith(managerFolderUrl)) {
         return info.path.endsWith('Manager') && (info.type === 'cc.Script' || info.type === 'cc.Prefab');
@@ -201,6 +201,7 @@ async function updateExecutor() {
     if (!fs_1.existsSync(adminFolderPath))
         await utils_1.createFolderByUrl(adminFolderUrl, { meta: utils_1.getResMeta(adminFolderName), readme: utils_1.getResReadme(adminFolderName) });
     const mgrList = [];
+    const ctrList = [];
     const dataList = [];
     const confList = [];
     const storeList = [];
@@ -208,8 +209,8 @@ async function updateExecutor() {
     const miniViewKeys = {};
     const musicKeys = {};
     const effectKeys = {};
-    // app-control app-manager app-model
-    const result1 = await Editor.Message.request('asset-db', 'query-assets', { pattern: builtinFolderUrl + '/{app-control,app-manager/*,app-model}/*.ts' })
+    // app-controller app-manager app-model
+    const result1 = await Editor.Message.request('asset-db', 'query-assets', { pattern: builtinFolderUrl + '/{app-controller,app-manager/*,app-model}/*.ts' })
         .then(res => {
         return res.sort((a, b) => compareStr(a.name, b.name));
     })
@@ -259,6 +260,12 @@ async function updateExecutor() {
             if (keyWords.indexOf(varname) >= 0) {
                 console.log(`[跳过此文件] [${filename}] 原因: ${varname}与关键字中(${JSON.stringify(keyWords)})的一个重复`);
             }
+            else if (fileUrl.startsWith(controllerFolderUrl)) {
+                // 用户controller
+                if (filename.endsWith('Controller')) {
+                    ctrList.push([filename, dirname, varname, extname]);
+                }
+            }
             else if (fileUrl.startsWith(managerFolderUrl)) {
                 // 用户manager
                 if (filename.endsWith('Manager') && dirname.endsWith(utils_1.stringCaseNegate(filename.slice(0, -7)))) {
@@ -266,7 +273,7 @@ async function updateExecutor() {
                 }
             }
             else if (fileUrl.startsWith('db://app/manager/')) {
-                // 系统manager
+                // 系统manager(系统Mgr的文件夹命名为了美观没有那么规范，所以和用户Mgr的逻辑有区别)
                 if (filename.endsWith('Manager') && dirname.endsWith(filename.slice(0, -7).toLocaleLowerCase())) {
                     mgrList.push([filename, dirname, varname, extname]);
                 }
@@ -290,7 +297,7 @@ async function updateExecutor() {
                 const index = dirArray.indexOf(viewFolderName);
                 const viewDirArray = dirArray.slice(index + 1);
                 // viewKeys
-                if (['page', 'paper', 'pop', 'top'].indexOf(viewDirArray[0].toLowerCase()) >= 0) {
+                if (['page', 'paper', 'pop', 'top'].indexOf(viewDirArray[0].toLocaleLowerCase()) >= 0) {
                     // 主界面
                     if (filename === `${utils_1.stringCase(viewDirArray[0], false)}${utils_1.stringCase(viewDirArray[1], false)}`) {
                         viewKeys[filename] = extname === '.scene';
@@ -411,6 +418,20 @@ async function updateExecutor() {
     result += 'export type IMusicNames = IMusicName[]\n';
     result += `export type IEffectName = ${Object.keys(effectKeys).map(str => `"${str}"`).join('|') || '"never"'}\n`;
     result += 'export type IEffectNames = IEffectName[]\n\n';
+    // controller
+    handle(ctrList, true);
+    let CtrStr = '';
+    let ctrStr = '';
+    ctrList.forEach(function (varname, index, array) {
+        CtrStr += `${varname.slice(0, -10)}:typeof ${varname}`;
+        ctrStr += `${varname.slice(0, -10).toLocaleLowerCase()}:IReadOnly<${varname}>`;
+        if (index < array.length - 1) {
+            CtrStr += ',';
+            ctrStr += ',';
+        }
+    });
+    result += `if(!EDITOR||DEV) Object.assign(app.Controller, {${ctrList.map(varname => `${varname.slice(0, -10)}:typeof ${varname}`).join(',')}})\n`;
+    result += `if(!EDITOR||DEV) Object.assign(app.controller, {${ctrList.map(varname => `${varname.slice(0, -10).toLocaleLowerCase()}:${varname}.inst`).join(',')}})\n`;
     // data
     handle(dataList, false);
     result += `if(!EDITOR||DEV) Object.assign(app.data, {${dataList.map(varname => `${varname.slice(5)}:new ${varname}()`).join(',')}})\n`;
@@ -420,8 +441,10 @@ async function updateExecutor() {
     // store
     handle(storeList, false);
     result += `if(!EDITOR||DEV) Object.assign(app.store, {${storeList.map(varname => `${varname.slice(6)}:new ${varname}()`).join(',')}})\n\n`;
-    result += 'type IReadOnly<T> = { readonly [P in keyof T]: T[P] extends Function ? T[P] : (T[P] extends Object ? IReadOnly<T[P]> : T[P]); };\n';
+    result += 'export type IReadOnly<T> = { readonly [P in keyof T]: T[P] extends Function ? T[P] : (T[P] extends Object ? IReadOnly<T[P]> : T[P]); };\n';
     result += 'export type IApp = {\n';
+    result += `    Controller: {${CtrStr}},\n`;
+    result += `    controller: {${ctrStr}},\n`;
     result += `    Manager: {${MgrStr}},\n`;
     result += `    manager: {${mgrStr}},\n`;
     result += `    data: {${dataList.map(varname => `${varname.slice(5)}:${varname}`).join(',')}},\n`;

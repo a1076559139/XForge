@@ -1,4 +1,5 @@
 import { DEV } from 'cc/env';
+import { IReadOnly } from '../../../../assets/app-builtin/app-admin/executor';
 import { Logger } from '../lib/logger/logger';
 
 class CallbackInfo {
@@ -180,9 +181,11 @@ class SuperBaseController<T extends { [key in string]?: AnyFunc }> {
     }
 }
 
-type IReadOnly<T> = { readonly [P in keyof T]: T[P] extends Function ? T[P] : (T[P] extends Object ? IReadOnly<T[P]> : T[P]); };
 export default function BaseController<C, T extends { [key in string]?: AnyFunc } = any>() {
     return class BaseController extends SuperBaseController<T> {
+        /**
+         * 控制器事件
+         */
         public static Event: { [key in keyof T]: key } = new Proxy({} as any, {
             get: function (target, key) {
                 if (target[key]) return target[key];
@@ -192,6 +195,10 @@ export default function BaseController<C, T extends { [key in string]?: AnyFunc 
         });
 
         private static _base_inst: IReadOnly<C> = null;
+        /**
+         * 控制器单例
+         * - 尽量使用app.controller，可以避免因跨Bundle引用导致的问题，也可以避免Controller之间循环引用的问题
+         */
         public static get inst() {
             if (this._base_inst === null) {
                 this._base_inst = new this() as C;

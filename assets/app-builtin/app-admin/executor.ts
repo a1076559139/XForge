@@ -26,12 +26,16 @@ export type IMusicNames = IMusicName[]
 export type IEffectName = "never"
 export type IEffectNames = IEffectName[]
 
+if(!EDITOR||DEV) Object.assign(app.Controller, {})
+if(!EDITOR||DEV) Object.assign(app.controller, {})
 if(!EDITOR||DEV) Object.assign(app.data, {})
 if(!EDITOR||DEV) Object.assign(app.config, {})
 if(!EDITOR||DEV) Object.assign(app.store, {})
 
-type IReadOnly<T> = { readonly [P in keyof T]: T[P] extends Function ? T[P] : (T[P] extends Object ? IReadOnly<T[P]> : T[P]); };
+export type IReadOnly<T> = { readonly [P in keyof T]: T[P] extends Function ? T[P] : (T[P] extends Object ? IReadOnly<T[P]> : T[P]); };
 export type IApp = {
+    Controller: {},
+    controller: {},
     Manager: {Event:Omit<typeof EventManager,keyof Component>,Loader:Omit<typeof LoaderManager,keyof Component>,Sound:Omit<typeof SoundManager,keyof Component>,Timer:Omit<typeof TimerManager,keyof Component>,UI:Omit<typeof UIManager,keyof Component>},
     manager: {event:Omit<EventManager,keyof Component>,loader:Omit<LoaderManager,keyof Component>,sound:Omit<SoundManager<IEffectName,IMusicName>,keyof Component>,timer:Omit<TimerManager,keyof Component>,ui:Omit<UIManager<IViewName,IMiniViewName>,keyof Component>},
     data: {},

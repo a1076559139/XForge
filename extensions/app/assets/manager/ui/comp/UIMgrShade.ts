@@ -1,4 +1,5 @@
 import { Camera, Color, Component, Director, Material, RenderTexture, Sprite, SpriteFrame, UIOpacity, UITransform, _decorator, director } from 'cc';
+import Core from '../../../Core';
 const { ccclass, property, requireComponent } = _decorator;
 
 @ccclass('UIMgrShade')
@@ -61,27 +62,13 @@ export default class UIMgrShade extends Component {
             let count = 0;
             director.targetOff(this);
             director.on(Director.EVENT_BEFORE_RENDER, () => {
-                const cameraList = cameras.sort((a, b) => a.priority - b.priority)
-                    .filter(camera => {
-                        if (!camera.enabledInHierarchy) return false;
-                        if (camera.targetTexture) return false;
-                        // 所在节点名 设置为 # 开头，表示不渲染该相机
-                        if (camera.node.name[0] === '#') return false;
-                        return true;
-                    });
-                const cameraList2 = cameraList.map(camera => camera.camera);
-
-                const size = this.node.getComponent(UITransform);
                 const renderTexture = new RenderTexture();
-                renderTexture.addRef();
+                const size = this.node.getComponent(UITransform);
                 renderTexture.reset({ width: size.width / 2, height: size.height / 2 });
+                renderTexture.addRef();
 
-                cameraList.forEach(camera => {
-                    camera.targetTexture = renderTexture;
-                });
-                director.root.pipeline.render(cameraList2);
-                cameraList.forEach(camera => {
-                    camera.targetTexture = null;
+                Core.inst.manager.ui.screenshot(renderTexture, {
+                    cameraList: cameras
                 });
 
                 this.blurFrame?.texture?.decRef();
@@ -91,9 +78,9 @@ export default class UIMgrShade extends Component {
                 this.blurMaterial.setProperty('blurLevel', count === 0 ? 3 : 1);
 
                 if (count++ === 2) {
+                    director.targetOff(this);
                     this.node.getComponent(Sprite).spriteFrame.flipUVY = false;
                     this.node.getComponent(Sprite).customMaterial = null;
-                    director.targetOff(this);
                 }
             }, this);
         } else {

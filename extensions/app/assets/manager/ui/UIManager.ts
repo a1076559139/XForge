@@ -1,4 +1,4 @@
-import { Asset, AssetManager, Camera, Canvas, Component, Event, Layers, Node, Prefab, ResolutionPolicy, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, instantiate, isValid, js, screen, settings, size, view } from 'cc';
+import { Asset, AssetManager, Camera, Canvas, Component, Event, Layers, Node, Prefab, RenderTexture, ResolutionPolicy, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, instantiate, isValid, js, screen, settings, size, view } from 'cc';
 import { DEBUG, DEV } from 'cc/env';
 import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
 import Core from '../../Core';
@@ -1545,5 +1545,43 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             ?.getChildByName(name)
             ?.getComponent(UIMgrZOrder)
             ?.updateZOrder();
+    }
+
+    /**
+     * 屏幕截图
+     * - 需要在Director.EVENT_BEFORE_RENDER事件中调用
+     * @example
+     * director.once(Director.EVENT_BEFORE_RENDER, () => {
+     *   const renderTexture = new RenderTexture();
+     *   const size = view.getVisibleSize();
+     *   renderTexture.reset({ width: size.width, height: size.height });
+     *   app.manager.ui.screenshot(renderTexture);
+     * });
+     */
+    public screenshot(renderTexture: RenderTexture, opts?: {
+        /**摄像机筛选 */
+        cameraFilter?: (camera: Camera) => boolean;
+        /**摄像机列表 */
+        cameraList?: Camera[];
+    }) {
+        const cameras = opts?.cameraList || director.getScene().getComponentsInChildren(Camera);
+
+        const cameraList = cameras.sort((a, b) => a.priority - b.priority)
+            .filter(camera => {
+                if (!camera.enabledInHierarchy) return false;
+                if (camera.targetTexture) return false;
+                return opts?.cameraFilter ? opts.cameraFilter(camera) : true;
+            });
+        const cameraList2 = cameraList.map(camera => camera.camera);
+
+        cameraList.forEach(camera => {
+            camera.targetTexture = renderTexture;
+        });
+        director.root.pipeline.render(cameraList2);
+        cameraList.forEach(camera => {
+            camera.targetTexture = null;
+        });
+
+        return renderTexture;
     }
 }
