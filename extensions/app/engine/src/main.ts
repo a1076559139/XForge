@@ -147,7 +147,7 @@ function isTSDefault(value: string[]) {
 }
 
 const keyWords = [
-    'lib', 'manager', 'Manager', 'data', 'config',
+    'lib', 'manager', 'Manager', 'controller', 'Controller', 'data', 'config', 'store',
     'IViewName', 'IViewNames', 'IMiniViewName', 'IMiniViewNames', 'IMusicName', 'IMusicNames', 'IEffectName', 'IEffectNames',
     'ViewName', 'MiniViewName', 'MusicName', 'EffectName'
 ];
@@ -158,7 +158,7 @@ async function clearExecutor() {
     let result = '/* eslint-disable */\n' +
         'import { Component } from \'cc\';\n' +
         'import { app } from \'../../app/app\';\n' +
-        'import { DEV, EDITOR } from \'cc/env\';\n\n';
+        'import { EDITOR,EDITOR_NOT_IN_PREVIEW } from \'cc/env\';\n\n';
 
     result += '/**界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用UIManager.ViewName*/\n';
     result += 'export const ViewName = { "never":"never" }\n';
@@ -178,16 +178,20 @@ async function clearExecutor() {
     result += 'export type IEffectName = "never"\n';
     result += 'export type IEffectNames = IEffectName[]\n\n';
 
-    // data
-    result += 'if(!EDITOR||DEV) Object.assign(app.data, {})\n';
-
     // config
-    result += 'if(!EDITOR||DEV) Object.assign(app.config, {})\n\n';
-
+    result += 'if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.config, {})\n';
+    // data
+    result += 'if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.data, {})\n';
     // store
-    result += 'if(!EDITOR||DEV) Object.assign(app.store, {})\n\n';
+    result += 'if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.store, {})\n\n';
+
+    // controller
+    result += 'if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.Controller, {})\n';
+    result += 'if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.controller, {})\n\n';
 
     result += 'export type IApp = {\n';
+    result += '    Controller: {},\n';
+    result += '    controller: {},\n';
     result += '    Manager: {},\n';
     result += '    manager: {},\n';
     result += '    data: {},\n';
@@ -366,7 +370,7 @@ async function updateExecutor() {
     let result = '/* eslint-disable */\n' +
         'import { Component } from \'cc\';\n' +
         'import { app } from \'../../app/app\';\n' +
-        'import { DEV,EDITOR } from \'cc/env\';\n\n';
+        'import { EDITOR,EDITOR_NOT_IN_PREVIEW } from \'cc/env\';\n\n';
 
     pkgs.forEach(name => {
         result += `import 'db://pkg/${name}'\n`;
@@ -428,6 +432,16 @@ async function updateExecutor() {
     result += `export type IEffectName = ${Object.keys(effectKeys).map(str => `"${str}"`).join('|') || '"never"'}\n`;
     result += 'export type IEffectNames = IEffectName[]\n\n';
 
+    // config
+    handle(confList, false);
+    result += `if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.config, {${confList.map(varname => `${varname.slice(7)}:new ${varname}()`).join(',')}})\n`;
+    // data
+    handle(dataList, false);
+    result += `if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.data, {${dataList.map(varname => `${varname.slice(5)}:new ${varname}()`).join(',')}})\n`;
+    // store
+    handle(storeList, false);
+    result += `if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.store, {${storeList.map(varname => `${varname.slice(6)}:new ${varname}()`).join(',')}})\n\n`;
+
     // controller
     handle(ctrList, true);
     let CtrStr = '';
@@ -440,20 +454,8 @@ async function updateExecutor() {
             ctrStr += ',';
         }
     });
-    result += `if(!EDITOR||DEV) Object.assign(app.Controller, {${ctrList.map(varname => `${varname.slice(0, -10)}:typeof ${varname}`).join(',')}})\n`;
-    result += `if(!EDITOR||DEV) Object.assign(app.controller, {${ctrList.map(varname => `${varname.slice(0, -10).toLocaleLowerCase()}:${varname}.inst`).join(',')}})\n`;
-
-    // data
-    handle(dataList, false);
-    result += `if(!EDITOR||DEV) Object.assign(app.data, {${dataList.map(varname => `${varname.slice(5)}:new ${varname}()`).join(',')}})\n`;
-
-    // config
-    handle(confList, false);
-    result += `if(!EDITOR||DEV) Object.assign(app.config, {${confList.map(varname => `${varname.slice(7)}:new ${varname}()`).join(',')}})\n`;
-
-    // store
-    handle(storeList, false);
-    result += `if(!EDITOR||DEV) Object.assign(app.store, {${storeList.map(varname => `${varname.slice(6)}:new ${varname}()`).join(',')}})\n\n`;
+    result += `if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.Controller, {${ctrList.map(varname => `${varname.slice(0, -10)}:${varname}`).join(',')}})\n`;
+    result += `if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.controller, {${ctrList.map(varname => `${varname.slice(0, -10).toLocaleLowerCase()}:${varname}.inst`).join(',')}})\n\n`;
 
     result += 'export type IReadOnly<T> = { readonly [P in keyof T]: T[P] extends Function ? T[P] : (T[P] extends Object ? IReadOnly<T[P]> : T[P]); };\n';
     result += 'export type IApp = {\n';

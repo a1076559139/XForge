@@ -6,7 +6,7 @@ import { Logger } from '../lib/logger/logger';
 import { IBaseControl } from './BaseControl';
 import { IBaseController } from './BaseController';
 
-const { ccclass, property } = _decorator;
+const { ccclass, property, disallowMultiple } = _decorator;
 
 const BlockEvents = [
     Node.EventType.TOUCH_START, Node.EventType.TOUCH_MOVE, Node.EventType.TOUCH_END, Node.EventType.TOUCH_CANCEL,
@@ -120,6 +120,7 @@ const Group = { id: 'BaseView', name: 'Settings', displayOrder: -Infinity, style
 const PaperAllToOwner: Map<IMiniViewName, string> = new Map();
 
 @ccclass('BaseView')
+@disallowMultiple()
 export default class BaseView extends Component {
     /**
      * @deprecated 废弃，请使用BindController代替BindControl
@@ -143,11 +144,13 @@ export default class BaseView extends Component {
      * 给UI绑定一个控制器，绑定后可以通过this.controller访问，并能访问一些内部方法(emit、on、once、off、targetOff)
      */
     static BindController<C, T extends { [key in string]: any }>(Controller: IBaseController<C, T>) {
-        return class BindController extends BaseView {
+        @disallowMultiple()
+        class BindController extends BaseView {
             protected get controller() {
                 return Controller ? Controller.inst as any : null;
             }
-        } as any as IBaseViewController<C, T>;
+        }
+        return BindController as any as IBaseViewController<C, T>;
     }
 
     /**

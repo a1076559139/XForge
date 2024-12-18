@@ -1,5 +1,5 @@
 import { Asset, AssetManager, Camera, Canvas, Component, Event, Layers, Node, Prefab, RenderTexture, ResolutionPolicy, Scene, SceneAsset, Settings, UITransform, Widget, _decorator, director, instantiate, isValid, js, screen, settings, size, view } from 'cc';
-import { DEBUG, DEV } from 'cc/env';
+import { DEV } from 'cc/env';
 import { IMiniViewName, IViewName } from '../../../../../assets/app-builtin/app-admin/executor';
 import Core from '../../Core';
 import BaseManager from '../../base/BaseManager';
@@ -688,12 +688,13 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 预加载ui内部资源
      */
-    public preloadRes<T extends typeof Asset>(target: Component | UIName | MiniName, path: string, type: T) {
+    public preloadRes<T extends typeof Asset>(target: Component | UIName | MiniName, path: string, type: T, complete?: (item: AssetManager.RequestItem[] | null) => any) {
         if (typeof target === 'string') {
             Core.inst.manager.loader.preload({
                 bundle: this.getResBundleName(target),
                 path: path,
-                type: type
+                type: type,
+                onComplete: complete
             });
         } else {
             const view = this.getBaseView(target.node) || this.getViewInParents(target.node) || this.getViewInChildren(director.getScene());
@@ -701,7 +702,8 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 Core.inst.manager.loader.preload({
                     bundle: this.getResBundleName(view.viewName as UIName | MiniName),
                     path: path,
-                    type: type
+                    type: type,
+                    onComplete: complete
                 });
             } else {
                 this.error('preloadRes', target.name, path);
@@ -739,12 +741,13 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     /**
      * 预加载ui内部资源
      */
-    public preloadResDir<T extends typeof Asset>(target: Component | UIName | MiniName, path: string, type: T) {
+    public preloadResDir<T extends typeof Asset>(target: Component | UIName | MiniName, path: string, type: T, complete?: (item: AssetManager.RequestItem[] | null) => any) {
         if (typeof target === 'string') {
             Core.inst.manager.loader.preloadDir({
                 bundle: this.getResBundleName(target),
                 path: path,
-                type: type
+                type: type,
+                onComplete: complete
             });
         } else {
             const view = this.getBaseView(target.node) || this.getViewInParents(target.node) || this.getViewInChildren(director.getScene());
@@ -752,7 +755,8 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                 Core.inst.manager.loader.preloadDir({
                     bundle: this.getResBundleName(view.viewName as UIName | MiniName),
                     path: path,
-                    type: type
+                    type: type,
+                    onComplete: complete
                 });
             } else {
                 this.error('preloadResDir', target.name, path);
@@ -813,16 +817,12 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     /**
-     * 销毁ui，释放ui的资源(hideEvent为destroy模式的UI，无需手动调用)
-     * - release会直接销毁UI，不管UI是否是show状态
+     * 销毁UI，释放资源
+     * - 直接销毁，不管是否是show状态
+     * - 此流程一定是同步的
      */
     public release(nameOrCom: UIName | MiniName | BaseView) {
-        let uiName = '';
-        if (typeof nameOrCom === 'string') {
-            uiName = nameOrCom;
-        } else {
-            uiName = nameOrCom.viewName;
-        }
+        const uiName = typeof nameOrCom === 'string' ? nameOrCom : nameOrCom.viewName;
 
         if (!uiName) {
             this.error('release', `${nameOrCom} fail`);
@@ -831,25 +831,47 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
         // 传入字符串是释放所有
         if (typeof nameOrCom === 'string') {
-            const nodes = this.getUIInScene(uiName, true);
-            nodes.forEach((node) => {
-                if (!node || !isValid(node, true)) return;
-                if (DEBUG) {
-                    if (this.getBaseView(node).isShow)
-                        this.warn('release', `${uiName}正处于show状态, 此处将直接destroy`);
+            this.getUIInScene(uiName, true).forEach((node) => {
+                const com = this.getBaseView(node);
+                if (!com) {
+                    this.error('release', `${uiName}不存在BaseView组件`);
+                    return;
                 }
-                node.parent = null;
-                node.destroy();
+
+                if (com.isShow) {
+                    this.warn('release', `${uiName}正处于show状态, 此处将直接销毁`);
+                }
+                if (com === this.currPage) {
+                    this.currPage = null;
+                }
+                if (com === this.currFocus) {
+                    this.currFocus = null;
+                }
+
+                this.uiShowingMap.delete(com);
+
+                if (node && isValid(node, true)) {
+                    node.parent = null;
+                    node.destroy();
+                }
             });
         }
-        // 传入节点或组件是释放单个
+        // 传入组件是释放单个
         else {
+            if (nameOrCom.isShow) {
+                this.warn('release', `${uiName}正处于show状态, 此处将直接销毁`);
+            }
+            if (nameOrCom === this.currPage) {
+                this.currPage = null;
+            }
+            if (nameOrCom === this.currFocus) {
+                this.currFocus = null;
+            }
+
+            this.uiShowingMap.delete(nameOrCom);
+
             const node = nameOrCom.node;
             if (node && isValid(node, true)) {
-                if (DEBUG) {
-                    if (this.getBaseView(node).isShow)
-                        this.warn('release', `${uiName}正处于show状态, 此处将直接destroy`);
-                }
                 node.parent = null;
                 node.destroy();
             }
@@ -861,6 +883,22 @@ export default class UIManager<UIName extends string, MiniName extends string> e
             this.uninstallUI(uiName as UIName | MiniName);
             this.log(`释放资源: ${uiName}`);
         }
+    }
+
+    /**
+     * 销毁全部UI，释放资源
+     * - 直接销毁，不管是否是show状态
+     * - 此流程一定是同步的
+     */
+    public releaseAll(exclude?: UIName[]) {
+        Object.keys(this.prefabCache).forEach((name: UIName) => {
+            if (exclude && exclude.indexOf(name) !== -1) return;
+            this.release(name);
+        });
+        Object.keys(this.sceneCache).forEach((name: UIName) => {
+            if (exclude && exclude.indexOf(name) !== -1) return;
+            this.release(name);
+        });
     }
 
     /**
@@ -1044,7 +1082,11 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
                 // 验证节点是否有效
                 if (isValid(node, true)) {
-                    callback(node);
+                    if (this.currScene === name) {
+                        callback(node, director.getScene());
+                    } else {
+                        callback(node);
+                    }
                     this.hideLoading(loadingUuid);
                 } else {
                     this.createUI(name, silent, callback);
@@ -1200,12 +1242,13 @@ export default class UIManager<UIName extends string, MiniName extends string> e
                         onError && onError(error, UIManager.ErrorCode.LogicError);
                     } else if (BaseView.isPage(name)) {
                         this.uiShowingMap.set(com, name);
-                        if (isValid(this.currPage, true) && this.currPage !== com && this.currPage.isShow) {
-                            this.currPage.constructor.prototype.hide.call(this.currPage, { name });
-                        }
+                        const oldCom = this.currPage;
                         this.currPage = com;
+                        if (isValid(oldCom, true) && oldCom !== com && oldCom.isShow) {
+                            oldCom.constructor.prototype.hide.call(oldCom, { name });
+                        }
                         if (scene) {
-                            if (this.currScene !== name) {
+                            if (oldCom !== com) {
                                 this.currScene = name;
                                 director.runSceneImmediate(scene, null, () => {
                                     this.log(`切换场景: ${name}`);

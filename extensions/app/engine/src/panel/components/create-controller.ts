@@ -12,13 +12,14 @@ function getScript(name: string) {
         '    // 定义了事件，并同时定义参数列表和返回值\r\n' +
         '    Refresh: (a: number) => boolean\r\n' +
         '}>() {\r\n' +
-        '    // controller中发射事件, view中监听事件:\r\n' +
-        '    // 1、view中需要将 「extends BaseView」 改为=> 「extends BaseView.bindController(' + name + ')」\r\n' +
-        '    // 2、view中使用this.controller.on监听事件\r\n' +
+        '    // Controller中发射事件, UI中监听事件:\r\n' +
+        '    // 1、UI中需要将 「extends BaseView」 改为=> 「extends BaseView.bindController(' + name + ')」\r\n' +
+        '    // 2、UI中使用「this.controller.on/once」监听事件, 使用「this.controller.emit」发射事件, 使用「this.controller.off/targetOff」取消监听事件\r\n' +
+        '    // 3、在外部(无法使用this.controller的地方)可以通过「app.controller.xxx」来调用对外导出的方法, 比如下面的refresh方法\r\n' +
         '    refresh() {\r\n' +
-        '        this.emit(' + name + '.Event.Refresh, 1000); // 正确\r\n' +
-        '        const result = this.call(' + name + '.Event.Refresh, 1000); // 自动推导返回值类型\r\n' +
+        '        this.emit(' + name + '.Event.Refresh, 1000); // 参数类型正确\r\n' +
         '        this.emit(' + name + '.Event.Refresh, true); // 参数类型错误\r\n' +
+        '        const result = this.call(' + name + '.Event.Refresh, 1000); // 自动推导返回值类型\r\n' +
         '    }\r\n' +
         '}';
 }
