@@ -84,13 +84,13 @@
                 "message": "refresh-executor"
             },
             {
-                "path": "i18n:app.app",
-                "label": "i18n:app.help",
+                "path": "i18n:app.app/i18n:app.help",
+                "label": "Wiki",
                 "message": "open-help"
             },
             {
-                "path": "i18n:app.app",
-                "label": "i18n:app.repository",
+                "path": "i18n:app.app/i18n:app.help",
+                "label": "GitHub",
                 "message": "open-repository"
             }
         ],

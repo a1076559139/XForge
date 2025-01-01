@@ -1,6 +1,8 @@
-import { Asset, AssetManager, Font, Label, SceneAsset, Sprite, SpriteFrame, Texture2D, TextureCube, _decorator, assetManager, isValid, sp } from 'cc';
+import { Asset, AssetManager, Font, ImageAsset, JsonAsset, Label, SceneAsset, Sprite, SpriteFrame, Texture2D, TextureCube, _decorator, assetManager, isValid, path, sp } from 'cc';
+import { MINIGAME } from 'cc/env';
 import BaseManager from '../../base/BaseManager';
 const { ccclass } = _decorator;
+const REGEX = /^https?:\/\/.*/;
 
 @ccclass('LoaderManager')
 export default class LoaderManager extends BaseManager {
@@ -50,7 +52,7 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 预加载
-     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundel名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
+     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundle名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
      * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
      */
     public preload(params: { path: string, bundle?: string, version?: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (item: AssetManager.RequestItem[] | null) => void }) {
@@ -63,7 +65,7 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 预加载
-     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundel名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
+     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundle名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
      * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
      */
     public preloadDir(params: { path: string, bundle?: string, version?: string, type?: typeof Asset, onProgress?: (finish: number, total: number, item: AssetManager.RequestItem) => void, onComplete?: (items: AssetManager.RequestItem[] | null) => void }) {
@@ -72,7 +74,7 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 加载bundle下的资源
-     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundel名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
+     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundle名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
      * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
      * @param params.path bundle下的相对路径
      * @param params.type 资源类型
@@ -87,7 +89,7 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 加载bundle下的资源
-     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundel名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
+     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundle名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
      * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
      * @param params.path bundle下的相对路径
      * @param params.type 资源类型
@@ -103,7 +105,7 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 加载bundle下的资源
-     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundel名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
+     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundle名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
      * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
      * @param params.path bundle下的相对路径
      * @param params.type 资源类型
@@ -114,7 +116,7 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 加载bundle下的资源
-     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundel名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
+     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundle名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
      * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
      * @param params.path bundle下的相对路径
      * @param params.type 资源类型
@@ -130,7 +132,7 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 销毁一个bundle中对应path和type的资源
-     * @param params.bundle 默认为resources，如果是远程bundle，则使用url末位作为bundel名
+     * @param params.bundle 默认为resources，如果是远程bundle，则使用url末位作为bundle名
      * @param params.path bundle下的相对路径
      * @param params.type 资源类型
      */
@@ -141,7 +143,7 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 销毁一个bundle中所有的资源
-     * @param bundle 默认为resources，如果是远程bundle，则使用url末位作为bundel名
+     * @param bundle 默认为resources，如果是远程bundle，则使用url末位作为bundle名
      */
     public releaseAll(bundle?: string) {
         if (!bundle) bundle = 'resources';
@@ -157,7 +159,7 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 销毁一个bundle中未使用的资源
-     * @param bundle 默认为resources，如果是远程bundle，则使用url末位作为bundel名
+     * @param bundle 默认为resources，如果是远程bundle，则使用url末位作为bundle名
      */
     public releaseUnused(bundle?: string) {
         if (!bundle) bundle = 'resources';
@@ -167,11 +169,38 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 加载一个bundle
-     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundel名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
+     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundle名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
      * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
      */
     public loadBundle({ bundle, version, onComplete }: { bundle?: string, version?: string, onComplete?: (bundle: AssetManager.Bundle | null) => any }) {
         if (!bundle) bundle = 'resources';
+
+        if (MINIGAME) {
+            // 远程包
+            if (REGEX.test(bundle)) {
+                this.error('小游戏环境下暂不支持加载远程Bundle');
+                onComplete?.(null);
+                return;
+            }
+            // 本地包
+            // 由于小游戏环境下以下情况,Cocos内部的下载逻辑会出错(主要原因是cc会去加载不存在的js脚本)
+            // 1. 指定的version与本地version不一致
+            // 2. 是远程bundle本地不存在
+            if (version && assetManager.downloader.bundleVers[bundle] !== version) {
+                // 这里需要先加载bundle触发内部的一些初始化逻辑(主要是缓存相关的初始化)
+                assetManager.loadBundle(bundle, (err: Error, b: AssetManager.Bundle) => {
+                    if (err || !b) return onComplete?.(null);
+                    // 然后再走重载逻辑
+                    this.reloadBundle({ bundle, version, onComplete });
+                });
+            } else {
+                assetManager.loadBundle(bundle, (err: Error, bundle: AssetManager.Bundle) => {
+                    onComplete && onComplete(err ? null : bundle);
+                });
+            }
+            return;
+        }
+
         if (version) {
             assetManager.loadBundle(bundle, { version }, (err: Error, bundle: AssetManager.Bundle) => {
                 onComplete && onComplete(err ? null : bundle);
@@ -185,7 +214,7 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 加载一个bundle
-     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundel名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
+     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundle名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
      * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
      */
     public loadBundleAsync(params: { bundle?: string, version?: string }): Promise<AssetManager.Bundle | null> {
@@ -199,7 +228,7 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 获取一个已经加载的bundle
-     * @param bundle 默认为resources，如果是远程bundle，则使用url末位作为bundel名
+     * @param bundle 默认为resources，如果是远程bundle，则使用url末位作为bundle名
      */
     public getBundle(bundle?: string) {
         if (!bundle) bundle = 'resources';
@@ -208,12 +237,77 @@ export default class LoaderManager extends BaseManager {
 
     /**
      * 移除一个已经加载的bundle
-     * @param bundle 默认为resources，如果是远程bundle，则使用url末位作为bundel名
+     * @param bundle 默认为resources，如果是远程bundle，则使用url末位作为bundle名
      */
     public removeBundle(bundle?: string) {
         if (!bundle) bundle = 'resources';
         const b = assetManager.getBundle(bundle);
         if (b) assetManager.removeBundle(b);
+    }
+
+    /**
+     * 重载一个bundle(只重载资源列表)
+     * - 需要确保bundle已经被加载过了，否则在某些环境下可能会有异常
+     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundle名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
+     * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
+     */
+    public reloadBundle({ bundle, version, onComplete }: { bundle?: string, version?: string, onComplete?: (bundle: AssetManager.Bundle | null) => any }) {
+        if (!bundle) bundle = 'resources';
+
+        let baseUrl = '';
+        let configUrl = '';
+
+        // 远程包
+        if (REGEX.test(bundle)) {
+            if (MINIGAME) {
+                this.error('小游戏环境下暂不支持重载远程Bundle');
+                onComplete?.(null);
+                return;
+            }
+
+            baseUrl = bundle;
+            const suffix = version ? `${version}.` : '';
+            configUrl = `${baseUrl}config.${suffix}json`;
+        }
+        // 本地包
+        else {
+            const suffix = version ? `${version}.` : '';
+            baseUrl = `${assetManager.downloader.remoteServerAddress}remote/${bundle}/`;
+            configUrl = `${baseUrl}config.${suffix}json`;
+        }
+
+        // 清除可能存在的config缓存
+        assetManager.cacheManager?.removeCache(configUrl);
+        assetManager.loadRemote(configUrl, (err: Error, data: JsonAsset) => {
+            if (err) {
+                onComplete?.(null);
+                return;
+            }
+
+            this.releaseAll(path.basename(bundle));
+            this.removeBundle(path.basename(bundle));
+
+            const ab = new AssetManager.Bundle();
+            const config = data.json as any;
+            config.base = baseUrl;
+            ab.init(config);
+            onComplete?.(ab);
+        });
+    }
+
+    /**
+     * 重载一个bundle(只重载资源列表)
+     * - 需要确保bundle已经被加载过了，否则在某些环境下可能会有异常
+     * @param params.bundle 默认为resources, 可以是项目中的bundle名，也可以是远程bundle的url(url末位作为bundle名)，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#%E5%8A%A0%E8%BD%BD-asset-bundle
+     * @param params.version 远程bundle的版本，参考https://docs.cocos.com/creator/manual/zh/asset/bundle.html#asset-bundle-%E7%9A%84%E7%89%88%E6%9C%AC
+     */
+    public reloadBundleAsync(params: { bundle?: string, version?: string }): Promise<AssetManager.Bundle | null> {
+        return new Promise((resolve) => {
+            this.reloadBundle({
+                ...params,
+                onComplete: resolve
+            });
+        });
     }
 
     /**
@@ -262,23 +356,43 @@ export default class LoaderManager extends BaseManager {
      * 
      * @example
      * setFont({target:label, path:'font/num', bundle:'resources', onComplete:(succ)=>{}})
+     * setFont({target:label, url:'http://img/a/font',ext:'.ttf', onComplete:(succ)=>{}})
      */
-    public setFont(params: { target: Label, path: string, bundle?: string, onComplete?: (success: boolean) => any, onSuccess?: () => void, onFail?: () => void }) {
-        this.load({
-            path: params.path,
-            bundle: params.bundle,
-            type: Font,
-            onComplete: (font) => {
-                if (!font || !isValid(params.target)) {
-                    params.onFail && params.onFail();
-                    params.onComplete && params.onComplete(false);
-                    return;
+    public setFont(params: { target: Label, url: string, ext?: string, onComplete?: (success: boolean) => any, onSuccess?: () => void, onFail?: () => void }): void;
+    public setFont(params: { target: Label, path: string, bundle?: string, onComplete?: (success: boolean) => any, onSuccess?: () => void, onFail?: () => void }): void;
+    public setFont(params: { target: Label, path?: string, bundle?: string, url?: string, ext?: string, onComplete?: (success: boolean) => any, onSuccess?: () => void, onFail?: () => void }) {
+        if (params.url) {
+            this.loadRemote({
+                url: params.url,
+                ext: params.ext,
+                onComplete: (font: Font) => {
+                    if (!font || !isValid(params.target)) {
+                        params.onFail && params.onFail();
+                        params.onComplete && params.onComplete(false);
+                        return;
+                    }
+                    params.target.font = font;
+                    params.onSuccess && params.onSuccess();
+                    params.onComplete && params.onComplete(true);
                 }
-                params.target.font = font;
-                params.onSuccess && params.onSuccess();
-                params.onComplete && params.onComplete(true);
-            }
-        });
+            });
+        } else {
+            this.load({
+                path: params.path,
+                bundle: params.bundle,
+                type: Font,
+                onComplete: (font) => {
+                    if (!font || !isValid(params.target)) {
+                        params.onFail && params.onFail();
+                        params.onComplete && params.onComplete(false);
+                        return;
+                    }
+                    params.target.font = font;
+                    params.onSuccess && params.onSuccess();
+                    params.onComplete && params.onComplete(true);
+                }
+            });
+        }
     }
 
     /**
@@ -314,22 +428,43 @@ export default class LoaderManager extends BaseManager {
      * 
      * @example
      * setSprite({target:sprite, path:'img/a/spriteFrame', bundle:'resources', onComplete:(succ)=>{}})
+     * setSprite({target:sprite, url:'http://img/a/avatar',ext:'.png', onComplete:(succ)=>{}})
      */
-    public setSprite(params: { target: Sprite, path: string, bundle?: string, onComplete?: (success: boolean) => any, onSuccess?: () => void, onFail?: () => void }) {
-        this.load({
-            path: params.path,
-            bundle: params.bundle,
-            type: SpriteFrame,
-            onComplete: (spriteFrame) => {
-                if (!spriteFrame || !isValid(params.target)) {
-                    params.onFail && params.onFail();
-                    params.onComplete && params.onComplete(false);
-                    return;
+    public setSprite(params: { target: Sprite, url: string, ext?: string, onComplete?: (success: boolean) => any, onSuccess?: () => void, onFail?: () => void }): void;
+    public setSprite(params: { target: Sprite, path: string, bundle?: string, onComplete?: (success: boolean) => any, onSuccess?: () => void, onFail?: () => void }): void;
+    public setSprite(params: { target: Sprite, path?: string, bundle?: string, url?: string, ext?: string, onComplete?: (success: boolean) => any, onSuccess?: () => void, onFail?: () => void }) {
+        if (params.url) {
+            this.loadRemote({
+                url: params.url,
+                ext: params.ext,
+                onComplete: (imageAsset: ImageAsset) => {
+                    if (!imageAsset || !isValid(params.target)) {
+                        params.onFail && params.onFail();
+                        params.onComplete && params.onComplete(false);
+                        return;
+                    }
+                    const spriteFrame = SpriteFrame.createWithImage(imageAsset);
+                    params.target.spriteFrame = spriteFrame;
+                    params.onSuccess && params.onSuccess();
+                    params.onComplete && params.onComplete(true);
                 }
-                params.target.spriteFrame = spriteFrame;
-                params.onSuccess && params.onSuccess();
-                params.onComplete && params.onComplete(true);
-            }
-        });
+            });
+        } else {
+            this.load({
+                path: params.path,
+                bundle: params.bundle,
+                type: SpriteFrame,
+                onComplete: (spriteFrame) => {
+                    if (!spriteFrame || !isValid(params.target)) {
+                        params.onFail && params.onFail();
+                        params.onComplete && params.onComplete(false);
+                        return;
+                    }
+                    params.target.spriteFrame = spriteFrame;
+                    params.onSuccess && params.onSuccess();
+                    params.onComplete && params.onComplete(true);
+                }
+            });
+        }
     }
 }

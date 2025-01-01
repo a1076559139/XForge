@@ -5,7 +5,6 @@ module.exports = {
     create: 'Create',
     refresh: 'Refresh',
     help: 'Help',
-    repository: 'GitHub',
     tiny: 'TinyPNG',
     menuCreateView: 'CreateUI',
     menuCreateManager: 'CreateManager',
