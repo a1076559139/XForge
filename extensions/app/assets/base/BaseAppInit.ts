@@ -14,7 +14,7 @@ const DontRewriteFuns = ['startInit', 'nextInit'];
 @ccclass('BaseAppInit')
 export default abstract class BaseAppInit extends Component {
     private get _base_mgr_total() {
-        return Math.max(0, BaseManager.getTotalAssetNum());
+        return Math.max(0, BaseManager.getTotalAssetNum(assetManager.getBundle(ManagerBundleName)));
     }
     private get _base_user_total() {
         return Math.max(0, this.getUserAssetNum());
@@ -125,23 +125,30 @@ export default abstract class BaseAppInit extends Component {
                 });
             })
             // 加载manager
-            .add((next) => {
-                BaseManager.init(ManagerBundleName, next);
+            .add((next, retry) => {
+                if (projectBundles.indexOf(ManagerBundleName) === -1) return next();
+                assetManager.loadBundle(ManagerBundleName, (err) => {
+                    if (err) return retry(0.1);
+                    next();
+                });
             })
             .start(() => {
                 this._base_inited = true;
                 this.onProgress(0, this._base_total);
 
                 // 初始化app, 使用complete来实现onUserInit的切换以确保manager已完全加载
-                BaseManager.initManagers(() => {
-                    this.innerNextInit();
-                }, () => {
-                    this.onUserInit();
-                    // 全部加载完成
-                    if (this._base_completed >= this._base_total) {
+                BaseManager.init(
+                    assetManager.getBundle(ManagerBundleName),
+                    () => {
+                        this.innerNextInit();
+                    },
+                    () => {
+                        this.onUserInit();
+                        if (this._base_completed < this._base_total) return;
+                        // 全部加载完成
                         this.innerFinished();
                     }
-                });
+                );
             });
     }
 

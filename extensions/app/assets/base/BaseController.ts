@@ -200,10 +200,12 @@ export default function BaseController<C, T extends { [key in string]?: AnyFunc 
          * - 尽量使用app.controller，可以避免因跨Bundle引用导致的问题，也可以避免Controller之间循环引用的问题
          */
         public static get inst() {
-            if (this._base_inst === null) {
-                this._base_inst = new this() as C;
-            }
             return this._base_inst;
+        }
+
+        constructor() {
+            super();
+            BaseController._base_inst = this as any;
         }
     };
 }

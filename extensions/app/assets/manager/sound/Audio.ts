@@ -6,7 +6,22 @@ export default class Audio {
     private mute = false;
     private endedCallback: Function = null;
     private startedCallback: Function = null;
-    private paused = false;
+
+    private _playing = false;
+    public get playing() {
+        return this._playing;
+    }
+    private set playing(value) {
+        this._playing = value;
+    }
+
+    private _paused = false;
+    public get paused() {
+        return this._paused;
+    }
+    private set paused(value) {
+        this._paused = value;
+    }
 
     private audioSource: AudioSource = null;
     constructor() {
@@ -37,26 +52,33 @@ export default class Audio {
         this.endedCallback = onEnded;
         this.startedCallback = onStarted;
         this.audioSource.play();
+        this.playing = true;
+        this.paused = false;
         return this;
     }
 
     stop() {
+        this.playing = false;
+        this.paused = false;
         this.audioSource.stop();
         this.audioSource.node.emit(AudioSource.EventType.ENDED);
         return this;
     }
 
     pause() {
+        if (!this.playing) return this;
+
         this.paused = true;
         this.audioSource.pause();
         return this;
     }
 
     resume() {
-        if (this.paused) {
-            this.paused = false;
-            this.audioSource.play();
-        }
+        if (!this.playing) return this;
+        if (!this.paused) return this;
+
+        this.paused = false;
+        this.audioSource.play();
         return this;
     }
 

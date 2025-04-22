@@ -1,4 +1,4 @@
-import { AssetManager, Component, EventTarget, Prefab, Widget, _decorator, assetManager, error, instantiate, js, path, settings, warn } from 'cc';
+import { AssetManager, Component, EventTarget, Prefab, Widget, _decorator, error, instantiate, js, path, warn } from 'cc';
 import { DEBUG, DEV, EDITOR } from 'cc/env';
 import Core from '../Core';
 import { Logger } from '../lib/logger/logger';
@@ -145,29 +145,44 @@ export default class BaseManager extends Component {
         );
     }
 
+    /**
+     * [系统内置] 事件分发
+     */
     public emit(event: string | number, ...data: any[]) {
         this._base_event.emit(event as any, ...data);
     }
 
+    /**
+     * [系统内置] 事件监听
+     */
     public on(event: string | number, cb: (...any: any[]) => void, target?: any) {
         this._base_event.on(event as any, cb, target);
     }
 
+    /**
+     * [系统内置] 事件监听
+     */
     public once(event: string | number, cb: (...any: any[]) => void, target?: any) {
         this._base_event.once(event as any, cb, target);
     }
 
+    /**
+     * [系统内置] 事件移除监听
+     */
     public off(event: string | number, cb?: (...any: any[]) => void, target?: any) {
         this._base_event.off(event as any, cb, target);
     }
 
+    /**
+     * [系统内置] 事件移除监听
+     */
     public targetOff(target: any) {
         this._base_event.targetOff(target);
     }
 
     /***********************************静态***********************************/
     /**
-     * 系统内置manager的数量
+     * 框架内置Manager的数量
      * @private
      */
     public static get sysMgrCount() {
@@ -175,41 +190,15 @@ export default class BaseManager extends Component {
     }
 
     /**
-     * manager asset bundle
-     */
-    private static bundle: AssetManager.Bundle = null;
-
-    /**
-     * 初始化操作
-     * @private
-     */
-    public static init(bundleName: string, onFinish?: Function) {
-        // 避免game.restart()时读取错误的缓存
-        // if (this.bundle) return onFinish && onFinish();
-        this.bundle = null;
-        const projectBundles = settings.querySettings('assets', 'projectBundles') as string[];
-        if (projectBundles.indexOf(bundleName) === -1) return onFinish && onFinish();
-
-        // 一定会加载成功
-        Core.inst.lib.task.execute((retry) => {
-            assetManager.loadBundle(bundleName, (err, bundle) => {
-                if (err) return retry(1);
-                this.bundle = bundle;
-                onFinish && onFinish();
-            });
-        });
-    }
-
-    /**
      * 获得初始化资源的数量(包括sysMgrCount)
      * @private
      */
-    public static getTotalAssetNum() {
+    public static getTotalAssetNum(bundle: AssetManager.Bundle) {
         let count = this.sysMgrCount;
 
-        if (!this.bundle) return count;
+        if (!bundle) return count;
 
-        const array = this.bundle.getDirWithPath('/', Prefab) as { uuid: string, path: string, ctor: Function }[];
+        const array = bundle.getDirWithPath('/', Prefab) as { uuid: string, path: string, ctor: Function }[];
 
         array.forEach(function (item) {
             if (item.path.endsWith('Manager')) {
@@ -224,12 +213,12 @@ export default class BaseManager extends Component {
      * 获得初始化资源的数量
      * @private
      */
-    public static getUserAssetUrls() {
+    public static getUserAssetUrls(bundle: AssetManager.Bundle) {
         const pathArr: string[] = [];
 
-        if (!this.bundle) return pathArr;
+        if (!bundle) return pathArr;
 
-        const array = this.bundle.getDirWithPath('/', Prefab) as { uuid: string, path: string, ctor: Function }[];
+        const array = bundle.getDirWithPath('/', Prefab) as { uuid: string, path: string, ctor: Function }[];
 
         array.forEach(function (item) {
             if (item.path.endsWith('Manager')) {
@@ -244,9 +233,11 @@ export default class BaseManager extends Component {
      * 静态方法，初始化manager，该方法必须在场景初始化完毕之后调用
      * @private
      */
-    public static initManagers(progress: (completeAsset: Number, totalAsset: Number) => any, complete: (totalAsset: Number) => any) {
-        const bundle = this.bundle;
-        const urls = this.getUserAssetUrls();
+    public static init(
+        bundle: AssetManager.Bundle,
+        progress: (completeAsset: Number, totalAsset: Number) => any,
+        complete: (totalAsset: Number) => any) {
+        const urls = this.getUserAssetUrls(bundle);
 
         const totalAsset = urls.length + this.sysMgrCount;
         let completeAsset = 0;
@@ -287,7 +278,7 @@ export default class BaseManager extends Component {
 
         // 加载用户manager
         const loadUserMgrTask = Core.inst.lib.task.createASync();
-        const UserManagerRoot = Core.Root2D.getChildByPath(UserManagerPath);
+        const UserManagerRoot = Core.inst.manager.ui.root.getChildByPath(UserManagerPath);
         urls.forEach(function (url) {
             loadUserMgrTask.add(function (next, retry) {
                 if (DEBUG) {

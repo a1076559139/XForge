@@ -1,4 +1,4 @@
-import { Canvas, Component, director, EventTarget, js, Node } from 'cc';
+import { Component, Director, director, EventTarget, js } from 'cc';
 import { DEV, EDITOR } from 'cc/env';
 import * as debug from './lib/debug/debug';
 import logger from './lib/logger/logger';
@@ -54,7 +54,6 @@ interface ICore {
     Manager: ITypeofManager
 }
 
-const EventMap = {};
 const Lib = { task, storage, debug, logger };
 const Config = {};
 const Data = {};
@@ -63,17 +62,24 @@ const controller = {};
 const Controller = {};
 const Manager = {};
 const manager = {};
+
 const eventTarget = new EventTarget();
+let EventMap = {};
+
+director.on(Director.EVENT_RESET, () => {
+    js.clear(Config);
+    js.clear(Data);
+    js.clear(Store);
+    js.clear(controller);
+    js.clear(Controller);
+    js.clear(Manager);
+    js.clear(manager);
+
+    EventMap = {};
+});
+
 export default class Core<T extends ICore> {
     static EventType = EventType;
-
-    private static _Root2D: Node | undefined;
-    public static get Root2D(): Node | undefined {
-        if (!this._Root2D) {
-            this._Root2D = director.getScene().getComponentInChildren(Canvas)?.node;
-        }
-        return this._Root2D;
-    }
 
     protected static _inst: Core<ICore> | undefined;
     static get inst() {

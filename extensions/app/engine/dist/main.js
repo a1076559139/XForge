@@ -38,6 +38,7 @@ const viewFolderName = 'app-view';
 const builtinFolderName = 'app-builtin';
 const bundleFolderName = 'app-bundle';
 const pkgFolderUrl = 'db://pkg/';
+const pkgFolderPath = utils_1.convertUrlToPath(pkgFolderUrl);
 const builtinFolderUrl = 'db://assets/' + builtinFolderName;
 const builtinFolderPath = utils_1.convertUrlToPath(builtinFolderUrl);
 const bundleFolderUrl = 'db://assets/' + bundleFolderName;
@@ -134,12 +135,14 @@ function readFileSyncByPath(url) {
     return fs_1.existsSync(filepath) ? fs_1.readFileSync(filepath, 'utf8') : '';
 }
 function isTSDefault(value) {
+    // const varname = value[0];
+    const filename = value[1];
+    const dirname = value[2];
     const extname = value[3];
     if (extname.endsWith('js')) {
         return false;
     }
-    const filename = value[0];
-    const filepath = path_1.default.join(utils_1.convertUrlToPath(value[1]), filename + '.ts');
+    const filepath = path_1.default.join(utils_1.convertUrlToPath(dirname), filename + '.ts');
     const js = fs_1.readFileSync(filepath, 'utf8');
     return js.search(/export\s+default/) >= 0;
 }
@@ -155,14 +158,7 @@ async function clearExecutor() {
         'import { Component } from \'cc\';\n' +
         'import { app } from \'../../app/app\';\n' +
         'import { EDITOR,EDITOR_NOT_IN_PREVIEW } from \'cc/env\';\n\n';
-    result += '/**界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用UIManager.ViewName*/\n';
-    result += 'export const ViewName = { "never":"never" }\n';
-    result += '/**子界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用UIManager.MiniViewName*/\n';
-    result += 'export const MiniViewName = { "never":"never" }\n';
-    result += '/**音乐名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用SoundManager.MusicName*/\n';
-    result += 'export const MusicName = { "never":"never" }\n';
-    result += '/**音效名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用SoundManager.EffectName*/\n';
-    result += 'export const EffectName = { "never":"never" }\n\n';
+    result += 'export type IReadOnly<T> = { readonly [P in keyof T]: T[P] extends Function ? T[P] : (T[P] extends Object ? IReadOnly<T[P]> : T[P]); };\n\n';
     result += 'export type IViewName = "never"\n';
     result += 'export type IViewNames = IViewName[]\n';
     result += 'export type IMiniViewName = "never"\n';
@@ -171,15 +167,6 @@ async function clearExecutor() {
     result += 'export type IMusicNames = IMusicName[]\n';
     result += 'export type IEffectName = "never"\n';
     result += 'export type IEffectNames = IEffectName[]\n\n';
-    // config
-    result += 'if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.config, {})\n';
-    // data
-    result += 'if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.data, {})\n';
-    // store
-    result += 'if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.store, {})\n\n';
-    // controller
-    result += 'if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.Controller, {})\n';
-    result += 'if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.controller, {})\n\n';
     result += 'export type IApp = {\n';
     result += '    Controller: {},\n';
     result += '    controller: {},\n';
@@ -189,6 +176,15 @@ async function clearExecutor() {
     result += '    config: {}\n';
     result += '    store: {}\n';
     result += '}\n';
+    // config
+    result += 'if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.config, {})\n';
+    // data
+    result += 'if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.data, {})\n';
+    // store
+    result += 'if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.store, {})\n\n';
+    // controller
+    result += 'if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.Controller, {})\n';
+    result += 'if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.controller, {})\n\n';
     // 修正windows系统中的\为/
     result = result.replace(/\\/g, '/');
     // save
@@ -210,7 +206,7 @@ async function updateExecutor() {
     const dataList = [];
     const confList = [];
     const storeList = [];
-    const viewKeys = {};
+    const viewScene = {};
     const miniViewKeys = {};
     const musicKeys = {};
     const effectKeys = {};
@@ -268,31 +264,31 @@ async function updateExecutor() {
             else if (fileUrl.startsWith(controllerFolderUrl)) {
                 // 用户controller
                 if (filename.endsWith('Controller')) {
-                    ctrList.push([filename, dirname, varname, extname]);
+                    ctrList.push([varname, filename, dirname, extname]);
                 }
             }
             else if (fileUrl.startsWith(managerFolderUrl)) {
                 // 用户manager
                 if (filename.endsWith('Manager') && dirname.endsWith(utils_1.stringCaseNegate(filename.slice(0, -7)))) {
-                    mgrList.push([filename, dirname, varname, extname]);
+                    mgrList.push([varname, filename, dirname, extname]);
                 }
             }
             else if (fileUrl.startsWith('db://app/manager/')) {
                 // 系统manager(系统Mgr的文件夹命名为了美观没有那么规范，所以和用户Mgr的逻辑有区别)
                 if (filename.endsWith('Manager') && dirname.endsWith(filename.slice(0, -7).toLocaleLowerCase())) {
-                    mgrList.push([filename, dirname, varname, extname]);
+                    mgrList.push([varname, filename, dirname, extname]);
                 }
             }
             else if (fileUrl.startsWith(modelFolderUrl)) {
                 // model
                 if (filename.startsWith('data.')) {
-                    dataList.push([filename, dirname, varname, extname]);
+                    dataList.push([varname, filename, dirname, extname]);
                 }
                 else if (filename.startsWith('config.')) {
-                    confList.push([filename, dirname, varname, extname]);
+                    confList.push([varname, filename, dirname, extname]);
                 }
                 else if (filename.startsWith('store.')) {
-                    storeList.push([filename, dirname, varname, extname]);
+                    storeList.push([varname, filename, dirname, extname]);
                 }
             }
         }
@@ -301,11 +297,10 @@ async function updateExecutor() {
                 const dirArray = dirname.split('/');
                 const index = dirArray.indexOf(viewFolderName);
                 const viewDirArray = dirArray.slice(index + 1);
-                // viewKeys
                 if (['page', 'paper', 'pop', 'top'].indexOf(viewDirArray[0].toLocaleLowerCase()) >= 0) {
                     // 主界面
                     if (filename === `${utils_1.stringCase(viewDirArray[0], false)}${utils_1.stringCase(viewDirArray[1], false)}`) {
-                        viewKeys[filename] = extname === '.scene';
+                        viewScene[filename] = extname === '.scene';
                     }
                     // 子界面
                     else if (filename === `${utils_1.stringCase(viewDirArray[0], false)}${utils_1.stringCase(viewDirArray[1], false)}${utils_1.stringCase(viewDirArray[2], false)}`) {
@@ -315,7 +310,7 @@ async function updateExecutor() {
                 else {
                     // 主界面
                     if (filename === `${utils_1.stringCase(viewDirArray[1], false)}${utils_1.stringCase(viewDirArray[2], false)}`) {
-                        viewKeys[filename] = extname === '.scene';
+                        viewScene[filename] = extname === '.scene';
                     }
                     // 子界面
                     else if (filename === `${utils_1.stringCase(viewDirArray[1], false)}${utils_1.stringCase(viewDirArray[2], false)}${utils_1.stringCase(viewDirArray[3], false)}`) {
@@ -336,45 +331,45 @@ async function updateExecutor() {
             }
         }
     }
-    const pkgs = [];
-    const pkgAssetsPath = utils_1.convertUrlToPath(pkgFolderUrl);
-    if (fs_1.existsSync(pkgAssetsPath)) {
-        fs_1.readdirSync(pkgAssetsPath).forEach(function (item) {
-            const item_path = path_1.default.join(pkgAssetsPath, item);
-            const item_stat = fs_1.statSync(item_path);
-            if (!item_stat.isDirectory())
-                return;
-            const item_name = path_1.default.basename(item_path);
-            if (item_name.startsWith('@')) {
-                fs_1.readdirSync(item_path).forEach(function (sub) {
-                    const sub_path = path_1.default.join(item_path, sub);
-                    const sub_stat = fs_1.statSync(sub_path);
-                    if (!sub_stat.isDirectory())
-                        return;
-                    const sub_name = path_1.default.basename(sub_path);
-                    pkgs.push(item_name + '/' + sub_name);
-                });
-            }
-            else {
-                pkgs.push(item_name);
-            }
-        });
-    }
+    // const pkgNames: string[] = [];
+    // if (existsSync(pkgFolderPath)) {
+    //     readdirSync(pkgFolderPath).forEach(function (item) {
+    //         const item_path = path.join(pkgFolderPath, item);
+    //         const item_stat = statSync(item_path);
+    //         if (!item_stat.isDirectory()) return;
+    //         const item_name = path.basename(item_path);
+    //         if (item_name.startsWith('@')) {
+    //             readdirSync(item_path).forEach(function (sub) {
+    //                 const sub_path = path.join(item_path, sub);
+    //                 const sub_stat = statSync(sub_path);
+    //                 if (!sub_stat.isDirectory()) return;
+    //                 const sub_name = path.basename(sub_path);
+    //                 pkgNames.push(item_name + '/' + sub_name);
+    //             });
+    //         } else {
+    //             pkgNames.push(item_name);
+    //         }
+    //     });
+    // }
     let result = '/* eslint-disable */\n' +
-        'import { Component } from \'cc\';\n' +
+        'import { Component,director,Director } from \'cc\';\n' +
         'import { app } from \'../../app/app\';\n' +
         'import { EDITOR,EDITOR_NOT_IN_PREVIEW } from \'cc/env\';\n\n';
-    pkgs.forEach(name => {
-        result += `import 'db://pkg/${name}'\n`;
-    });
-    const handle = function handle(arr, module) {
-        arr.forEach(function (value, index, array) {
-            // storage
-            const filename = value[0];
-            // db://assets/app/lib/storage
-            const dirname = value[1];
-            // storage
-            const varname = value[2];
+    result += 'export type IReadOnly<T> = { readonly [P in keyof T]: T[P] extends Function ? T[P] : (T[P] extends Object ? IReadOnly<T[P]> : T[P]); };\n\n';
+    result += `export type IViewName = ${Object.keys(viewScene).map(str => `"${str}"`).join('|') || '"never"'}\n`;
+    result += 'export type IViewNames = IViewName[]\n';
+    result += `export type IMiniViewName = ${Object.keys(miniViewKeys).map(str => `"${str}"`).join('|') || '"never"'}\n`;
+    result += 'export type IMiniViewNames = IMiniViewName[]\n';
+    result += `export type IMusicName = ${Object.keys(musicKeys).map(str => `"${str}"`).join('|') || '"never"'}\n`;
+    result += 'export type IMusicNames = IMusicName[]\n';
+    result += `export type IEffectName = ${Object.keys(effectKeys).map(str => `"${str}"`).join('|') || '"never"'}\n`;
+    result += 'export type IEffectNames = IEffectName[]\n\n';
+    // pkgNames.forEach(name => result += `import 'db://pkg/${name}'\n`);
+    const writeImport = function writeImport(arr, module) {
+        return arr.forEach(function (value) {
+            const varname = value[0];
+            const filename = value[1];
+            const dirname = value[2];
             if (isTSDefault(value)) {
                 result += `import ${varname} from '${path_1.default.join(path_1.default.relative(adminFolderPath, utils_1.convertUrlToPath(dirname)), filename)}'\n`;
             }
@@ -384,14 +379,28 @@ async function updateExecutor() {
             else {
                 result += `import * as ${varname} from '${path_1.default.join(path_1.default.relative(adminFolderPath, utils_1.convertUrlToPath(dirname)), filename)}'\n`;
             }
-            array[index] = varname;
         });
     };
+    writeImport(confList, false);
+    writeImport(dataList, false);
+    writeImport(storeList, false);
+    writeImport(ctrList, true);
+    writeImport(mgrList, true);
+    // controller
+    let ctrStr = '';
+    let CtrStr = '';
+    ctrList.forEach(function ([varname], index, array) {
+        CtrStr += `${varname.slice(0, -10)}:typeof ${varname}`;
+        ctrStr += `${varname.slice(0, -10).toLocaleLowerCase()}:IReadOnly<${varname}>`;
+        if (index < array.length - 1) {
+            CtrStr += ',';
+            ctrStr += ',';
+        }
+    });
     // manager
-    handle(mgrList, true);
-    let MgrStr = '';
     let mgrStr = '';
-    mgrList.forEach(function (varname, index, array) {
+    let MgrStr = '';
+    mgrList.forEach(function ([varname], index, array) {
         MgrStr += `${varname.slice(0, -7)}:Omit<typeof ${varname},keyof Component>`;
         if (varname === 'UIManager') {
             mgrStr += `${varname.slice(0, -7).toLocaleLowerCase()}:Omit<${varname}<IViewName,IMiniViewName>,keyof Component>`;
@@ -407,55 +416,28 @@ async function updateExecutor() {
             mgrStr += ',';
         }
     });
-    result += '/**界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用UIManager.ViewName*/\n';
-    result += 'export const ViewName = UIManager.ViewName\n';
-    result += '/**子界面名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用UIManager.MiniViewName*/\n';
-    result += 'export const MiniViewName = UIManager.MiniViewName\n';
-    result += '/**音乐名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用SoundManager.MusicName*/\n';
-    result += 'export const MusicName = SoundManager.MusicName\n';
-    result += '/**音效名字枚举(在main、resources、app-model与app-controller所在的Asset Bundle中无法使用此枚举) @deprecated 请使用SoundManager.EffectName*/\n';
-    result += 'export const EffectName = SoundManager.EffectName\n\n';
-    result += `export type IViewName = ${Object.keys(viewKeys).map(str => `"${str}"`).join('|') || '"never"'}\n`;
-    result += 'export type IViewNames = IViewName[]\n';
-    result += `export type IMiniViewName = ${Object.keys(miniViewKeys).map(str => `"${str}"`).join('|') || '"never"'}\n`;
-    result += 'export type IMiniViewNames = IMiniViewName[]\n';
-    result += `export type IMusicName = ${Object.keys(musicKeys).map(str => `"${str}"`).join('|') || '"never"'}\n`;
-    result += 'export type IMusicNames = IMusicName[]\n';
-    result += `export type IEffectName = ${Object.keys(effectKeys).map(str => `"${str}"`).join('|') || '"never"'}\n`;
-    result += 'export type IEffectNames = IEffectName[]\n\n';
-    // config
-    handle(confList, false);
-    result += `if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.config, {${confList.map(varname => `${varname.slice(7)}:new ${varname}()`).join(',')}})\n`;
-    // data
-    handle(dataList, false);
-    result += `if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.data, {${dataList.map(varname => `${varname.slice(5)}:new ${varname}()`).join(',')}})\n`;
-    // store
-    handle(storeList, false);
-    result += `if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.store, {${storeList.map(varname => `${varname.slice(6)}:new ${varname}()`).join(',')}})\n\n`;
-    // controller
-    handle(ctrList, true);
-    let CtrStr = '';
-    let ctrStr = '';
-    ctrList.forEach(function (varname, index, array) {
-        CtrStr += `${varname.slice(0, -10)}:typeof ${varname}`;
-        ctrStr += `${varname.slice(0, -10).toLocaleLowerCase()}:IReadOnly<${varname}>`;
-        if (index < array.length - 1) {
-            CtrStr += ',';
-            ctrStr += ',';
-        }
-    });
-    result += `if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.Controller, {${ctrList.map(varname => `${varname.slice(0, -10)}:${varname}`).join(',')}})\n`;
-    result += `if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.controller, {${ctrList.map(varname => `${varname.slice(0, -10).toLocaleLowerCase()}:${varname}.inst`).join(',')}})\n\n`;
-    result += 'export type IReadOnly<T> = { readonly [P in keyof T]: T[P] extends Function ? T[P] : (T[P] extends Object ? IReadOnly<T[P]> : T[P]); };\n';
     result += 'export type IApp = {\n';
     result += `    Controller: {${CtrStr}},\n`;
     result += `    controller: {${ctrStr}},\n`;
     result += `    Manager: {${MgrStr}},\n`;
     result += `    manager: {${mgrStr}},\n`;
-    result += `    data: {${dataList.map(varname => `${varname.slice(5)}:${varname}`).join(',')}},\n`;
-    result += `    config: {${confList.map(varname => `${varname.slice(7)}:IReadOnly<${varname}>`).join(',')}}\n`;
-    result += `    store: {${storeList.map(varname => `${varname.slice(6)}:IReadOnly<${varname}>`).join(',')}}\n`;
+    result += `    data: {${dataList.map(([varname]) => `${varname.slice(5)}:${varname}`).join(',')}},\n`;
+    result += `    config: {${confList.map(([varname]) => `${varname.slice(7)}:IReadOnly<${varname}>`).join(',')}}\n`;
+    result += `    store: {${storeList.map(([varname]) => `${varname.slice(6)}:IReadOnly<${varname}>`).join(',')}}\n`;
+    result += '}\n\n';
+    result += 'function init(){\n';
+    // config
+    result += `if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.config, {${confList.map(([varname]) => `${varname.slice(7)}:new ${varname}()`).join(',')}})\n`;
+    // data
+    result += `if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.data, {${dataList.map(([varname]) => `${varname.slice(5)}:new ${varname}()`).join(',')}})\n`;
+    // store
+    result += `if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.store, {${storeList.map(([varname]) => `${varname.slice(6)}:new ${varname}()`).join(',')}})\n\n`;
+    // controller
+    result += `if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.Controller, {${ctrList.map(([varname]) => `${varname.slice(0, -10)}:${varname}`).join(',')}})\n`;
+    result += `if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) Object.assign(app.controller, {${ctrList.map(([varname]) => `${varname.slice(0, -10).toLocaleLowerCase()}:new ${varname}()`).join(',')}})\n`;
     result += '}\n';
+    result += 'if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) director.on(Director.EVENT_RESET,init)\n';
+    result += 'if(!EDITOR||!EDITOR_NOT_IN_PREVIEW) init()\n';
     // 修正windows系统中的\为/
     result = result.replace(/\\/g, '/');
     // save
@@ -503,12 +485,20 @@ exports.methods = {
     ['open-panel']() {
         Editor.Panel.open('app.open-panel');
     },
-    ['open-help']() {
+    ['open-wiki']() {
         const url = 'https://gitee.com/cocos2d-zp/xforge/wikis/pages';
         Editor.Message.send('program', 'open-url', url);
     },
-    ['open-repository']() {
+    ['open-issues']() {
+        const url = 'https://gitee.com/cocos2d-zp/xforge/issues';
+        Editor.Message.send('program', 'open-url', url);
+    },
+    ['open-github']() {
         const url = 'https://github.com/a1076559139/XForge';
+        Editor.Message.send('program', 'open-url', url);
+    },
+    ['open-store']() {
+        const url = 'https://store.cocos.com/app/search?name=xforge';
         Editor.Message.send('program', 'open-url', url);
     },
     ['refresh-executor']() {

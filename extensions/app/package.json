@@ -31,14 +31,24 @@
                     "open-panel"
                 ]
             },
-            "open-help": {
+            "open-wiki": {
                 "methods": [
-                    "open-help"
+                    "open-wiki"
                 ]
             },
-            "open-repository": {
+            "open-issues": {
                 "methods": [
-                    "open-repository"
+                    "open-issues"
+                ]
+            },
+            "open-github": {
+                "methods": [
+                    "open-github"
+                ]
+            },
+            "open-store": {
+                "methods": [
+                    "open-store"
                 ]
             },
             "refresh-executor": {
@@ -85,13 +95,23 @@
             },
             {
                 "path": "i18n:app.app/i18n:app.help",
-                "label": "Wiki",
-                "message": "open-help"
+                "label": "文档",
+                "message": "open-wiki"
             },
             {
                 "path": "i18n:app.app/i18n:app.help",
-                "label": "GitHub",
-                "message": "open-repository"
+                "label": "反馈",
+                "message": "open-issues"
+            },
+            {
+                "path": "i18n:app.app/i18n:app.help",
+                "label": "商店",
+                "message": "open-store"
+            },
+            {
+                "path": "i18n:app.app/i18n:app.help",
+                "label": "GitHub🌟",
+                "message": "open-github"
             }
         ],
         "assets": {

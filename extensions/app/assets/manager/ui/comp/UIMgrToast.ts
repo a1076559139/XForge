@@ -54,7 +54,6 @@ export default class UIMgrToast extends Component {
     }
 
     protected onDestroy() {
-        this.clear();
         this.pool.clear();
     }
 

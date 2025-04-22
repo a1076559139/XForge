@@ -1,61 +1,17 @@
-/* 竖向排列容器 */
-.vertical-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-/* 横向排列容器 */
-.horizontal-box {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-}
-
-/* 容器子元素尺寸相对比 */
-.box-item-1 {
-    flex: 1;
-}
-
-.box-item-2 {
-    flex: 2;
-}
-
-.box-item-3 {
-    flex: 3;
-}
-
-.box-item-4 {
-    flex: 4;
-}
-
-.box-item-5 {
-    flex: 5;
-}
-
-/* 其它 */
-.body {
-    margin-top: 4px;
-    text-align: center;
-}
-
-.loading {
-    position: fixed;
-    top: 0%;
-    left: 0%;
+#app {
+    position: relative;
     width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 9999;
 }
 
-.loading-item {
-    margin-top: 50%;
+.container {
+    position: relative;
+    width: 100%;
 }
 
 .content {
+    position: relative;
     width: 80%;
-    margin: auto;
+    margin: 8px auto;
     text-align: center;
 }
 
@@ -63,10 +19,24 @@
     margin-top: 8px;
 }
 
-.create-btn {
-    float: right;
+.help {
+    position: absolute;
+    right: 0;
+    top: 0;
 }
 
-.display {
-    text-align: left;
+.loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    background-color: rgba(0, 0, 0, 0.6);
+    /* 背景模糊 */
+    /* backdrop-filter: blur(3px); */
+}
+
+.loading-item {
+    margin-top: 50%;
 }

@@ -17,10 +17,9 @@ export default class AudioEngine {
     private music: Audio = null;
 
     private musicMute = false;
-    private effectMute = false;
-    private musicVolume = 1;
     private musicVolumeScale = 1;
-    private effectVolume = 1;
+
+    private effectMute = false;
     private effectVolumeScale = 1;
 
     ////////////////////////////////
@@ -86,112 +85,118 @@ export default class AudioEngine {
         return !!this.effectMap.get(id)?.setMute(mute);
     }
 
-    setAllEffectsMute(mute: boolean) {
-        this.effectMute = mute;
-        this.effectMap.forEach((audio) => {
-            audio.setMute(mute);
-        });
-    }
-
     getEffectMute(id: number) {
         return !!this.effectMap.get(id)?.getMute();
-    }
-
-    getAllEffectsMute() {
-        return this.effectMute;
     }
 
     setEffectVolume(id: number, volume: number) {
         return !!this.effectMap.get(id)?.setVolume(volume);
     }
 
-    setAllEffectsVolume(volume: number) {
-        this.effectVolume = volume;
-        this.effectMap.forEach((audio) => {
-            audio.setVolume(volume);
-        });
-    }
-
     getEffectVolume(id: number) {
         return this.effectMap.get(id)?.getVolume() || 0;
     }
 
-    getAllEffectsVolume() {
-        return this.effectVolume;
+    setAllEffectsVolume(volume: number) {
+        this.effectMap.forEach((audio) => {
+            audio.setVolume(volume);
+        });
     }
 
     setEffectVolumeScale(id: number, volume: number) {
         return !!this.effectMap.get(id)?.setVolumeScale(volume);
     }
 
-    setAllEffectsVolumeScale(scale: number) {
+    getEffectVolumeScale(id: number) {
+        return this.effectMap.get(id)?.getVolumeScale() || 0;
+    }
+
+    setGlobalEffectsVolumeScale(scale: number) {
         this.effectVolumeScale = scale;
         this.effectMap.forEach((audio) => {
             audio.setVolumeScale(scale);
         });
     }
 
-    getEffectVolumeScale(id: number) {
-        return this.effectMap.get(id)?.getVolumeScale() || 0;
+    getGlobalEffectsVolumeScale() {
+        return this.effectVolumeScale;
     }
 
-    getAllEffectsVolumeScale() {
-        return this.effectVolumeScale;
+    setGlobalEffectsMute(mute: boolean) {
+        this.effectMute = mute;
+        this.effectMap.forEach((audio) => {
+            audio.setMute(mute);
+        });
+    }
+
+    getGlobalEffectsMute() {
+        return this.effectMute;
     }
 
     ////////////////////////////////
     // 音乐                        //
     ////////////////////////////////
     playMusic(audioClip: AudioClip, volume = 1, onStarted: Function = null) {
-        if (this.music) {
-            this.music.destroy();
-        }
+        this.stopMusic();
+
         this.music = AudioManager.inst.getAudio();
         this.music
             .setLoop(true)
-            .setVolume(volume)
+            .setMute(this.musicMute)
+            .setVolume(volume, this.musicVolumeScale)
             .play(audioClip, null, onStarted);
 
         return 0;
     }
 
     stopMusic() {
-        return !!this.music?.stop();
+        if (!this.music) return false;
+        this.music.destroy();
+        this.music = null;
+        return true;
     }
 
     pauseMusic() {
-        return !!this.music?.pause();
+        if (!this.music) return false;
+        this.music.pause();
+        return true;
     }
 
     resumeMusic() {
-        return !!this.music?.resume();
-    }
-
-    setMusicMute(mute: boolean) {
-        this.musicMute = mute;
-        return !!this.music?.setMute(mute);
-    }
-
-    getMusicMute() {
-        return this.musicMute;
+        if (!this.music) return false;
+        this.music.resume();
+        return true;
     }
 
     setMusicVolume(volume: number) {
-        this.musicVolume = volume;
-        return !!this.music?.setVolume(volume);
+        if (!this.music) return false;
+        this.music.setVolume(volume);
+        return true;
     }
 
     getMusicVolume() {
-        return this.musicVolume;
+        if (!this.music) return -1;
+        return this.music.getVolume();
     }
 
     setMusicVolumeScale(scale: number) {
         this.musicVolumeScale = scale;
-        return !!this.music?.setVolumeScale(scale);
+        this.music?.setVolumeScale(scale);
+        return true;
     }
 
     getMusicVolumeScale() {
         return this.musicVolumeScale;
+    }
+
+    setMusicMute(mute: boolean) {
+        this.musicMute = mute;
+        this.music?.setMute(mute);
+        return true;
+    }
+
+    getMusicMute() {
+        return this.musicMute;
     }
 
     ////////////////////////////////

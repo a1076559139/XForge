@@ -1,10 +1,12 @@
-import { Component, Graphics, Size, UITransform, _decorator } from 'cc';
+import { Component, Graphics, Node, Size, UITransform, _decorator } from 'cc';
 const { ccclass, property, requireComponent } = _decorator;
 
 @ccclass('UIMgrLoading')
-@requireComponent(Graphics)
 @requireComponent(UITransform)
 export default class UIMgrLoading extends Component {
+    @property(Node)
+    private loading: Node;
+
     @property({ tooltip: '动画的尺寸' })
     private size: Size = new Size(60, 60);
 
@@ -28,12 +30,12 @@ export default class UIMgrLoading extends Component {
 
         this.progress = 0;
         this.ringScale = 1;
-        this.node.angle = 0;
+        this.loading.angle = 0;
         this.reverse = false;
 
         this.drawing = false;
         this.timedown = this.delay;
-        this.getComponent(Graphics).clear();
+        this.loading.getComponent(Graphics).clear();
     }
 
     clear() {
@@ -45,9 +47,9 @@ export default class UIMgrLoading extends Component {
      * 需要重写
      */
     private onDraw() {
-        const uiTransform = this.node.getComponent(UITransform);
+        const graphics = this.loading.getComponent(Graphics);
+        const uiTransform = this.loading.getComponent(UITransform);
 
-        const graphics = this.getComponent(Graphics);
         const centerX = this.size.width * (0.5 - uiTransform.anchorX);
         const centerY = this.size.height * (0.5 - uiTransform.anchorY);
 
@@ -85,9 +87,9 @@ export default class UIMgrLoading extends Component {
         }
 
         // 旋转
-        this.node.angle -= this.angleSpeed * dt;
-        if (this.node.angle >= 360 || this.node.angle <= -360) {
-            this.node.angle = this.node.angle % 360;
+        this.loading.angle -= this.angleSpeed * dt;
+        if (this.loading.angle >= 360 || this.loading.angle <= -360) {
+            this.loading.angle = this.loading.angle % 360;
         }
 
         // 进度

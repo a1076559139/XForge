@@ -242,6 +242,11 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     private showQueue: IShowParams<UIName>[] = [];
 
+    /**UI根节点 */
+    public get root() {
+        return this.node.parent.parent;
+    }
+
     /**相机 */
     public get camera() {
         return this.canvas.cameraComponent;
@@ -249,7 +254,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
 
     /**画布*/
     public get canvas() {
-        return Core.Root2D.getComponent(Canvas);
+        return this.root.getComponent(Canvas);
     }
 
     protected init(finish: Function) {
@@ -277,22 +282,22 @@ export default class UIManager<UIName extends string, MiniName extends string> e
     }
 
     protected onLoad() {
-        this.UserInterface = Core.Root2D.getChildByName(UserInterfacePath);
+        this.UserInterface = this.root.getChildByName(UserInterfacePath);
 
-        Core.Root2D.getComponentsInChildren(Camera).forEach(camera => {
+        this.root.getComponentsInChildren(Camera).forEach(camera => {
             // 避免camera.priority<0的情况，否则会造成渲染异常
             if (camera.priority < 0) camera.priority = 0;
             // 避免camera.far<=camera.near的情况，否则会造成渲染异常
             if (camera.far <= camera.near) camera.far = camera.near + 1;
         });
-        director.addPersistRootNode(Core.Root2D);
+        director.addPersistRootNode(this.root);
 
         this.createTypeRoot();
 
         this.shade = instantiate(this.shadePre);
         this.shade.parent = this.UserInterface;
         this.shade.active = false;
-        this.shade.getComponent(Widget).target = Core.Root2D;
+        this.shade.getComponent(Widget).target = this.root;
 
         this.loading = instantiate(this.loadingPre);
         this.loading.parent = this.node;
@@ -363,7 +368,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         if (this.touchMaskMap.size > 0) return;
 
         for (let i = 0; i < BlockEvents.length; i++) {
-            Core.Root2D.on(BlockEvents[i], this.stopPropagation, this, true);
+            this.root.on(BlockEvents[i], this.stopPropagation, this, true);
         }
     }
 
@@ -372,7 +377,7 @@ export default class UIManager<UIName extends string, MiniName extends string> e
         if (this.touchMaskMap.size > 0) return;
 
         for (let i = 0; i < BlockEvents.length; i++) {
-            Core.Root2D.off(BlockEvents[i], this.stopPropagation, this, true);
+            this.root.off(BlockEvents[i], this.stopPropagation, this, true);
         }
     }
 
