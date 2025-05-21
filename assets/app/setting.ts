@@ -1,7 +1,15 @@
-import SoundManager from '../../extensions/app/assets/manager/sound/SoundManager';
-import UIManager from '../../extensions/app/assets/manager/ui/UIManager';
+import { DEBUG } from 'cc/env';
+import { Logger } from 'db://app/lib/logger/logger';
+import { Storage } from 'db://app/lib/storage/storage';
+import SoundManager from 'db://app/manager/sound/SoundManager';
+import UIManager from 'db://app/manager/ui/UIManager';
 
-// 预加载的UI(符合app.lib.task.createAny规则)
+// 如果需要加密内容，请设置密钥的值
+Storage.setting.secretKey = '';
+// 设置日志过滤
+Logger.setting.filter = DEBUG ? ['error', 'log', 'warn'] : ['error'];
+
+// 预加载的UI列表
 UIManager.setting.preload = [];
 // 默认UI, 会在首屏流程后自动show
 UIManager.setting.defaultUI = ''; // 通过App菜单创建Page类型的UI后，填入该UI的名称(会有自动提示与类型检查)

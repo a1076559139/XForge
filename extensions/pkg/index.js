@@ -44,6 +44,12 @@ function deleteDirectory(dir) {
     fs.rmdirSync(dir);
 }
 
+function getPackageName(fullName) {
+    // 匹配包名（可能包含 @scope/）和版本号
+    const match = fullName.match(/^(@[^/]+\/[^@]+|@[^@]+\/[^@]+|[^@]+)/);
+    return match ? match[0] : fullName;
+}
+
 const assetsDir = path.join(__dirname, 'node_modules');
 const packageDir = path.join(__dirname, 'package');
 
@@ -83,10 +89,11 @@ async function main() {
         else
             console.log('\n✅: 已更新安装包');
     } else if (cmd === 'add') {
-        const pkgName = process.argv[cmdIndex + 1];
+        const pkgInput = process.argv[cmdIndex + 1];
+        const pkgName = getPackageName(pkgInput);
         if (!pkgName)
             throw new Error('输入要安装的包名字');
-        const args = [prefix, registry, 'install', pkgName];
+        const args = [prefix, registry, 'install', pkgInput];
         const code = await executeCmd(npm, args);
         if (code !== 0) {
             throw new Error(`错误码: ${code}`);
@@ -112,7 +119,8 @@ async function main() {
             console.log(`\n✅: 已成功安装包 ${pkgName}`);
         }
     } else if (cmd === 'remove') {
-        const pkgName = process.argv[cmdIndex + 1];
+        const pkgInput = process.argv[cmdIndex + 1];
+        const pkgName = getPackageName(pkgInput);
         if (!pkgName)
             throw new Error('输入要卸载的包名字');
         const args = [prefix, registry, 'uninstall', pkgName];

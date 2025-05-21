@@ -18,7 +18,7 @@ export interface ITask<T extends Array<any> = any[]> {
 /**
  * 顺序执行
  */
-class Sync<T extends Array<any>> implements ITask<T> {
+export class Sync<T extends Array<any>> implements ITask<T> {
     private running = false;
     private index: number = -1;
     private list: IHandle[] = [];
@@ -168,7 +168,7 @@ class Sync<T extends Array<any>> implements ITask<T> {
 /**
  * 同时执行
  */
-class ASync<T extends Array<any>> implements ITask<T> {
+export class ASync<T extends Array<any>> implements ITask<T> {
     private running = false;
     private count: number = 0;
     private list: IHandle[] = [];
@@ -320,7 +320,7 @@ class ASync<T extends Array<any>> implements ITask<T> {
     }
 }
 
-class Any<T extends Array<any>> implements ITask<T> {
+export class Any<T extends Array<any>> implements ITask<T> {
     private task = new Sync();
 
     /**
@@ -434,14 +434,6 @@ const task = {
                 task.execute(fun, retryMax, retryFinish);
             }
         });
-    },
-
-    /**
-     * 执行单个任务
-     * @deprecated
-     */
-    excute(fun: IExecuteCallBack, retryMax = -1, retryFinish?: Function) {
-        return this.execute(fun, retryMax, retryFinish);
     }
 };
 

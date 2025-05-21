@@ -8,10 +8,20 @@ interface ILog {
  * 日志管理类，用于统一日志输出格式
  */
 export class Logger {
+    static setting: {
+        filter: Array<'log' | 'warn' | 'error'>
+    } = {
+            filter: ['error', 'log', 'warn']
+        };
+
     /**
      * 创建日志输出函数
      */
     static create(level: 'log' | 'warn' | 'error', styleColor: string, title: string, titleColor = '#fff') {
+        if (this.setting.filter.indexOf(level) == -1) {
+            return;
+        }
+
         if (DEV) {
             return window.console[level].bind(window.console,
                 '%c %s %c %s ',

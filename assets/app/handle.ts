@@ -1,10 +1,14 @@
+import { game, sys } from 'cc';
 import { App } from './app';
 
 /**
  * ccc除物理引擎等外的基础功能已经准备好了
  */
 export function cccReady(app: App) {
-
+    // 为了防止web环境中异常掉帧问题(关键代码在cc.game._pacer._handleRAF中)
+    if (sys.isBrowser) {
+        game.frameRate = 100;
+    }
 }
 
 /**

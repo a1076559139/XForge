@@ -53,14 +53,18 @@ const getDayUpdateTime = function (curDate?: Date) {
     return curDate.toLocaleDateString();
 };
 
-class Storage {
-    private _cache = {};
+export class Storage {
+    static setting: {
+        /**
+         * 加密密钥  
+         * - 如果需要加密内容，请设置密钥的值
+         */
+        secretKey: string
+    } = {
+            secretKey: ''
+        };
 
-    /**
-     * 加密密钥  
-     * - 如果需要加密内容，请设置密钥的值
-     */
-    secretKey: string = '';
+    private _cache = {};
 
     /**
      * 返回值为false代表调用失败
@@ -69,8 +73,8 @@ class Storage {
         if (typeof key === 'string' && typeof value !== 'undefined') {
             try {
                 const data = JSON.stringify(value);
-                if (this.secretKey) {
-                    sys.localStorage.setItem(key, encode(data, this.secretKey));
+                if (Storage.setting.secretKey) {
+                    sys.localStorage.setItem(key, encode(data, Storage.setting.secretKey));
                 } else {
                     sys.localStorage.setItem(key, data);
                 }
@@ -97,7 +101,7 @@ class Storage {
         try {
             let data = sys.localStorage.getItem(key);
             if (data && typeof data === 'string') {
-                if (this.secretKey) data = decode(data, this.secretKey);
+                if (Storage.setting.secretKey) data = decode(data, Storage.setting.secretKey);
                 // 设置缓存
                 this._cache[key] = data;
                 result = JSON.parse(data);

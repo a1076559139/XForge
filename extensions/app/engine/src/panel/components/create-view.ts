@@ -18,16 +18,18 @@ function getComScript(name = 'NewClass') {
         'const { ccclass, property } = _decorator;\r\n' +
         '@ccclass(\'' + name + '\')\r\n' +
         'export class ' + name + ' extends BaseView {\r\n' +
-        `    ${isPage ? '// 子界面列表，数组顺序为子界面排列顺序\r\n' : '\r\n'}` +
-        `    ${isPage ? 'protected miniViews: IMiniViewNames = [];\r\n' : '\r\n'}` +
+        `    ${isPage ? '// 子界面列表，数组顺序为子界面排列顺序\r\n' : ''}` +
+        `    ${isPage ? 'protected miniViews: IMiniViewNames = [];\r\n\r\n' : '\r\n'}` +
         '    // 初始化的相关逻辑写在这\r\n' +
         '    onLoad() {}\r\n\r\n' +
         '    // 界面打开时的相关逻辑写在这(onShow可被多次调用-它与onHide不成对)\r\n' +
-        `    ${isPage ? 'onShow(params: any) { this.showMiniViews({ views: this.miniViews }); }\r\n\r\n' : 'onShow(params: any) {}\r\n\r\n'}` +
+        '    onShow(params: any) {\r\n' +
+        `        ${isPage ? 'this.showMiniViews({ views: this.miniViews });' : ''}\r\n` +
+        '    }\r\n\r\n' +
         '    // 界面关闭时的相关逻辑写在这(已经关闭的界面不会触发onHide)\r\n' +
         '    onHide(result: undefined) {\r\n' +
-        '        // app.manager.ui.show<' + name + '>({name: \'' + name + '\', onHide:(result) => { 接收到return的数据，并且有类型提示 }})\r\n' +
-        '        return result;\r\n' +
+        `        ${isPaper ? '' : '// app.manager.ui.show<' + name + '>({name: \'' + name + '\', onHide:(result) => { 接收到return的数据，并且有类型提示 }})\r\n'}` +
+        `        ${isPaper ? '' : 'return result;'}\r\n` +
         '    }\r\n' +
         '}';
 }
